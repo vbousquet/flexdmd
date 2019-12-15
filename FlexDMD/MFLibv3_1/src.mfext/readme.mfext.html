@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<title>Media Foundation .Net Extension Library v1.0</title>
+</head>
+<body>
+	<h1>
+		Media Foundation .Net Extension Library v1.0</h1>
+	<p>
+		Media Foundation .Net Extension Library (mfext for short) is an optional library
+		that enhances the Media Foundation .Net Library and makes it a little more managed
+		friendly.</p>
+	<p>
+		mfext brings three kinds of enhancements:</p>
+	<ul>
+		<li>Numerous extension methods for 47 of mflib&#39;s interfaces</li>
+		<li>A smarter MF static class for all Media Foundation functions</li>
+		<li>Some helper classes to make interop easier</li>
+	</ul>
+	<h2>
+		Extensions methods</h2>
+	<blockquote>
+		<p>
+			Extension methods enable you to &quot;add&quot; methods to existing types without
+			creating a new derived type, recompiling, or otherwise modifying the original type.
+			See the MSDN Library <a href="https://msdn.microsoft.com/en-us/library/bb383977%28v=vs.140%29.aspx">
+				https://msdn.microsoft.com/en-us/library/bb383977%28v=vs.140%29.aspx</a></p>
+		<p>
+			To make use of these extensions, simply add a Reference to 
+			MediaFoundation.Extension.dll to your project.</p>
+	</blockquote>
+	<p>
+		mfext adds methods to mflib&#39;s COM interfaces. These methods provide:</p>
+	<ul>
+		<li>Better parameter passing, for example by removing parameters that only accept one
+			(like null) or a limited number of values or by using managed types (like the TimeSpan
+			structure to express duration).</li>
+		<li>Directly accept a managed Stream instead of a COM IStream.</li>
+		<li>Expose as methods features that are normally only available with MF functions.</li>
+	</ul>
+	<h2>
+		The MF static class</h2>
+	<p>
+		This class is a wrapper around the mflib&#39;s MFExtern class but it adds a lot
+		of enhancements in the same vein as for the extensions methods.</p>
+	<p>
+		For example instead of calling:</p>
+	<pre><code class="lang-c#">MFExtern.MFStartup(0x20070, MFStartup.Full);</code></pre>
+	<p>
+		You just have to call the following code to get the same result:</p>
+	<pre><code class="lang-c#">MF.Startup();</code></pre>
+	<h2>
+		The HResult extensions methods</h2>
+	<p>
+		mfext also comes with enhancements to the HResult enumeration returned by most mflib&#39;s
+		methods. You can now write code like:</p>
+	<pre><code class="lang-c#">HResult hr = MF.GetSupportedMimeTypes(supportedMimeTypes);
+		if (hr.Succeeded()) { // Do something with supportedMimeTypes }</code></pre>
+	<p>
+		Or if you prefer working with exceptions</p>
+	<pre><code class="lang-c#">
+	HResult hr = MF.GetSupportedMimeTypes(supportedMimeTypes);
+	hr.ThrowExceptionOnError();</code></pre>
+	<h2>
+		Helpers classes from the Interop namespace</h2>
+	<ul>
+		<li>ComCallableStream: A class that exposes the COM interface IStream around a wrapped
+			managed Stream.</li>
+		<li>RuntimeCallableStream: A class that exposes a managed Stream around a wrapped IStream
+			COM interface</li>
+		<li>GCPin: A wrapper around GCHandle that implements the Disposable pattern.</li>
+		<li>MemoryBuffer: A class based on SafeBuffer that allows easy reads or writes into
+			unmanaged memory.</li>
+	</ul>
+</body>
+</html>

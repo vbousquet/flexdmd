@@ -1,0 +1,9 @@
+﻿{
+    "General": {
+        "KeyFile": "FlexDMD.snk"
+    },
+    "Advanced": {
+        "Log": false,
+        "LogFile": "ilmerge.log"
+    }
+}

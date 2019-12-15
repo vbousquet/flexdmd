@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FlexDMDCmdTest": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

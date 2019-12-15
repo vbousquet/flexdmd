@@ -1,0 +1,219 @@
+v3.1 (2016-03-23)
+
+252 defined
+167 tested
+ 78 untestable
+
+Externs
+263 defined
+216 tested
+ 45 untestable
+
+See interfaces.txt for details.  These are all the testable 
+interfaces/externs up to and including W10.
+
+Added a series of extensions to Media Foundation interfaces
+and externs.  See readme.mfext.html for more information.
+
+At this point, all testable interfaces have been tested.  No
+further work is planned for MediaFoundation.dll.
+
+-----------------------------------------------------------------
+v3.0 (2015-07-01)
+
+252 defined
+159 tested
+ 44 untestable
+
+Externs
+263 defined
+214 tested
+ 41 untestable
+
+See interfaces.txt for details.  These are all the testable 
+interfaces/externs up to and including W8.
+
+Be aware that .Net Framework v4.0.3 requires KB2495593.
+
+Also in v3.0, the licensing has been expanded to support BSD.
+
+New samples have been added showing how to write Media 
+Foundation Transforms (MFTs), along with templates to make 
+them easier to write.
+
+
+-----------------------------------------------------------------
+v2.2 (2015-04-14)
+
+
+232 defined
+131 tested
+ 33 untestable
+
+Externs
+
+259 defined
+181 tested
+ 37 untestable
+
+See interfaces.txt for details.
+
+Moved to framework v4.0.3.
+
+Also, it is now possible to get MSDN help for MFNet interfaces inside Visual 
+Studio. Run docs\insthelp.cmd to configure this features for VS2012, 2013 & 
+2015.
+
+-----------------------------------------------------------------
+v2.1 (2015-03-10)
+
+
+213 defined
+110 tested
+ 43 untestable
+
+Externs
+
+259 defined
+178 tested
+ 40 untestable
+
+See interfaces.txt for details.
+
+There are also 3 new samples: MFCaptureAlt, MFCaptureD3D, 
+and MFCaptureToFile.  Make sure to download the lastest
+version.
+
+-----------------------------------------------------------------
+v2.0 (2012-03-05)
+
+Interfaces
+
+152 defined
+ 75 tested
+ 11 untestable
+
+Externs
+
+188 defined
+ 76 tested
+ 22 untestable
+
+See interfaces.txt for details.
+
+The error handling has been significantly re-worked.  In earlier versions, methods 
+that failed would automatically throw exceptions.  This version returns the COM 
+result codes as integers.  If you have code written to previous versions of this 
+library, you'll need to modify your code for every call to the MF library, like 
+this:
+
+   int hr;
+
+   hr = iSomething.DoSomething();
+   MFError.ThrowExceptionForHR(hr); // Turn hr into exception if it was an error
+
+This was changed because:
+
+1) Consistent with the MF docs
+2) Significantly better performance when exceptions are thrown
+3) Consistent with other libraries (DS & WM)
+4) Some methods already had to use the integer return method,
+resulting in internal inconsistencies and coder confusion.
+
+Also, given the newness of MF and the free availability of 2010 Express
+the solution files for VS2008 and VS2005 have been removed.
+
+
+Thanks to the following SF users who provided feedback for v2.0:
+
+    asa11
+    sstevee
+    longkerdandy
+
+-----------------------------------------------------------------
+v1.1 (2009-06-10)
+
+Interfaces
+
+124 defined
+ 75 tested
+ 11 untestable
+
+Externs
+
+156 defined
+ 76 tested
+ 21 untestable
+
+See interfaces.txt for details.
+
+The new lib is compiled with VS 2008 (framework v3.5).  However, this should still
+work properly with apps from VS2005.
+
+There were a few minor perf changes.  I also changed the def for BitmapInfoHeader
+to be consistent with DirectShow.  Yes, it will cause problems for (a few) MFLib
+users.  However, it makes life less confusing when you use both libraries.
+
+Also, I added new interfaces to the alt.cs file.  Check out the comments at
+the top of the file for details.
+
+Since the last release, I have gotten the EVRPresenter sample to work.  This
+was a HUGE and finicky project.  It required adding support for a number of 
+MF interfaces.
+
+So, in order to have a release of MFNet that would work with this new 
+sample, I decided it was time to do a v1.1.  Since I was doing another 
+release I decided to also attack all the remaining Vista interfaces. 
+I picked the last of the easy interfaces, and all of the remaining 
+ones I find to be interesting.  
+
+At this point, I don't plan to do any more of the vista interfaces 
+unless there are specific requests.  If you request an interface, be 
+prepared to help test it!
+
+
+-----------------------------------------------------------------
+v1.0 (2007-09-23)
+
+Interfaces
+
+123 defined
+ 55 tested
+ 11 untestable
+
+Externs
+
+156 defined
+ 71 tested
+ 21 untestable
+
+See interfaces.txt for details.
+
+There have been *significant* changes since beta 2.  Commenting,
+more enums, and some serious re-working of the PropVariant class,
+which affects a number of methods.
+
+In addition to testing a bunch more interfaces and externs, I have 
+finished translating 7 of the 8 samples that ship with the the PSDK, 
+plus 1 sample that only exists in the mf sdk docs.  Note: The samples 
+are in a separate download.  Make sure you grab it too!
+
+-----------------------------------------------------------------
+v.091 beta 2
+
+A few more tested externs (for the GrayScale sample)
+Two more tested interfaces: IMFTransform, IMF2DBuffer
+Fix DllImport statement for PropVariantClear (Thanks Stephen!)
+Helper class MFInt
+
+General cleanup of some of the methods in the untested area
+Fix the name for GetGUID to match MF docs
+Change SafeRelease to a much simpler function
+Remove ParseError in favor of Marshal.GetHRForException()
+Remove ISequentialStream & IStream in favor of .Net's implementation
+
+-----------------------------------------------------------------
+v0.9 Beta 1 release (2007-07-15)
+
+114 Interfaces defined
+33 Interfaces tested 
