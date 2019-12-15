@@ -11,8 +11,6 @@ namespace FlexDMDTest
             Logger log = LogManager.GetCurrentClassLogger();
             IDMDObject dmd = (IDMDObject)(new DMDObject());
             dmd.Init();
-            var pixels = dmd.RawDmdColoredPixels;
-
             // dmd.DisplayScene00("Diablo.UltraDMD/act1.wmv", " ", 15, "FREE PLAY", 15, 14, 3000, 14);
             // dmd.DisplayScene00("Diablo.UltraDMD/act2.wmv", "SCENE", 0, "2", 0, 0, 1000, 0);
             dmd.DisplayScene00("Metal Slug.UltraDMD/Explosion.gif", "SCENE", 0, "2", 0, 0, 1000, 0);
@@ -60,6 +58,8 @@ namespace FlexDMDTest
         int RawDmdWidth();
 
         int RawDmdHeight();
+
+        void Init(string gameName);
 
         /// <summary>
         /// Init must be called before any other method.  It initializes the scene queue and internal state.

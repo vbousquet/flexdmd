@@ -104,6 +104,7 @@
     <Compile Include="Glide\Tweener.cs" />
     <Compile Include="FlexDMD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowHandle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="NLog.config">

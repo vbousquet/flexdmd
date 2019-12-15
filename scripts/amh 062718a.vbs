@@ -199,7 +199,6 @@ Sub Table1_exit()
     If UltraDMD.IsRendering Then
       UltraDMD.CancelRendering
     End If
-    UltraDMD.Uninit
     UltraDMD = NULL
   End If
 End Sub
@@ -11510,8 +11509,8 @@ Sub UpdateFlipperLogo_Timer
     RFlogo2.RotY = RightFlipper.CurrentAngle
 	PRGhost1.ObjRotZ = PrGhost.ObjRotZ
 	PRDoor1.ObjRotZ = PrDoor.ObjRotZ
-	FlipperLSh.RotZ = LeftFlipper.currentangle
-	FlipperRSh.RotZ = RightFlipper.currentangle
+	'FlipperLSh.RotZ = LeftFlipper.currentangle
+	'FlipperRSh.RotZ = RightFlipper.currentangle
 	dim bulb
 	if NightDay <= 15 then
 		for each bulb in GI_Lights1

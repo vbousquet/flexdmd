@@ -77,7 +77,7 @@ namespace FlexDMD.Actors
                         {
                             Character data = _font[character];
                             int kerning = _font.GetKerning(previousCharacter, character);
-                            this.DrawCharacter(graphics, data, x + data.Offset.X + kerning, y + data.Offset.Y);
+                            DrawCharacter(graphics, data, x + data.Offset.X + kerning, y + data.Offset.Y);
                             x += data.XAdvance + kerning;
                         }
                         catch (Exception e)

@@ -678,7 +678,6 @@ Sub Table1_Exit():
 		If UltraDMD.IsRendering Then
 			UltraDMD.CancelRendering
 		End If
-		UltraDMD.Uninit
 		UltraDMD = NULL
 	End If
 End Sub
@@ -2128,7 +2127,7 @@ Sub DMD_Init
         Exit Sub
     End If
 
-    UltraDMD.Init
+    UltraDMD.Init cGameName
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."
         Exit Sub

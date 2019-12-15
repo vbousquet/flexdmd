@@ -41,13 +41,16 @@ namespace FlexDMD
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate void RenderDelegate(ushort width, ushort height, IntPtr currbuffer);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate void GameSettingsDelegate(string gameName, ulong hardwareGeneration, IntPtr options);
+
         IntPtr _dllhandle = IntPtr.Zero;
         OpenCloseDelegate _open = null;
         OpenCloseDelegate _close = null;
         RenderDelegate _renderRgb24 = null;
         RenderDelegate _renderGray4 = null;
         RenderDelegate _renderGray2 = null;
-
+        GameSettingsDelegate _gameSettings = null;
 
         public DMDDevice()
         {
@@ -67,6 +70,8 @@ namespace FlexDMD
                 if (renderGray4Handle != IntPtr.Zero) _renderGray4 = (RenderDelegate)Marshal.GetDelegateForFunctionPointer(renderGray4Handle, typeof(RenderDelegate));
                 var renderRgb24Handle = NativeLibrary.GetProcAddress(_dllhandle, "Render_RGB24");
                 if (renderRgb24Handle != IntPtr.Zero) _renderRgb24 = (RenderDelegate)Marshal.GetDelegateForFunctionPointer(renderRgb24Handle, typeof(RenderDelegate));
+                var gameSettingsHandle = NativeLibrary.GetProcAddress(_dllhandle, "PM_GameSettings");
+                if (gameSettingsHandle != IntPtr.Zero) _gameSettings = (GameSettingsDelegate)Marshal.GetDelegateForFunctionPointer(gameSettingsHandle, typeof(GameSettingsDelegate));
             }
             else
             {
@@ -104,6 +109,17 @@ namespace FlexDMD
         public void RenderGray2(ushort width, ushort height, IntPtr currbuffer)
         {
             if (_renderGray2 != null) _renderGray2(width, height, currbuffer);
+        }
+
+        public void GameSettings(string gameName, ulong hardwareGeneration, PMoptions options)
+        {
+            if (_gameSettings != null)
+            {
+                IntPtr ptr = Marshal.AllocHGlobal(19 * sizeof(int));
+                Marshal.StructureToPtr(options, ptr, true);
+                _gameSettings(gameName, hardwareGeneration, ptr);
+                Marshal.FreeHGlobal(ptr);
+            }
         }
 
         /*

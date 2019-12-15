@@ -25,6 +25,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using static FlexDMD.DMDDevice;
 
 namespace FlexDMD
 {
@@ -67,6 +68,8 @@ namespace FlexDMD
         int RawDmdWidth();
 
         int RawDmdHeight();
+
+        void Init(string gameName);
 
         /// <summary>
         /// Init must be called before any other method.  It initializes the scene queue and internal state.
@@ -357,6 +360,7 @@ namespace FlexDMD
         public delegate void OnDMDChangedDelegate();
         private event OnDMDChangedDelegate OnDMDChanged;
         private object[] _pixels, _coloredPixels;
+        private string _gameName;
 
         object IDMDObject.RawDmdColoredPixels
         {
@@ -376,8 +380,24 @@ namespace FlexDMD
             }
         }
 
+        ~DMDObject()
+        {
+            if (_processThread != null)
+            {
+                log.Error("Destructor called before Uninit");
+                Uninit();
+            }
+        }
+
         public void Init()
         {
+            Init("");
+        }
+
+        public void Init(string gameName)
+        {
+            log.Info("Init {0}", gameName);
+            _gameName = gameName;
             if (_processThread != null)
             {
                 log.Error("Init called on an already initialized DMD. Call Uninit first.");
@@ -400,15 +420,19 @@ namespace FlexDMD
             _processThread = new Thread(new ThreadStart(RenderLoop));
             _processThread.IsBackground = true;
             _processThread.Start();
-
         }
 
         public void Uninit()
         {
+            if (!_running) return;
             log.Info("Uninit");
             _running = false;
-            _processThread.Join();
-            _processThread = null;
+            CancelRendering();
+            if (_processThread != null)
+            {
+                _processThread.Join();
+                _processThread = null;
+            }
             SetVisibleVirtualDMD(false);
             _graphics.Dispose();
             _graphics = null;
@@ -422,9 +446,21 @@ namespace FlexDMD
         {
             Stopwatch stopWatch = new Stopwatch();
             double elapsedMs = 0.0;
+            WindowHandle visualPinball = null;
             while (_running)
             {
                 stopWatch.Restart();
+                if (visualPinball == null)
+                {
+                    visualPinball = WindowHandle.FindWindow(wh => wh.IsVisible() && wh.GetWindowText().StartsWith("Visual Pinball Player"));
+                }
+                else if (!visualPinball.IsWindow())
+                {
+                    log.Info("Closing FlexDMD since Visual Pinball player Windows was closed");
+                    _processThread = null;
+                    Uninit();
+                    break;
+                }
                 float elapsedS = (float)(elapsedMs / 1000.0);
                 _stage.SetSize(_width, _height);
                 lock (_runnables)
@@ -539,6 +575,8 @@ namespace FlexDMD
             if (!wasVisible && _visible)
             {
                 _dmd.Open();
+                var options = new PMoptions();
+                _dmd.GameSettings(_gameName, 0, options);
             }
             else if (wasVisible && !_visible)
             {
