@@ -31,3 +31,6 @@ Sub FlexDMDTimer_Timer
 	End If
 End Sub
 ```
+
+<br></br>As an example, applying these changes to JPSalas' Diablo III table, gives the following result (top left DMD is rendered through FlexDMD/dmddevice.dll, bottom one is rendered by VPX):
+<br></br>![Visual Pinball Architecture](./media/diablo-embedded.png)
