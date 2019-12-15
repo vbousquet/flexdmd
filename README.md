@@ -2,7 +2,7 @@
 FlexDMD is a DMD renderer extension for Visual Pinball. 
 FlexDMD was created as a drop-in replacement for UltraDMD, since it was was not updated anymore. 
 
-For install instruction and detailed informations, open the [Docs folder](./docs).
+For install instruction and detailed informations, open the [Docs folder](./docs/FlexDMD.md).
 
 <b>Disclaimer: this software is in a pre-alpha state. Use at your own risk !</b>
 
