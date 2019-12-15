@@ -32,7 +32,7 @@ namespace FlexDMD.Scenes
             _background = background;
             _topText = new Label(topFont, topText);
             _bottomText = new Label(bottomFont, bottomText);
-            AddActor(_background);
+            if (_background != null) AddActor(_background);
             AddActor(_topText);
             AddActor(_bottomText);
         }

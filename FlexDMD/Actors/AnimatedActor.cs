@@ -20,7 +20,7 @@ namespace FlexDMD
     abstract class AnimatedActor : Actor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        protected bool _loop;
+        protected bool _loop = true;
         protected bool _endOfAnimation;
         protected float _frameTime;
         protected float _frameDuration;

@@ -37,7 +37,15 @@ namespace FlexDMD.Actors
             get => _text;
             set
             {
-                var newText = Regex.Replace(value, @"\r\n|\n\r|\n|\r", "\r\n");
+                string newText;
+                if (value == null)
+                {
+                    newText = "";
+                }
+                else
+                {
+                    newText = Regex.Replace(value, @"\r\n|\n\r|\n|\r", "\r\n");
+                }
                 if (_text == null || !_text.Equals(newText))
                 {
                     _text = newText;

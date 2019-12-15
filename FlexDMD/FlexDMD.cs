@@ -378,6 +378,11 @@ namespace FlexDMD
 
         public void Init()
         {
+            if (_processThread != null)
+            {
+                log.Error("Init called on an already initialized DMD. Call Uninit first.");
+                Uninit();
+            }
             HResult hr = MFExtern.MFStartup(0x10070, MFStartup.Full);
             if (hr < 0) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
             _running = true;
@@ -385,8 +390,6 @@ namespace FlexDMD
             _font7 = Actors.Font.LoadFromRessource("FlexDMD.Resources.font-7.fnt");
             _font12 = Actors.Font.LoadFromRessource("FlexDMD.Resources.font-12.fnt");
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
-            // _pixels = Marshal.AllocHGlobal(_width * _height * 3 * 16);
-            // _pixels = SafeArrayCreateVector(VarEnum.VT_VARIANT, 0, _width * _height);
             _graphics = Graphics.FromImage(_frame);
             _scoreBoard = new ScoreBoard(_font7, _font12, _font5);
             _scoreBoard.SetSize(_width, _height);
@@ -406,7 +409,6 @@ namespace FlexDMD
             _running = false;
             _processThread.Join();
             _processThread = null;
-            // Marshal.FreeHGlobal(_pixels);
             SetVisibleVirtualDMD(false);
             _graphics.Dispose();
             _graphics = null;
@@ -591,8 +593,8 @@ namespace FlexDMD
                 _runnables.Add(() =>
                 {
                     log.Info("Clear");
-                    _scoreBoard._visible = false;
                     _graphics.Clear(Color.Black);
+                    _scoreBoard._visible = false;
                 });
             }
         }
@@ -631,6 +633,7 @@ namespace FlexDMD
         {
             // filename can be a preloaded id, or a comma separated image list, or a filename to an image, gif or video file.
             if (_preloads.ContainsKey(filename)) return _preloads[filename];
+            if (filename.Trim().Length == 0) return null;
             var fullPath = System.IO.Path.Combine(_basePath, filename);
             if (File.Exists(fullPath))
             {
@@ -639,7 +642,11 @@ namespace FlexDMD
                 {
                     return new Image(fullPath);
                 }
-                if (extension.Equals("wmv") || extension.Equals("avi") || extension.Equals("mp4"))
+                else if (extension.Equals("gif"))
+                {
+                    return new GIFImage(fullPath);
+                }
+                else if (extension.Equals("wmv") || extension.Equals("avi") || extension.Equals("mp4"))
                 {
                     return new Video(fullPath, false, _stretchMode);
                 }
@@ -725,7 +732,8 @@ namespace FlexDMD
                 _runnables.Add(() =>
                 {
                     // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened
-                    log.Info("Scoreboard for {0} players, {1} is playing", cPlayers, highlightedPlayer);
+                    // log.Info("Scoreboard for {0} players, {1} is playing", cPlayers, highlightedPlayer);
+                    _graphics.Clear(Color.Black);
                     _scoreBoard._visible = true;
                     _scoreBoard.SetNPlayers(cPlayers);
                     _scoreBoard.SetHighlightedPlayer(highlightedPlayer);

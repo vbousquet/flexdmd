@@ -75,6 +75,7 @@
     <Compile Include="Actors\Font.cs" />
     <Compile Include="Actors\GraphicUtils.cs" />
     <Compile Include="Actors\Group.cs" />
+    <Compile Include="Actors\GIFImage.cs" />
     <Compile Include="Actors\Image.cs" />
     <Compile Include="Actors\Label.cs" />
     <Compile Include="Actors\ScoreBoard.cs" />

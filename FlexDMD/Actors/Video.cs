@@ -28,6 +28,7 @@ namespace FlexDMD
     class Video : AnimatedActor
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+        private static int nOpenedVideos = 0;
         private readonly string _path;
         private readonly int _stretchMode; // stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
         private IMFSourceReader _reader;
@@ -45,10 +46,13 @@ namespace FlexDMD
         public void Open()
         {
             Rewind();
+            nOpenedVideos++;
+            log.Info("Video opened: {0} ({1} videos concurrently opened)", _path, nOpenedVideos);
         }
 
         public void Close()
         {
+            nOpenedVideos--;
             if (_reader != null) COMBase.SafeRelease(_reader);
             _reader = null;
         }
