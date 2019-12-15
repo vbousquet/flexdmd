@@ -18,4 +18,4 @@ The main design decisions are summarized here:
 ## Visual Pinball Architecture
 The following diagram shows the overall architecture of Visual Pinball and where FlexDMD sits.
 
-<br></br>![Visual Pinball Architecture](./docs/architecture.svg)
+<br></br>![Visual Pinball Architecture](./docs/media/architecture.svg)
