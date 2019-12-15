@@ -20,7 +20,6 @@ using System.Linq;
 
 namespace FlexDMD.Actors
 {
-
     class SceneQueue : Actor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
@@ -44,7 +43,29 @@ namespace FlexDMD.Actors
             _isRendering = false;
             _queue.Clear();
         }
-        public bool IsRendering()
+
+        public void CancelRendering(Scene s)
+        {
+            if (s._active) s.End();
+            _queue.Remove(s);
+            _isRendering = _queue.Count() > 0;
+        }
+
+        public Scene GetActiveScene()
+        {
+            if (_queue.Count() > 0)
+            {
+                var s = _queue[0];
+                if (!s._active) s.Begin();
+                return s;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+            public bool IsRendering()
         {
             return _isRendering;
         }

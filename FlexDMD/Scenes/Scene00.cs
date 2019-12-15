@@ -37,6 +37,12 @@ namespace FlexDMD.Scenes
             AddActor(_bottomText);
         }
 
+        public void SetText(string topText, string bottomText)
+        {
+            _topText.Text = topText;
+            _bottomText.Text = bottomText;
+        }
+
         public override void Begin()
         {
             base.Begin();

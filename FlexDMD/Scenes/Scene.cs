@@ -12,16 +12,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NLog;
 
 namespace FlexDMD.Scenes
 {
     abstract class Scene : Group
     {
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
         protected readonly string _id;
         protected float _pauseS;
         protected AnimationType _animateIn;
@@ -29,12 +26,21 @@ namespace FlexDMD.Scenes
         protected float _time;
         public bool _active = false;
 
+        public string Id { get { return _id; } }
+
         public Scene(AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "")
         {
             _animateIn = animateIn;
             _animateOut = animateOut;
             _pauseS = pauseS;
             _id = id;
+            if (animateIn != AnimationType.None || animateOut != AnimationType.None)
+                log.Error("Unsupported animation in scene '{0}': {1} => {2}", id, animateIn, animateOut);
+        }
+
+        public void SetPause(float pauseS)
+        {
+            _pauseS = pauseS;
         }
 
         public virtual void Begin()

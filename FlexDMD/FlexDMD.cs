@@ -69,7 +69,9 @@ namespace FlexDMD
 
         int RawDmdHeight();
 
-        void Init(string gameName);
+        void InitForGame(string gameName);
+
+        void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight);
 
         /// <summary>
         /// Init must be called before any other method.  It initializes the scene queue and internal state.
@@ -391,16 +393,16 @@ namespace FlexDMD
 
         public void Init()
         {
-            Init("");
+            InitForGame("");
         }
 
-        public void Init(string gameName)
+        public void InitForGame(string gameName)
         {
             log.Info("Init {0}", gameName);
             _gameName = gameName;
             if (_processThread != null)
             {
-                log.Error("Init called on an already initialized DMD. Call Uninit first.");
+                log.Error("Init called on an already initialized DMD. Please call it once, or call Uninit first.");
                 Uninit();
             }
             HResult hr = MFExtern.MFStartup(0x10070, MFStartup.Full);
@@ -456,7 +458,7 @@ namespace FlexDMD
                 }
                 else if (!visualPinball.IsWindow())
                 {
-                    log.Info("Closing FlexDMD since Visual Pinball player Windows was closed");
+                    log.Info("Closing FlexDMD since Visual Pinball Player window was closed");
                     _processThread = null;
                     Uninit();
                     break;
@@ -569,7 +571,7 @@ namespace FlexDMD
 
         public bool SetVisibleVirtualDMD(bool bVisible)
         {
-            log.Info("SetVisibleVirtualDMD({0})", bVisible);
+            // log.Info("SetVisibleVirtualDMD({0})", bVisible);
             bool wasVisible = _visible;
             _visible = bVisible;
             if (!wasVisible && _visible)
@@ -613,12 +615,12 @@ namespace FlexDMD
             var scene = _scenes[sceneId];
             if (scene != null)
             {
-                log.Info("CancelRenderingWithId {0}", sceneId);
                 lock (_runnables)
                 {
                     _runnables.Add(() =>
                     {
-                        // _queue.CancelRendering(scene);
+                        log.Info("CancelRenderingWithId {0}", sceneId);
+                        _queue.CancelRendering(scene);
                     });
                 }
             }
@@ -675,16 +677,16 @@ namespace FlexDMD
             var fullPath = System.IO.Path.Combine(_basePath, filename);
             if (File.Exists(fullPath))
             {
-                string extension = Path.GetExtension(filename).ToLowerInvariant().Remove(0, 1);
-                if (extension.Equals("png") || extension.Equals("jpg") || extension.Equals("jpeg") || extension.Equals("bmp"))
+                string extension = Path.GetExtension(filename).ToLowerInvariant();
+                if (extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".bmp"))
                 {
                     return new Image(fullPath);
                 }
-                else if (extension.Equals("gif"))
+                else if (extension.Equals(".gif"))
                 {
                     return new GIFImage(fullPath);
                 }
-                else if (extension.Equals("wmv") || extension.Equals("avi") || extension.Equals("mp4"))
+                else if (extension.Equals(".wmv") || extension.Equals(".avi") || extension.Equals(".mp4"))
                 {
                     return new Video(fullPath, false, _stretchMode);
                 }
@@ -694,15 +696,7 @@ namespace FlexDMD
 
         public void DisplayVersionInfo()
         {
-            lock (_runnables)
-            {
-                _runnables.Add(() =>
-                {
-                    _scoreBoard._visible = false;
-                    // scene.SetSize(_width, _height);
-                    // _queue.Enqueue(scene);
-                });
-            }
+            // No version info (this is an implementation choice to avoid delaying game startup and displaying again and again the same scene)
         }
 
         public void DisplayScene00(string background, string toptext, int topBrightness, string bottomtext, int bottomBrightness, int animateIn, int pauseTime, int animateOut)
@@ -713,7 +707,7 @@ namespace FlexDMD
                 {
                     _scoreBoard._visible = false;
                     log.Info("DisplayScene00 '{0}', '{1}', {2}, '{3}', {4}, {5}, {6}, {7}", background, toptext, topBrightness, bottomtext, bottomBrightness, animateIn, pauseTime, animateOut);
-                    var scene = new Scene00(ResolveImage(background), toptext, _font7, topBrightness, bottomtext, _font12, bottomBrightness, AnimationType.None, pauseTime / 1000f, AnimationType.None, "");
+                    var scene = new Scene00(ResolveImage(background), toptext, _font7, topBrightness, bottomtext, _font12, bottomBrightness, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, "");
                     _queue.Enqueue(scene);
                 });
             }
@@ -730,9 +724,11 @@ namespace FlexDMD
             {
                 _runnables.Add(() =>
                 {
+                    // Used by Metal Slug when entering high score, or quite frquently by amh
                     _scoreBoard._visible = false;
-                    // scene.SetSize(_width, _height);
-                    // _queue.Enqueue(scene);
+                    log.Error("DisplayScene00Ex [unsupported] '{0}', '{1}', {2}, '{3}', {4}, {5}, {6}, {7}", background, toptext, topBrightness, bottomtext, bottomBrightness, animateIn, pauseTime, animateOut);
+                    var scene = new Scene00(ResolveImage(background), toptext, _font7, topBrightness, bottomtext, _font12, bottomBrightness, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, "");
+                    _queue.Enqueue(scene);
                 });
             }
         }
@@ -744,6 +740,7 @@ namespace FlexDMD
                 _runnables.Add(() =>
                 {
                     _scoreBoard._visible = false;
+                    log.Error("DisplayScene01 [unsupported] '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
                     // scene.SetSize(_width, _height);
                     // _queue.Enqueue(scene);
                 });
@@ -782,12 +779,46 @@ namespace FlexDMD
             }
         }
 
+        // From KissDMDv2.vbs, an undocumented function. Not a clue for the difference between this one and DisplayScoreboard.
+        // UltraDMD.DisplayScoreboard00 PlayersPlayingGame, 0, Score(1), Score(2), Score(3), Score(4), "credits " & Credits, ""
+        public void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight)
+        {
+            DisplayScoreboard(cPlayers, highlightedPlayer, score1, score2, score3, score4, lowerLeft, lowerRight);
+        }
+
+
         public void ModifyScene00(string id, string toptext, string bottomtext)
         {
+            log.Info("ModifyScene00 '{0}', '{1}', '{2}'", id, toptext, bottomtext);
+            lock (_runnables)
+            {
+                _runnables.Add(() =>
+                {
+                    var scene = _queue.GetActiveScene();
+                    if (scene != null && scene.Id == id && scene is Scene00 s)
+                    {
+                        s.SetText(toptext, bottomtext);
+                    }
+                });
+            }
         }
 
         public void ModifyScene00Ex(string id, string toptext, string bottomtext, int pauseTime)
         {
+            log.Info("ModifyScene00Ex '{0}', '{1}', '{2}', {3}", id, toptext, bottomtext, pauseTime);
+            lock (_runnables)
+            {
+                _runnables.Add(() =>
+                {
+                    var scene = _queue.GetActiveScene();
+                    if (scene != null && scene.Id == id && scene is Scene00 s)
+                    {
+                        s.SetText(toptext, bottomtext);
+                        // This is unclear if the new pauseTime should be added or simply replace the old one. To be checked from UltraDMD source code.
+                        s.SetPause(pauseTime / 1000f);
+                    }
+                });
+            }
         }
 
         public void DisplayText(string text, int textBrightness, int textOutlineBrightness)
@@ -798,6 +829,7 @@ namespace FlexDMD
                 {
                     _scoreBoard._visible = false;
                     // Direct rendering
+                    log.Error("DisplayText [unsupported] '{0}', {1}, {2}", text, textBrightness, textOutlineBrightness);
                 });
             }
         }
@@ -809,6 +841,7 @@ namespace FlexDMD
                 _runnables.Add(() =>
                 {
                     _scoreBoard._visible = false;
+                    log.Error("ScrollingCredits [unsupported] '{0}', '{1}', {2}", background, text, textBrightness);
                     // scene.SetSize(_width, _height);
                     // _queue.Enqueue(scene);
                 });

@@ -23,6 +23,9 @@ using System.Drawing.Imaging;
 
 // Based on : https://docs.microsoft.com/en-us/windows/win32/medfound/processing-media-data-with-the-source-reader?redirectedfrom=MSDN
 // Using : https://docs.microsoft.com/en-us/windows/win32/medfound/uncompressed-video-buffers
+//
+// Works fine with all diablo wmv files (WMV2 profile which is supported by MMF)
+// Fails on all of Metal Slug wmv; IntroMS.wmv, Mision1Start.wmv, Mision2Start.wmv,... (WMV3 profile which is also supported by MMF)
 namespace FlexDMD
 {
     class Video : AnimatedActor

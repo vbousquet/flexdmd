@@ -59,7 +59,11 @@ namespace FlexDMDTest
 
         int RawDmdHeight();
 
+        void InitForGame(string gameName);
+
         void Init(string gameName);
+
+        void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight);
 
         /// <summary>
         /// Init must be called before any other method.  It initializes the scene queue and internal state.
