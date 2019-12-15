@@ -15,7 +15,7 @@ The main design decisions are summarized below:
 * Clear Open Source licensing; FlexDMD's code is licensed under Apache 2. It has as little dependencies as possible and only on libraries or assets with permissive OSS license too.
 * Offer a few improvements missing to UltraDMD (variable font width, comma separated scores, animated score background,...).
 
-## Visual Pinball Architecture
+## Overall Architecture
 The following diagram shows the overall architecture of Visual Pinball and where FlexDMD sits.
 
-<br></br>![Visual Pinball Architecture](./docs/media/architecture.svg)
+<br></br>![Overall Architecture](./docs/media/architecture.svg)
