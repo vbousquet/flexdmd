@@ -19,6 +19,21 @@
   <defs
      id="defs2">
     <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker5822"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend">
+      <path
+         inkscape:connector-curvature="0"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path5820" />
+    </marker>
+    <marker
        inkscape:stockid="Arrow1Lend"
        orient="auto"
        refY="0"
@@ -135,7 +150,8 @@
        refX="0"
        id="marker3634"
        style="overflow:visible"
-       inkscape:isstock="true">
+       inkscape:isstock="true"
+       inkscape:collect="always">
       <path
          id="path3632"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
@@ -294,9 +310,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="312.71528"
-     inkscape:cy="527.11221"
+     inkscape:zoom="1.979899"
+     inkscape:cx="626.06271"
+     inkscape:cy="356.09312"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -478,7 +494,7 @@
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.99999994;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;marker-start:none;marker-mid:none;marker-end:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
     <rect
        y="729.96014"
-       x="385.7948"
+       x="383.26947"
        height="222.2531"
        width="135.16458"
        id="rect885"
@@ -683,19 +699,19 @@
     <path
        sodipodi:nodetypes="cc"
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker2260)"
-       d="M 521.42857,762 H 570"
+       d="M 518.90319,762 H 570"
        id="path2256"
        inkscape:connector-curvature="0" />
     <path
        inkscape:connector-curvature="0"
        id="path2622"
-       d="M 521.42857,828 H 570"
+       d="M 518.65065,828 H 570"
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker2626)"
        sodipodi:nodetypes="cc" />
     <path
        sodipodi:nodetypes="cc"
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker2698)"
-       d="M 521.42857,908 H 570"
+       d="M 518.90319,908 H 570"
        id="path2694"
        inkscape:connector-curvature="0" />
     <path
@@ -707,13 +723,13 @@
     <path
        inkscape:connector-curvature="0"
        id="path3108"
-       d="M 137.14286,908 H 384.28571"
+       d="M 137.14286,908 H 380.75018"
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker3112)"
        sodipodi:nodetypes="cc" />
     <path
        sodipodi:nodetypes="cc"
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker3634)"
-       d="m 320.71429,788 h 63.57142"
+       d="m 320.71429,788 h 60.54096"
        id="path3630"
        inkscape:connector-curvature="0" />
     <path
@@ -778,7 +794,7 @@
     <path
        sodipodi:nodetypes="cc"
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5554)"
-       d="M 321.42857,692 H 570"
+       d="M 321.42857,680 H 570"
        id="path5550"
        inkscape:connector-curvature="0" />
     <text
@@ -814,5 +830,249 @@
          x="609.26953"
          id="tspan5808"
          sodipodi:role="line">User</tspan></text>
+    <path
+       inkscape:connector-curvature="0"
+       id="path5818"
+       d="M 420.84377,729.60155 421.06943,620 l -98.78372,0"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5822)"
+       sodipodi:nodetypes="ccc" />
+    <text
+       id="text6598"
+       y="908.75293"
+       x="-17.150532"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="908.75293"
+         x="-17.150532"
+         id="tspan6596"
+         sodipodi:role="line">In of Proc</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="924.73352"
+         x="-17.150532"
+         sodipodi:role="line"
+         id="tspan6600">COM</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="-16.912903"
+       y="986.78717"
+       id="text6606"><tspan
+         sodipodi:role="line"
+         id="tspan6602"
+         x="-16.912903"
+         y="986.78717"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">Out of Proc</tspan><tspan
+         id="tspan6604"
+         sodipodi:role="line"
+         x="-16.912903"
+         y="1002.7678"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">COM</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="-16.564594"
+       y="592.75293"
+       id="text6612"><tspan
+         id="tspan6610"
+         sodipodi:role="line"
+         x="-16.564594"
+         y="592.75293"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">COM</tspan></text>
+    <text
+       id="text6618"
+       y="756.9433"
+       x="154.67694"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="756.9433"
+         x="154.67694"
+         sodipodi:role="line"
+         id="tspan6616">COM</tspan></text>
+    <text
+       id="text6626"
+       y="783.58325"
+       x="351.81403"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="783.58325"
+         x="351.81403"
+         sodipodi:role="line"
+         id="tspan6624">dmddevice</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="799.56384"
+         x="351.81403"
+         sodipodi:role="line"
+         id="tspan6628">.dll</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="255.34956"
+       y="904.59338"
+       id="text6634"><tspan
+         id="tspan6630"
+         sodipodi:role="line"
+         x="255.34956"
+         y="904.59338"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">dmddevice</tspan><tspan
+         id="tspan6632"
+         sodipodi:role="line"
+         x="255.34956"
+         y="920.57397"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">.dll</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="538.20813"
+       y="356.75293"
+       id="text6642"><tspan
+         id="tspan6640"
+         sodipodi:role="line"
+         x="538.20813"
+         y="356.75293"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">Render</tspan></text>
+    <text
+       id="text6646"
+       y="436.75293"
+       x="538.20813"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="436.75293"
+         x="538.20813"
+         sodipodi:role="line"
+         id="tspan6644">Render</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="538.20813"
+       y="602.75293"
+       id="text6650"><tspan
+         id="tspan6648"
+         sodipodi:role="line"
+         x="538.20813"
+         y="602.75293"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">Render</tspan></text>
+    <text
+       id="text6654"
+       y="690.75293"
+       x="538.20813"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="690.75293"
+         x="538.20813"
+         sodipodi:role="line"
+         id="tspan6652">Render</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="538.20813"
+       y="996.75293"
+       id="text6658"><tspan
+         id="tspan6656"
+         sodipodi:role="line"
+         x="538.20813"
+         y="996.75293"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">Render</tspan></text>
+    <text
+       id="text6662"
+       y="842.75293"
+       x="538.20813"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="842.75293"
+         x="538.20813"
+         sodipodi:role="line"
+         id="tspan6660">Render</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="540.83179"
+       y="774.75293"
+       id="text6666"><tspan
+         id="tspan6664"
+         sodipodi:role="line"
+         x="540.83179"
+         y="774.75293"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">USB,...</tspan></text>
+    <text
+       id="text6670"
+       y="518.75293"
+       x="540.83179"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="518.75293"
+         x="540.83179"
+         sodipodi:role="line"
+         id="tspan6668">USB,...</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="540.13519"
+       y="905.46722"
+       id="text6674"><tspan
+         id="tspan6672"
+         sodipodi:role="line"
+         x="540.13519"
+         y="905.46722"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">Web</tspan><tspan
+         sodipodi:role="line"
+         x="540.13519"
+         y="921.44781"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         id="tspan6676">Socket</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="154.80389"
+       y="501.33072"
+       id="text6688"><tspan
+         id="tspan6684"
+         sodipodi:role="line"
+         x="154.80389"
+         y="501.33072"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">plugin</tspan><tspan
+         id="tspan6686"
+         sodipodi:role="line"
+         x="154.80389"
+         y="517.31128"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">.dll</tspan></text>
+    <text
+       id="text6694"
+       y="601.33069"
+       x="154.80389"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="601.33069"
+         x="154.80389"
+         sodipodi:role="line"
+         id="tspan6690">plugin</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle"
+         y="617.31128"
+         x="154.80389"
+         sodipodi:role="line"
+         id="tspan6692">.dll</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Quivira;-inkscape-font-specification:Quivira;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="381.53845"
+       y="616.29755"
+       id="text6700"><tspan
+         id="tspan6696"
+         sodipodi:role="line"
+         x="381.53845"
+         y="616.29755"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">dmddevicePUP</tspan><tspan
+         id="tspan6698"
+         sodipodi:role="line"
+         x="381.53845"
+         y="632.27814"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle">.dll</tspan></text>
   </g>
 </svg>
