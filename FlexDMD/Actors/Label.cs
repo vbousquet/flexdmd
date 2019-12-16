@@ -70,7 +70,7 @@ namespace FlexDMD.Actors
         private void UpdateBounds()
         {
             if (_text == null || _font == null) return;
-            var size = _font._font.MeasureFont(_text);
+            var size = _font.BitmapFont.MeasureFont(_text);
             _width = size.Width;
             _height = size.Height;
             // log.Info("Label '{0}' {1}x{2}", _text, _width, _height);

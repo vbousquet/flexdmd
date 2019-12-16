@@ -79,6 +79,7 @@
     <Compile Include="Actors\Image.cs" />
     <Compile Include="Actors\Label.cs" />
     <Compile Include="Actors\ScoreBoard.cs" />
+    <Compile Include="AssetManager.cs" />
     <Compile Include="BMFonts\BitmapFont.cs" />
     <Compile Include="BMFonts\BitmapFontLoader.cs" />
     <Compile Include="BMFonts\Character.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="BMFonts\Padding.cs" />
     <Compile Include="BMFonts\Page.cs" />
     <Compile Include="DMDDevice.cs" />
+    <Compile Include="IFlexDMD.cs" />
     <Compile Include="IDisposable.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -115,9 +117,6 @@
     <EmbeddedResource Include="Resources\font-7_0.png" />
     <None Include="FlexDMD.snk" />
     <None Include="ILMergeConfig.json" />
-    <None Include="NLog.xsd">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config" />
     <EmbeddedResource Include="Resources\font-12.fnt" />
     <EmbeddedResource Include="Resources\font-5.fnt" />

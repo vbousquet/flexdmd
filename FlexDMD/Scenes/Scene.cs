@@ -26,7 +26,8 @@ namespace FlexDMD.Scenes
         protected float _time;
         public bool _active = false;
 
-        public string Id { get { return _id; } }
+        public string Id { get => _id; }
+        public float Time { get => _time; }
 
         public Scene(AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "")
         {

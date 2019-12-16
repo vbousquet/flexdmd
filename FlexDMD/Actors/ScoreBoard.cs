@@ -13,6 +13,7 @@
    limitations under the License.
    */
 using NLog;
+using System.Drawing;
 
 namespace FlexDMD.Actors
 {
@@ -20,12 +21,14 @@ namespace FlexDMD.Actors
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private Actor _background = null;
-        public int _selectedBrightness = 15;
-        public int _unselectedBrightness = 15;
         private int _highlightedPlayer = 0;
         private Label[] _scores = new Label[4];
-        private readonly Font _scoreFont, _highlightFont, _textFont;
+        private Font _scoreFont, _highlightFont, _textFont;
         public Label _lowerLeft, _lowerRight;
+
+        public Font ScoreFont { get => _scoreFont; }
+        public Font HighlightFont { get => _highlightFont; }
+        public Font TextFont { get => _textFont; }
 
         public ScoreBoard(Font scoreFont, Font highlightFont, Font textFont)
         {
@@ -65,6 +68,16 @@ namespace FlexDMD.Actors
             }
         }
 
+        public void SetFonts(Font scoreFont, Font highlightFont, Font textFont)
+        {
+            _scoreFont = scoreFont;
+            _highlightFont = highlightFont;
+            _textFont = textFont;
+            SetHighlightedPlayer(_highlightedPlayer);
+            _lowerLeft.Font = textFont;
+            _lowerRight.Font = textFont;
+        }
+
         public void SetHighlightedPlayer(int player)
         {
             _highlightedPlayer = player;
@@ -92,7 +105,7 @@ namespace FlexDMD.Actors
         public override void Update(float delta)
         {
             base.Update(delta);
-            float yText = _height - _textFont._font.BaseHeight - 1;
+            float yText = _height - _textFont.BitmapFont.BaseHeight - 1;
             float yLine2 = (1 + yText) * 0.5f;
             _scores[0].SetPosition(1, 1);
             _scores[1].SetPosition(_width - _scores[1]._width - 1, 1);
@@ -100,6 +113,12 @@ namespace FlexDMD.Actors
             _scores[3].SetPosition(_width - _scores[3]._width - 1, yLine2);
             _lowerLeft.SetPosition(1, yText);
             _lowerRight.SetPosition(_width - _lowerRight._width - 1, yText);
+        }
+
+        public override void Draw(Graphics graphics)
+        {
+            graphics.Clear(Color.Black);
+            base.Draw(graphics);
         }
     }
 }

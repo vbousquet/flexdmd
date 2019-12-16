@@ -27,7 +27,7 @@ namespace FlexDMD.Scenes
         private Label _topText;
         private Label _bottomText;
 
-        public Scene00(Actor background, string topText, Font topFont, int topBrightness, string bottomText, Font bottomFont, int bottomBrightness, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(animateIn, pauseS, animateOut, id)
+        public Scene00(Actor background, string topText, Font topFont, string bottomText, Font bottomFont, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(animateIn, pauseS, animateOut, id)
         {
             _background = background;
             _topText = new Label(topFont, topText);

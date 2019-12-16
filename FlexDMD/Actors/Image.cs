@@ -24,6 +24,11 @@ namespace FlexDMD
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         public Bitmap _image = null;
 
+        public Image(Bitmap image)
+        {
+            _image = image;
+        }
+
         public Image(string path) 
         {
             // log.Info("Initalizing image: {0}", path);

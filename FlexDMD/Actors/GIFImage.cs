@@ -26,17 +26,20 @@ namespace FlexDMD
         private int _pos = 0;
         private Bitmap _image = null;
         private float[] _frameDelays;
+        private const int PropertyTagFrameDelay = 0x5100;
 
-        public GIFImage(string path)
+        public GIFImage(string path) : this(new Bitmap(path))
         {
-            const int PropertyTagFrameDelay = 0x5100;
-            // log.Info("Initalizing image: {0}", path);
-            _image = new Bitmap(path);
+        }
+
+        public GIFImage(Bitmap image)
+        {
+            _image = image;
             var item = _image.GetPropertyItem(PropertyTagFrameDelay);
             _frameDelays = new float[_image.GetFrameCount(FrameDimension.Time)];
             if (item.Type != 4)
             {
-                log.Error("Invalid GIF: {0}, frame delays are not of type 4 (32 bits unsigned int) but {1}", path, item.Type);
+                log.Error("Invalid GIF: frame delays are not of type 4 (32 bits unsigned int) but {0}", item.Type);
                 _image = null;
                 return;
             }
