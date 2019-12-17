@@ -37,13 +37,17 @@ namespace FlexDMD
     {
         #region Properties
 
-        object RawDmdColoredPixels
+        ushort DmdWidth { get; set; }
+
+        ushort DmdHeight { get; set; }
+
+        object DmdColoredPixels
         {
             [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
             get;
         }
 
-        object RawDmdPixels
+        object DmdPixels
         {
             [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
             get;
@@ -52,10 +56,6 @@ namespace FlexDMD
         #endregion
 
         #region Methods
-
-        int RawDmdWidth();
-
-        int RawDmdHeight();
 
         void InitForGame(string gameName);
 

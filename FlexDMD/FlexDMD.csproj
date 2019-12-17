@@ -108,6 +108,7 @@
     <Compile Include="Scenes\BackgroundScene.cs" />
     <Compile Include="Scenes\SingleLineScene.cs" />
     <Compile Include="Scenes\TwoLineScene.cs" />
+    <Compile Include="WaveOut.cs" />
     <Compile Include="WindowHandle.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -38,5 +38,11 @@ namespace FlexDMD.Scenes
             base.End();
             if (_background != null && _background is Video v) v.Close();
         }
+
+        public override void Update(float delta)
+        {
+            base.Update(delta);
+            _background?.SetSize(Width, Height);
+        }
     }
 }

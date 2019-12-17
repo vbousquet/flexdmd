@@ -28,10 +28,6 @@ namespace FlexDMD
         private float[] _frameDelays;
         private const int PropertyTagFrameDelay = 0x5100;
 
-        public GIFImage(string path) : this(new Bitmap(path))
-        {
-        }
-
         public GIFImage(Bitmap image)
         {
             _image = image;
@@ -74,7 +70,7 @@ namespace FlexDMD
                 _image.SelectActiveFrame(FrameDimension.Time, _pos);
                 Rectangle rect = new Rectangle(0, 0, _image.Width, _image.Height);
                 BitmapData data = _image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-                GraphicUtils.BGRtoRGB(data.Scan0, data.Stride);
+                GraphicUtils.BGRtoRGB(data.Scan0, data.Stride, _image.Width, _image.Height);
                 _image.UnlockBits(data);
             }
         }

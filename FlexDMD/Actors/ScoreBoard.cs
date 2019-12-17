@@ -19,22 +19,20 @@ namespace FlexDMD.Actors
 {
     class ScoreBoard : Group
     {
-        private static readonly Logger log = LogManager.GetCurrentClassLogger();
+        private readonly Label[] _scores = new Label[4];
         private Actor _background = null;
         private int _highlightedPlayer = 0;
-        private Label[] _scores = new Label[4];
-        private Font _scoreFont, _highlightFont, _textFont;
         public Label _lowerLeft, _lowerRight;
 
-        public Font ScoreFont { get => _scoreFont; }
-        public Font HighlightFont { get => _highlightFont; }
-        public Font TextFont { get => _textFont; }
+        public Font ScoreFont { get; private set; }
+        public Font HighlightFont { get; private set; }
+        public Font TextFont { get; private set; }
 
         public ScoreBoard(Font scoreFont, Font highlightFont, Font textFont)
         {
-            _scoreFont = scoreFont;
-            _highlightFont = highlightFont;
-            _textFont = textFont;
+            ScoreFont = scoreFont;
+            HighlightFont = highlightFont;
+            TextFont = textFont;
             _lowerLeft = new Label(textFont, "");
             _lowerRight = new Label(textFont, "");
             AddActor(_lowerLeft);
@@ -70,9 +68,9 @@ namespace FlexDMD.Actors
 
         public void SetFonts(Font scoreFont, Font highlightFont, Font textFont)
         {
-            _scoreFont = scoreFont;
-            _highlightFont = highlightFont;
-            _textFont = textFont;
+            ScoreFont = scoreFont;
+            HighlightFont = highlightFont;
+            TextFont = textFont;
             SetHighlightedPlayer(_highlightedPlayer);
             _lowerLeft.Font = textFont;
             _lowerRight.Font = textFont;
@@ -85,11 +83,11 @@ namespace FlexDMD.Actors
             {
                 if (i == player - 1)
                 {
-                    _scores[i].Font = _highlightFont;
+                    _scores[i].Font = HighlightFont;
                 }
                 else
                 {
-                    _scores[i].Font = _scoreFont;
+                    _scores[i].Font = ScoreFont;
                 }
             }
         }
@@ -105,7 +103,7 @@ namespace FlexDMD.Actors
         public override void Update(float delta)
         {
             base.Update(delta);
-            float yText = Height - _textFont.BitmapFont.BaseHeight - 1;
+            float yText = Height - TextFont.BitmapFont.BaseHeight - 1;
             float yLine2 = (1 + yText) * 0.5f;
             _scores[0].SetPosition(1, 1);
             _scores[1].SetPosition(Width - _scores[1].Width - 1, 1);
@@ -118,6 +116,7 @@ namespace FlexDMD.Actors
         public override void Draw(Graphics graphics)
         {
             graphics.Clear(Color.Black);
+            _background?.SetSize(Width, Height);
             base.Draw(graphics);
         }
     }

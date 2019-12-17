@@ -57,9 +57,42 @@ namespace FlexDMD
         private object[] _coloredPixels = null;
         private event OnDMDChangedDelegate OnDMDChanged;
         public delegate void OnDMDChangedDelegate();
+        
+        public ushort DmdWidth
+        {
+            get => _width;
+            set
+            {
+                if (_width == value) return;
+                if (_processThread != null)
+                {
+                    log.Error("Width changed after initialization.");
+                }
+                else
+                {
+                    _width = value;
+                }
+            }
+        }
 
+        public ushort DmdHeight
+        {
+            get => _height;
+            set
+            {
+                if (_height == value) return;
+                if (_processThread != null)
+                {
+                    log.Error("Height changed after initialization.");
+                }
+                else
+                {
+                    _height = value;
+                }
+            }
+        }
 
-        object IDMDObject.RawDmdColoredPixels
+        object IDMDObject.DmdColoredPixels
         {
             get
             {
@@ -68,7 +101,7 @@ namespace FlexDMD
             }
         }
 
-        object IDMDObject.RawDmdPixels
+        object IDMDObject.DmdPixels
         {
             get
             {
@@ -77,7 +110,7 @@ namespace FlexDMD
             }
         }
 
-        ~DMDObject()
+         ~DMDObject()
         {
             if (_processThread != null)
             {
@@ -119,8 +152,10 @@ namespace FlexDMD
             _stage.AddActor(_queue);
             SetVisibleVirtualDMD(true);
             Clear();
-            _processThread = new Thread(new ThreadStart(RenderLoop));
-            _processThread.IsBackground = true;
+            _processThread = new Thread(new ThreadStart(RenderLoop))
+            {
+                IsBackground = true
+            };
             _processThread.Start();
         }
 
@@ -259,16 +294,6 @@ namespace FlexDMD
             return fvi.FileBuildPart * 10000 + fvi.FilePrivatePart;
         }
 
-        public int RawDmdWidth()
-        {
-            return _width;
-        }
-
-        public int RawDmdHeight()
-        {
-            return _height;
-        }
-
         public bool SetVisibleVirtualDMD(bool bVisible)
         {
             // log.Info("SetVisibleVirtualDMD({0})", bVisible);
@@ -389,7 +414,7 @@ namespace FlexDMD
             {
                 return new AnimatedImage(_assets.BasePath, filename, 25, false);
             }
-            log.Error("Missing ressource '{0}'", filename);
+            log.Error("Missing resource '{0}'", filename);
             return new Actor();
         }
 

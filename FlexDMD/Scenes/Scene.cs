@@ -36,6 +36,7 @@ namespace FlexDMD.Scenes
             _pauseS = pauseS;
             _id = id;
             // Minions => Lots of ScrollOnLeft / ScrollOffLeft
+            // Kiss => Lots of ScrollOnUp / FadeOut
             if (animateIn != AnimationType.None || animateOut != AnimationType.None)
                 log.Error("Unsupported animation in scene '{0}': {1} => {2}", id, animateIn, animateOut);
         }

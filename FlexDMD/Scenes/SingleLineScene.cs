@@ -18,7 +18,7 @@ namespace FlexDMD.Scenes
 {
     class SingleLineScene : BackgroundScene
     {
-        private Label _text;
+        private readonly Label _text;
 
         public SingleLineScene(Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {

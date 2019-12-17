@@ -28,8 +28,8 @@ namespace FlexDMD.Actors
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly FontDef _fontDef;
         private Bitmap[] _textures;
-        private float _fillBrightness;
-        private float _outlineBrightness;
+        private readonly float _fillBrightness;
+        private readonly float _outlineBrightness;
 
         public FontDef FontDef { get; }
         public BitmapFont BitmapFont { get; }
@@ -83,7 +83,7 @@ namespace FlexDMD.Actors
                 uint outline = 0xFF000000 | (outlineValue * 0x00010101);
                 uint fillValue = (uint)(255 * _fillBrightness);
                 uint fill = fillValue * 0x00010101;
-                if (_fillBrightness >= 0f) fill = fill | 0xFF000000;
+                if (_fillBrightness >= 0f) fill |= 0xFF000000;
                 // TODO do not process the complete bitmap but only the glyph areas
                 for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
@@ -143,6 +143,7 @@ namespace FlexDMD.Actors
                     }
                     src.UnlockBits(srcData);
                     dst.UnlockBits(dstData);
+                    _textures[i].Dispose();
                     _textures[i] = dst;
                 }
             }
@@ -191,7 +192,7 @@ namespace FlexDMD.Actors
                 {
                     var character = glyph.Value;
                     // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
-                    character.XAdvance -= 2; // Adjust to remove the outline padding
+                    character.XAdvance -= 1; // Adjust to remove the outline padding
                     charDictionary.Add(glyph.Key, character);
                 }
                 BitmapFont.Characters = charDictionary;
@@ -214,11 +215,11 @@ namespace FlexDMD.Actors
                         graphics.DrawImage(_textures[data.TexturePage], new RectangleF((int)(x + data.Offset.X + kerning), (int)(y + data.Offset.Y), data.Bounds.Width, data.Bounds.Height), data.Bounds, GraphicsUnit.Pixel);
                         x += data.XAdvance + kerning;
                     }
-                    catch (KeyNotFoundException e)
+                    catch (KeyNotFoundException)
                     {
                         log.Error("Missing character #{0} replaced by ' ' for font {1}", (int)character, _fontDef.Path);
                         BitmapFont.Characters[character] = BitmapFont[' '];
-                        DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
+                        if (character != ' ') DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
                     }
                     break;
             }

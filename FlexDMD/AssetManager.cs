@@ -12,44 +12,41 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using Cyotek.Drawing.BitmapFont;
 using FlexDMD.Actors;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Reflection;
 
 namespace FlexDMD
 {
-	public enum PathType 
-	{
-		Resource = 0,
-		FilePath = 1
-	}
-	
-	public class FontDef
+    public enum PathType
     {
-		public float FillBrightness { get; set; } = 1f;
-		public float OutlineBrightness { get; set; } = -1f;
-		public PathType PathType { get; set; } = PathType.FilePath;
-		public string Path { get; set; } = "";
-		
-		public FontDef(PathType pathType, string path, float fillBrightness, float outlineBrightness) 
-		{
-			Path = path;
-			FillBrightness = fillBrightness;
-			OutlineBrightness = outlineBrightness;
-			PathType = pathType;
-		}
+        Resource = 0,
+        FilePath = 1
+    }
 
-		public FontDef(PathType pathType, string path, float brightness) : this(pathType, path, brightness, -1f)
+    public class FontDef
+    {
+        public float FillBrightness { get; set; } = 1f;
+        public float OutlineBrightness { get; set; } = -1f;
+        public PathType PathType { get; set; } = PathType.FilePath;
+        public string Path { get; set; } = "";
+
+        public FontDef(PathType pathType, string path, float fillBrightness, float outlineBrightness)
+        {
+            Path = path;
+            FillBrightness = fillBrightness;
+            OutlineBrightness = outlineBrightness;
+            PathType = pathType;
+        }
+
+        public FontDef(PathType pathType, string path, float brightness) : this(pathType, path, brightness, -1f)
         {
         }
-		
-		public FontDef(PathType pathType, string path) : this(pathType, path, 1f, -1f)
+
+        public FontDef(PathType pathType, string path) : this(pathType, path, 1f, -1f)
         {
         }
 
@@ -71,69 +68,78 @@ namespace FlexDMD
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
             return hashCode;
         }
+
+        public override string ToString()
+        {
+            return string.Format("FontDef [type={0}, path={1}, fill={2}, outline={3}]", PathType, Path, FillBrightness, OutlineBrightness);
+        }
+
     }
-	
-	public class Asset<T>
-	{
+
+    public class Asset<T>
+    {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly AssetManager _assets;
-		private readonly object _id;
-		private T _value;
-		public bool _loaded;
-		public int _refCount;
+        private readonly object _id;
+        private T _value;
+        public bool _loaded;
+        public int _refCount;
 
-		public Asset(AssetManager assets, object id)
-		{
-			_id = id;
-			_assets = assets;
-			_refCount = 1;
-		}
+        public Asset(AssetManager assets, object id)
+        {
+            _id = id;
+            _assets = assets;
+            _refCount = 1;
+        }
 
-		public T Value
-		{
-			get
-			{
-				if (!_loaded) throw new InvalidOperationException("Asset must be loaded before accessing its value.");
-				return _value;
-			}
-		}
+        public T Value
+        {
+            get
+            {
+                if (!_loaded) throw new InvalidOperationException("Asset must be loaded before accessing its value.");
+                return _value;
+            }
+        }
 
-		public T Load()
-		{
-			if (!_loaded)
-			{
-				if (typeof(T) == typeof(Bitmap) && _id.GetType() == typeof(string))
-				{
-					log.Info("New bitmap added to asset manager: {0}", _id);
-					var fullPath = System.IO.Path.Combine(_assets.BasePath, (string) _id);
-					Bitmap image = new Bitmap(fullPath);
-					Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
-					BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-					GraphicUtils.BGRtoRGB(data.Scan0, data.Stride);
-					image.UnlockBits(data);
-					_value = (T)Convert.ChangeType(image, typeof(T));
-					_loaded = true;
-				}
-				else if (typeof(T) == typeof(Actors.Font) && _id.GetType() == typeof(FontDef))
-				{
-					var fontDef = (FontDef)_id;
-					log.Info("New font added to asset manager: {0}", fontDef);
-					var font = new Actors.Font(fontDef, fontDef.FillBrightness, fontDef.OutlineBrightness);
-					_value = (T)Convert.ChangeType(font, typeof(T));
-					_loaded = true;
-				}
-				else
-				{
-					throw new InvalidOperationException(string.Format("Unsupported asset type {0}", typeof(T)));
-				}
-			}
-			return _value;
-		}
-	}
+        public T Load()
+        {
+            if (!_loaded)
+            {
+                if (typeof(T) == typeof(Bitmap) && _id.GetType() == typeof(string))
+                {
+                    log.Info("New bitmap added to asset manager: {0}", _id);
+                    var fullPath = System.IO.Path.Combine(_assets.BasePath, (string)_id);
+                    Bitmap image = new Bitmap(fullPath);
+                    if (!Array.Exists(image.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
+                    {
+                        // Only convert for still image; animate done are converted when played
+                        Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+                        BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+                        GraphicUtils.BGRtoRGB(data.Scan0, data.Stride, image.Width, image.Height);
+                        image.UnlockBits(data);
+                    }
+                    _value = (T)Convert.ChangeType(image, typeof(T));
+                    _loaded = true;
+                }
+                else if (typeof(T) == typeof(Actors.Font) && _id.GetType() == typeof(FontDef))
+                {
+                    var fontDef = (FontDef)_id;
+                    log.Info("New font added to asset manager: {0}", fontDef);
+                    var font = new Actors.Font(fontDef, fontDef.FillBrightness, fontDef.OutlineBrightness);
+                    _value = (T)Convert.ChangeType(font, typeof(T));
+                    _loaded = true;
+                }
+                else
+                {
+                    throw new InvalidOperationException(string.Format("Unsupported asset type {0}", typeof(T)));
+                }
+            }
+            return _value;
+        }
+    }
 
     public class AssetManager
     {
-        private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly Dictionary<object, object> _cache = new Dictionary<object, object>();
         public string BasePath { get; set; } = "./";
 
