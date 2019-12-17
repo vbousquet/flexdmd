@@ -12,39 +12,29 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using NLog;
-using System.Drawing;
+using FlexDMD.Actors;
 
-namespace FlexDMD
+namespace FlexDMD.Scenes
 {
-    class Actor
+    class SingleLineScene : BackgroundScene
     {
-        public float X { get; set; } = 0f;
-        public float Y { get; set; } = 0f;
-        public float Width { get; set; } = 0f;
-        public float Height { get; set; } = 0f;
-        public Actor Parent { get; set; } = null;
-        public bool Visible { get; set; } = true;
+        private Label _text;
 
-        public void SetPosition(float x, float y)
+        public SingleLineScene(Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {
-            X = x;
-            Y = y;
+            _text = new Label(font, text);
+            AddActor(_text);
         }
 
-        public void SetSize(float width, float height)
+        public void SetText(string text)
         {
-            Width = width;
-            Height = height;
+            _text.Text = text;
         }
 
-        public virtual void Update(float delta)
+        public override void Update(float delta)
         {
-        }
-
-        public virtual void Draw(Graphics graphics)
-        {
+            base.Update(delta);
+            _text.SetPosition((Width - _text.Width) * 0.5f, (Height - _text.Height) * 0.5f);
         }
     }
 }
-

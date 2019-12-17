@@ -31,7 +31,7 @@ namespace FlexDMD
 
         public override void Draw(Graphics graphics)
         {
-            if (_visible)
+            if (Visible)
             {
                 foreach (Actor child in _children)
                 {
@@ -42,19 +42,19 @@ namespace FlexDMD
 
         public void AddActor(Actor child)
         {
-            child._parent = this;
+            child.Parent = this;
             _children.Add(child);
         }
 
         public void AddActorAt(Actor child, int index)
         {
-            child._parent = this;
+            child.Parent = this;
             _children.Insert(index, child);
         }
 
         public void RemoveActor(Actor child)
         {
-            child._parent = null;
+            child.Parent = null;
             _children.Remove(child);
         }
 

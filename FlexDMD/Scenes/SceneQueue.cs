@@ -29,7 +29,7 @@ namespace FlexDMD.Actors
         public void Enqueue(Scene scene)
         {
             _isRendering = true;
-            scene._parent = this;
+            scene.Parent = this;
             _queue.Add(scene);
         }
 
@@ -37,18 +37,21 @@ namespace FlexDMD.Actors
         {
             foreach (Scene s in _queue)
             {
-                s._parent = null;
+                s.Parent = null;
                 if (s._active) s.End();
             }
             _isRendering = false;
             _queue.Clear();
         }
 
-        public void CancelRendering(Scene s)
+        public void CancelRendering(string sceneId)
         {
-            if (s._active) s.End();
-            _queue.Remove(s);
-            _isRendering = _queue.Count() > 0;
+			int index = _queue.FindIndex(s => s.Id == sceneId);
+			if (index >= 0) {
+				if (_queue[index]._active) _queue[index].End();
+				_queue.RemoveAt(index);
+				_isRendering = _queue.Count() > 0;
+			}
         }
 
         public Scene GetActiveScene()
@@ -73,7 +76,7 @@ namespace FlexDMD.Actors
         public override void Update(float delta)
         {
             base.Update(delta);
-            SetSize(_parent._width, _parent._height);
+            SetSize(Parent.Width, Parent.Height);
             if (_queue.Count() > 0)
             {
                 var scene = _queue[0];
@@ -82,7 +85,7 @@ namespace FlexDMD.Actors
                 if (scene.IsFinished())
                 {
                     _queue.RemoveAt(0);
-                    scene._parent = null;
+                    scene.Parent = null;
                     scene.End();
                     _isRendering = _queue.Count() > 0;
                     if (_isRendering)
@@ -97,7 +100,7 @@ namespace FlexDMD.Actors
         public override void Draw(Graphics graphics)
         {
             base.Draw(graphics);
-            if (_visible && _queue.Count() > 0)
+            if (Visible && _queue.Count() > 0)
             {
                 _queue[0].Draw(graphics);
             }

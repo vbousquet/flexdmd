@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Reflection;
 
 namespace FlexDMD.Actors
@@ -25,29 +26,66 @@ namespace FlexDMD.Actors
     class Font
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private readonly Bitmap[] _textures;
+        private readonly FontDef _fontDef;
+        private Bitmap[] _textures;
+        private float _fillBrightness;
+        private float _outlineBrightness;
 
+        public FontDef FontDef { get; }
         public BitmapFont BitmapFont { get; }
 
-        public Font(BitmapFont font, float brightness = 1f, float outlineBrightness = -1f)
+        public Font(FontDef fontDef, float fillBrightness = 1f, float outlineBrightness = -1f)
         {
-            BitmapFont = font;
-            _textures = new Bitmap[font.Pages.Length];
-            var assembly = Assembly.GetExecutingAssembly();
-            for (int i = 0; i < font.Pages.Length; i++)
+            _fontDef = fontDef;
+            _fillBrightness = fillBrightness;
+            _outlineBrightness = outlineBrightness;
+            BitmapFont = new BitmapFont();
+            if (fontDef.PathType == PathType.Resource)
             {
-                // _textures[i] = new System.Drawing.Bitmap(font.Pages[i].FileName);
-                _textures[i] = new Bitmap(assembly.GetManifestResourceStream("FlexDMD.Resources." + font.Pages[i].FileName));
+                var assembly = Assembly.GetExecutingAssembly();
+                using (Stream stream = assembly.GetManifestResourceStream(fontDef.Path))
+                {
+                    BitmapFont.LoadText(stream);
+                }
+            }
+            else if (fontDef.PathType == PathType.FilePath)
+            {
+                BitmapFont.Load(fontDef.Path);
+            }
+        }
+
+        private void PrepareTextures()
+        {
+            if (_textures != null) return;
+            _textures = new Bitmap[BitmapFont.Pages.Length];
+
+            // Load base textures
+            if (_fontDef.PathType == PathType.Resource)
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                for (int i = 0; i < BitmapFont.Pages.Length; i++)
+                {
+                    _textures[i] = new Bitmap(assembly.GetManifestResourceStream("FlexDMD.Resources." + BitmapFont.Pages[i].FileName));
+                }
+            }
+            else if (_fontDef.PathType == PathType.FilePath)
+            {
+                for (int i = 0; i < BitmapFont.Pages.Length; i++)
+                {
+                    _textures[i] = new Bitmap(BitmapFont.Pages[i].FileName);
+                }
             }
 
-            if (outlineBrightness >= 0f)
-            { // Outlines font (note that the outline is created in the glyph padding area, so the font must have at least a padding of 1 pixel per char on all sides)
-                uint outlineValue = (uint)(255 * outlineBrightness);
+            // Render outlines font (note that the outline is created in the glyph padding area, so the font must have at least a padding of 1 pixel per char on all sides)
+            if (_outlineBrightness >= 0f)
+            {
+                uint outlineValue = (uint)(255 * _outlineBrightness);
                 uint outline = 0xFF000000 | (outlineValue * 0x00010101);
-                uint fillValue = (uint)(255 * brightness);
+                uint fillValue = (uint)(255 * _fillBrightness);
                 uint fill = fillValue * 0x00010101;
-                if (brightness >= 0f) fill = fill | 0xFF000000;
-                for (int i = 0; i < font.Pages.Length; i++)
+                if (_fillBrightness >= 0f) fill = fill | 0xFF000000;
+                // TODO do not process the complete bitmap but only the glyph areas
+                for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
                     Bitmap src = _textures[i];
                     int w = src.Width, h = src.Height;
@@ -107,20 +145,12 @@ namespace FlexDMD.Actors
                     dst.UnlockBits(dstData);
                     _textures[i] = dst;
                 }
-                /*var charDictionary = new Dictionary<char, Character>();
-                foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
-                {
-                    var character = glyph.Value;
-                    // already included by BMFont
-                    // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
-                    // character.XAdvance += 1; 
-                    charDictionary.Add(glyph.Key, character);
-                }
-                BitmapFont.Characters = charDictionary;*/
             }
-            else if (brightness >= 0f && brightness < 1f)
-            { // Modulated brightness font
-                for (int i = 0; i < font.Pages.Length; i++)
+
+            // Render modulated brightness font
+            else if (_fillBrightness >= 0f && _fillBrightness < 1f)
+            {
+                for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
                     BitmapData bmData = _textures[i].LockBits(new Rectangle(0, 0, _textures[i].Width, _textures[i].Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
                     int stride = bmData.Stride;
@@ -135,17 +165,17 @@ namespace FlexDMD.Actors
                         {
                             for (int x = 0; x < nWidth; ++x)
                             {
-                                nVal = (int)((*p) * brightness);
+                                nVal = (int)((*p) * _fillBrightness);
                                 if (nVal < 0) nVal = 0;
                                 if (nVal > 255) nVal = 255;
                                 *p = (byte)nVal;
                                 p++;
-                                nVal = (int)((*p) * brightness);
+                                nVal = (int)((*p) * _fillBrightness);
                                 if (nVal < 0) nVal = 0;
                                 if (nVal > 255) nVal = 255;
                                 *p = (byte)nVal;
                                 p++;
-                                nVal = (int)((*p) * brightness);
+                                nVal = (int)((*p) * _fillBrightness);
                                 if (nVal < 0) nVal = 0;
                                 if (nVal > 255) nVal = 255;
                                 *p = (byte)nVal;
@@ -156,39 +186,51 @@ namespace FlexDMD.Actors
                     }
                     _textures[i].UnlockBits(bmData);
                 }
+                var charDictionary = new Dictionary<char, Character>();
+                foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
+                {
+                    var character = glyph.Value;
+                    // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
+                    character.XAdvance -= 2; // Adjust to remove the outline padding
+                    charDictionary.Add(glyph.Key, character);
+                }
+                BitmapFont.Characters = charDictionary;
             }
         }
 
-        public void DrawCharacter(Graphics g, Character character, float x, float y)
+        private void DrawCharacter(Graphics graphics, char character, char previousCharacter, ref float x, ref float y)
         {
-            g.DrawImage(_textures[character.TexturePage], new RectangleF((int)x, (int)y, character.Bounds.Width, character.Bounds.Height), character.Bounds, GraphicsUnit.Pixel);
+            switch (character)
+            {
+                case '\n':
+                    x = 0;
+                    y += BitmapFont.LineHeight;
+                    break;
+                default:
+                    try
+                    {
+                        Character data = BitmapFont[character];
+                        int kerning = BitmapFont.GetKerning(previousCharacter, character);
+                        graphics.DrawImage(_textures[data.TexturePage], new RectangleF((int)(x + data.Offset.X + kerning), (int)(y + data.Offset.Y), data.Bounds.Width, data.Bounds.Height), data.Bounds, GraphicsUnit.Pixel);
+                        x += data.XAdvance + kerning;
+                    }
+                    catch (KeyNotFoundException e)
+                    {
+                        log.Error("Missing character #{0} replaced by ' ' for font {1}", (int)character, _fontDef.Path);
+                        BitmapFont.Characters[character] = BitmapFont[' '];
+                        DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
+                    }
+                    break;
+            }
         }
 
         public void DrawText(Graphics graphics, float x, float y, string text)
         {
+            PrepareTextures();
             char previousCharacter = ' ';
             foreach (char character in text)
             {
-                switch (character)
-                {
-                    case '\n':
-                        x = 0;
-                        y += BitmapFont.LineHeight;
-                        break;
-                    default:
-                        try
-                        {
-                            Character data = BitmapFont[character];
-                            int kerning = BitmapFont.GetKerning(previousCharacter, character);
-                            DrawCharacter(graphics, data, x + data.Offset.X + kerning, y + data.Offset.Y);
-                            x += data.XAdvance + kerning;
-                        }
-                        catch (Exception e)
-                        {
-                            log.Error(e, "Failed to render char '{0}'", character);
-                        }
-                        break;
-                }
+                DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
                 previousCharacter = character;
             }
         }

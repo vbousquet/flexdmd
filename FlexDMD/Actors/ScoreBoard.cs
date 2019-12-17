@@ -64,7 +64,7 @@ namespace FlexDMD.Actors
         {
             for (int i = 0; i < 4; i++)
             {
-                _scores[i]._visible = i < nPlayers;
+                _scores[i].Visible = i < nPlayers;
             }
         }
 
@@ -105,14 +105,14 @@ namespace FlexDMD.Actors
         public override void Update(float delta)
         {
             base.Update(delta);
-            float yText = _height - _textFont.BitmapFont.BaseHeight - 1;
+            float yText = Height - _textFont.BitmapFont.BaseHeight - 1;
             float yLine2 = (1 + yText) * 0.5f;
             _scores[0].SetPosition(1, 1);
-            _scores[1].SetPosition(_width - _scores[1]._width - 1, 1);
+            _scores[1].SetPosition(Width - _scores[1].Width - 1, 1);
             _scores[2].SetPosition(1, yLine2);
-            _scores[3].SetPosition(_width - _scores[3]._width - 1, yLine2);
+            _scores[3].SetPosition(Width - _scores[3].Width - 1, yLine2);
             _lowerLeft.SetPosition(1, yText);
-            _lowerRight.SetPosition(_width - _lowerRight._width - 1, yText);
+            _lowerRight.SetPosition(Width - _lowerRight.Width - 1, yText);
         }
 
         public override void Draw(Graphics graphics)

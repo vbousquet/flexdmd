@@ -71,15 +71,15 @@ namespace FlexDMD.Actors
         {
             if (_text == null || _font == null) return;
             var size = _font.BitmapFont.MeasureFont(_text);
-            _width = size.Width;
-            _height = size.Height;
+            Width = size.Width;
+            Height = size.Height;
             // log.Info("Label '{0}' {1}x{2}", _text, _width, _height);
         }
 
         public override void Draw(Graphics graphics)
         {
             base.Draw(graphics);
-            if (_visible) _font.DrawText(graphics, _x, _y, _text);
+            if (Visible) _font.DrawText(graphics, X, Y, _text);
         }
     }
 }

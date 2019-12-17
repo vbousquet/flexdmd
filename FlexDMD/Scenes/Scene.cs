@@ -35,6 +35,7 @@ namespace FlexDMD.Scenes
             _animateOut = animateOut;
             _pauseS = pauseS;
             _id = id;
+            // Minions => Lots of ScrollOnLeft / ScrollOffLeft
             if (animateIn != AnimationType.None || animateOut != AnimationType.None)
                 log.Error("Unsupported animation in scene '{0}': {1} => {2}", id, animateIn, animateOut);
         }
@@ -46,7 +47,7 @@ namespace FlexDMD.Scenes
 
         public virtual void Begin()
         {
-            SetSize(_parent._width, _parent._height);
+            SetSize(Parent.Width, Parent.Height);
             _active = true;
         }
 

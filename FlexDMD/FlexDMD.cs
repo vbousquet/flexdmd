@@ -33,30 +33,31 @@ namespace FlexDMD
     public class DMDObject : IDMDObject
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private readonly Group _stage = new Group();
-        private readonly Dictionary<String, Actor> _preloads = new Dictionary<String, Actor>();
-        private readonly Dictionary<String, Scene> _scenes = new Dictionary<String, Scene>();
-        private readonly SceneQueue _queue = new SceneQueue();
         private readonly List<Action> _runnables = new List<Action>();
         private readonly DMDDevice _dmd = new DMDDevice();
         private readonly AssetManager _assets = new AssetManager();
+        private readonly SceneQueue _queue = new SceneQueue();
         private readonly Tweener _tweener = new Tweener();
+        private readonly Group _stage = new Group();
         private readonly int _frameRate = 60;
-        private ushort _width = 128;
-        private ushort _height = 32;
-        private string _basePath = "./";
+        private ScoreBoard _scoreBoard;
+        private FontDef _scoreFontText, _scoreFontNormal, _scoreFontHighlight, _twoLinesFontTop, _twoLinesFontBottom;
+        private FontDef[] _singleLineFont;
+        private Thread _processThread = null;
         private bool _visible = false;
         private bool _running = false;
-        private Thread _processThread;
+        private ushort _width = 128;
+        private ushort _height = 32;
+        private string _gameName = "";
         private int _stretchMode = 0;
+        private int _nextId = 1;
         private Bitmap _frame = null;
         private Graphics _graphics = null;
-        private int _nextId = 1;
-        private ScoreBoard _scoreBoard;
-        public delegate void OnDMDChangedDelegate();
+        private object[] _pixels = null;
+        private object[] _coloredPixels = null;
         private event OnDMDChangedDelegate OnDMDChanged;
-        private object[] _pixels, _coloredPixels;
-        private string _gameName;
+        public delegate void OnDMDChangedDelegate();
+
 
         object IDMDObject.RawDmdColoredPixels
         {
@@ -96,19 +97,22 @@ namespace FlexDMD
             _running = true;
             log.Info("Init {0}", gameName);
             _gameName = gameName;
-            /* if (_processThread != null)
-            {
-                log.Error("Init called on an already initialized DMD. Please call it once, or call Uninit first.");
-                Uninit();
-            }*/
             HResult hr = MFExtern.MFStartup(0x10070, MFStartup.Lite);
             if (hr < 0) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
             _graphics = Graphics.FromImage(_frame);
+            _scoreFontText = new FontDef(PathType.Resource, "FlexDMD.Resources.font-5.fnt", 0.66f);
+            _scoreFontNormal = new FontDef(PathType.Resource, "FlexDMD.Resources.font-7.fnt", 0.66f);
+            _scoreFontHighlight = new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt");
+            // UltraDMD uses f14by26 or f12by24 or f7by13 to fit in
+            _singleLineFont = new FontDef[] { new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt") };
+            // UltraDMD uses f5by7 / f6by12 for top / bottom line
+            _twoLinesFontTop = new FontDef(PathType.Resource, "FlexDMD.Resources.font-7.fnt");
+            _twoLinesFontBottom = new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt");
             _scoreBoard = new ScoreBoard(
-                _assets.Load<Actors.Font>("FlexDMD.Resources.font-7.fnt:10:-1").Load(),
-                _assets.Load<Actors.Font>("FlexDMD.Resources.font-12.fnt:15:-1").Load(),
-                _assets.Load<Actors.Font>("FlexDMD.Resources.font-5.fnt:10:-1").Load()
+                _assets.Load<Actors.Font>(_scoreFontNormal).Load(),
+                _assets.Load<Actors.Font>(_scoreFontHighlight).Load(),
+                _assets.Load<Actors.Font>(_scoreFontText).Load()
                 );
             _scoreBoard.SetSize(_width, _height);
             _stage.AddActor(_scoreBoard);
@@ -168,7 +172,7 @@ namespace FlexDMD
                 }
                 _tweener.Update(elapsedS);
                 _stage.Update(elapsedS);
-                _scoreBoard._visible &= !_queue.IsRendering();
+                _scoreBoard.Visible &= !_queue.IsRendering();
                 if (_visible)
                 {
                     _stage.Draw(_graphics);
@@ -308,17 +312,13 @@ namespace FlexDMD
 
         public void CancelRenderingWithId(string sceneId)
         {
-            var scene = _scenes[sceneId];
-            if (scene != null)
+            lock (_runnables)
             {
-                lock (_runnables)
+                _runnables.Add(() =>
                 {
-                    _runnables.Add(() =>
-                    {
-                        log.Info("CancelRenderingWithId {0}", sceneId);
-                        _queue.CancelRendering(scene);
-                    });
-                }
+                    log.Info("CancelRenderingWithId {0}", sceneId);
+                    _queue.CancelRendering(sceneId);
+                });
             }
         }
 
@@ -330,7 +330,7 @@ namespace FlexDMD
                 {
                     // log.Info("Clear");
                     _graphics.Clear(Color.Black);
-                    _scoreBoard._visible = false;
+                    _scoreBoard.Visible = false;
                 });
             }
         }
@@ -338,8 +338,7 @@ namespace FlexDMD
         public void SetProjectFolder(string basePath)
         {
             log.Info("SetProjectFolder {0}", basePath);
-            _basePath = basePath;
-            _assets.SetBasePath(basePath);
+            _assets.BasePath = basePath;
         }
 
         public void SetVideoStretchMode(int mode)
@@ -352,8 +351,7 @@ namespace FlexDMD
         {
             var id = _nextId;
             _nextId++;
-            var video = new AnimatedImage(_basePath, imagelist, fps, loop);
-            _preloads.Add(id.ToString(), video);
+            // FIXME TODO, preload using the asset manager and create an Id reconized by the asset manager for the data, not the actor
             return id;
         }
 
@@ -361,17 +359,16 @@ namespace FlexDMD
         {
             var id = _nextId;
             _nextId++;
-            var video = new Video(videoFilename, loop, videoStretchMode);
-            _preloads.Add(id.ToString(), video);
+            // FIXME TODO, preload using the asset manager and create an Id reconized by the asset manager for the data, not the actor
             return id;
         }
 
         private Actor ResolveImage(string filename)
         {
             // filename can be a preloaded id, or a comma separated image list, or a filename to an image, gif or video file.
-            if (_preloads.ContainsKey(filename)) return _preloads[filename];
+            // FIXME if (_preloads.ContainsKey(filename)) return _preloads[filename];
             if (filename.Trim().Length == 0) return null;
-            var fullPath = System.IO.Path.Combine(_basePath, filename);
+            var fullPath = System.IO.Path.Combine(_assets.BasePath, filename);
             if (File.Exists(fullPath))
             {
                 string extension = Path.GetExtension(filename).ToLowerInvariant();
@@ -390,7 +387,7 @@ namespace FlexDMD
             }
             else if (filename.Contains(","))
             {
-                return new AnimatedImage(_basePath, filename, 25, false);
+                return new AnimatedImage(_assets.BasePath, filename, 25, false);
             }
             log.Error("Missing ressource '{0}'", filename);
             return new Actor();
@@ -403,20 +400,7 @@ namespace FlexDMD
 
         public void DisplayScene00(string background, string toptext, int topBrightness, string bottomtext, int bottomBrightness, int animateIn, int pauseTime, int animateOut)
         {
-            lock (_runnables)
-            {
-                _runnables.Add(() =>
-                {
-                    // log.Info("DisplayScene00 '{0}', '{1}', {2}, '{3}', {4}, {5}, {6}, {7}", background, toptext, topBrightness, bottomtext, bottomBrightness, animateIn, pauseTime, animateOut);
-                    _scoreBoard._visible = false;
-                    var font7 = _assets.Load<Actors.Font>(string.Format("FlexDMD.Resources.font-7.fnt:{0}:-1", topBrightness)).Load();
-                    var font12 = _assets.Load<Actors.Font>(string.Format("FlexDMD.Resources.font-12.fnt:{0}:-1", bottomBrightness)).Load();
-                    // Two lines => f5by7 / f6by12
-                    // Single lines => f14by26 or f12by24 or f7by13 to fit in, only evaluated at creation (not if text is changed afterward)
-                    var scene = new Scene00(ResolveImage(background), toptext, font7, bottomtext, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, "");
-                    _queue.Enqueue(scene);
-                });
-            }
+            DisplayScene00ExWithId("", false, background, toptext, topBrightness, -15, bottomtext, bottomBrightness, -15, animateIn, pauseTime, animateOut);
         }
 
         public void DisplayScene00Ex(string background, string toptext, int topBrightness, int topOutlineBrightness, string bottomtext, int bottomBrightness, int bottomOutlineBrightness, int animateIn, int pauseTime, int animateOut)
@@ -424,25 +408,45 @@ namespace FlexDMD
             DisplayScene00ExWithId("", false, background, toptext, topBrightness, topOutlineBrightness, bottomtext, bottomBrightness, bottomOutlineBrightness, animateIn, pauseTime, animateOut);
         }
 
+        // Used by Metal Slug when entering high score, or quite frequently by amh
         public void DisplayScene00ExWithId(string sceneId, bool cancelPrevious, string background, string toptext, int topBrightness, int topOutlineBrightness, string bottomtext, int bottomBrightness, int bottomOutlineBrightness, int animateIn, int pauseTime, int animateOut)
         {
             lock (_runnables)
             {
                 _runnables.Add(() =>
                 {
-                    // log.Info("DisplayScene00Ex '{0}', '{1}', {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}", background, toptext, topBrightness, topOutlineBrightness, bottomtext, bottomBrightness, bottomOutlineBrightness, animateIn, pauseTime, animateOut);
-                    if (cancelPrevious)
+                    //log.Info("DisplayScene00ExWithId sceneId='{0}', cancelPrevious='{1}', background={2}, toptext='{3}', topBrightness={4}, topOutlineBrightness={5}, bottomtext='{6}', bottomBrightness={7}, bottomOutlineBrightness={8}, animateIn={9}, pauseTime={10}, animateOut={11}",
+                    //    sceneId, cancelPrevious, background, toptext, topBrightness, topOutlineBrightness, bottomtext, bottomBrightness, bottomOutlineBrightness, animateIn, pauseTime, animateOut);
+                    _scoreBoard.Visible = false;
+                    if (cancelPrevious && sceneId != null && sceneId.Length > 0)
                     {
-                        // _queue.CancelRendering(sceneId);
+                        var s = _queue.GetActiveScene();
+                        if (s.Id == sceneId) _queue.CancelRendering(sceneId);
                     }
-                    // Used by Metal Slug when entering high score, or quite frequently by amh
-                    _scoreBoard._visible = false;
-                    // Two lines => f5by7 / f6by12
-                    // Single lines => f14by26 or f12by24 or f7by13 to fit in
-                    var font7 = _assets.Load<Actors.Font>(string.Format("FlexDMD.Resources.font-7.fnt:{0}:{1}", topBrightness, topOutlineBrightness)).Load();
-                    var font12 = _assets.Load<Actors.Font>(string.Format("FlexDMD.Resources.font-12.fnt:{0}:{1}", bottomBrightness, bottomOutlineBrightness)).Load();
-                    var scene = new Scene00(ResolveImage(background), toptext, font7, bottomtext, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
-                    _queue.Enqueue(scene);
+                    if (toptext != null && toptext.Length > 0 && bottomtext != null && bottomtext.Length > 0)
+                    {
+                        var font7 = _assets.Load<Actors.Font>(new FontDef(PathType.Resource, "FlexDMD.Resources.font-7.fnt", topBrightness / 15f, topOutlineBrightness / 15f)).Load();
+                        var font12 = _assets.Load<Actors.Font>(new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt", bottomBrightness / 15f, bottomOutlineBrightness / 15f)).Load();
+                        var scene = new TwoLineScene(ResolveImage(background), toptext, font7, bottomtext, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                        _queue.Enqueue(scene);
+                    }
+                    else if (toptext != null && toptext.Length > 0)
+                    {
+                        var font12 = _assets.Load<Actors.Font>(new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt", topBrightness / 15f, topOutlineBrightness / 15f)).Load();
+                        var scene = new SingleLineScene(ResolveImage(background), toptext, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                        _queue.Enqueue(scene);
+                    }
+                    else if (bottomtext != null && bottomtext.Length > 0)
+                    {
+                        var font12 = _assets.Load<Actors.Font>(new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt", bottomBrightness / 15f, bottomOutlineBrightness / 15f)).Load();
+                        var scene = new SingleLineScene(ResolveImage(background), bottomtext, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                        _queue.Enqueue(scene);
+                    }
+                    else
+                    {
+                        var scene = new BackgroundScene(ResolveImage(background), (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                        _queue.Enqueue(scene);
+                    }
                 });
             }
         }
@@ -455,9 +459,10 @@ namespace FlexDMD
                 {
                     // log.Info("ModifyScene00 '{0}', '{1}', '{2}'", id, toptext, bottomtext);
                     var scene = _queue.GetActiveScene();
-                    if (scene != null && scene.Id == id && scene is Scene00 s)
+                    if (scene != null && id != null && id.Length > 0 && scene.Id == id)
                     {
-                        s.SetText(toptext, bottomtext);
+                        if (scene is TwoLineScene s2) s2.SetText(toptext, bottomtext);
+                        if (scene is SingleLineScene s1) s1.SetText(toptext);
                     }
                 });
             }
@@ -471,10 +476,11 @@ namespace FlexDMD
                 {
                     // log.Info("ModifyScene00Ex '{0}', '{1}', '{2}', {3}", id, toptext, bottomtext, pauseTime);
                     var scene = _queue.GetActiveScene();
-                    if (scene != null && scene.Id == id && scene is Scene00 s)
+                    if (scene != null && id != null && id.Length > 0 && scene.Id == id)
                     {
-                        s.SetText(toptext, bottomtext);
-                        s.SetPause(s.Time + pauseTime / 1000f);
+                        if (scene is TwoLineScene s2) s2.SetText(toptext, bottomtext);
+                        if (scene is SingleLineScene s1) s1.SetText(toptext);
+                        scene.SetPause(scene.Time + pauseTime / 1000f);
                     }
                 });
             }
@@ -487,8 +493,7 @@ namespace FlexDMD
                 _runnables.Add(() =>
                 {
                     log.Error("DisplayScene01 [unsupported] '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
-                    _scoreBoard._visible = false;
-                    // scene.SetSize(_width, _height);
+                    _scoreBoard.Visible = false;
                     // _queue.Enqueue(scene);
                 });
             }
@@ -502,9 +507,9 @@ namespace FlexDMD
                 {
                     _scoreBoard.SetBackground(ResolveImage(filename));
                     _scoreBoard.SetFonts(
-                        _assets.Load<Actors.Font>(string.Format("FlexDMD.Resources.font-7.fnt:{0}:-1", unselectedBrightness)).Load(),
-                        _assets.Load<Actors.Font>(string.Format("FlexDMD.Resources.font-12.fnt:{0}:-1", selectedBrightness)).Load(),
-                        _assets.Load<Actors.Font>(string.Format("FlexDMD.Resources.font-5.fnt:{0}:-1", unselectedBrightness)).Load());
+                        _assets.Load<Actors.Font>(new FontDef(_scoreFontNormal.PathType, _scoreFontNormal.Path, unselectedBrightness)).Load(),
+                        _assets.Load<Actors.Font>(new FontDef(_scoreFontHighlight.PathType, _scoreFontHighlight.Path, selectedBrightness)).Load(),
+                        _assets.Load<Actors.Font>(new FontDef(_scoreFontText.PathType, _scoreFontText.Path, unselectedBrightness)).Load());
                 });
             }
         }
@@ -515,9 +520,9 @@ namespace FlexDMD
             {
                 _runnables.Add(() =>
                 {
-                    // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened
+                    // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened (managed by scoreboard visibility in render loop)
                     // log.Info("Scoreboard for {0} players, {1} is playing", cPlayers, highlightedPlayer);
-                    _scoreBoard._visible = true;
+                    _scoreBoard.Visible = true;
                     _scoreBoard.SetNPlayers(cPlayers);
                     _scoreBoard.SetHighlightedPlayer(highlightedPlayer);
                     _scoreBoard.SetScore(score1, score2, score3, score4);
@@ -527,7 +532,7 @@ namespace FlexDMD
             }
         }
 
-        // From KissDMDv2.vbs, an undocumented function. Not a clue for the difference between this one and DisplayScoreboard.
+        // From KissDMDv2.vbs, an undocumented function as far as I know. I do not have a clue on the difference between this one and DisplayScoreboard.
         // UltraDMD.DisplayScoreboard00 PlayersPlayingGame, 0, Score(1), Score(2), Score(3), Score(4), "credits " & Credits, ""
         public void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight)
         {
@@ -540,9 +545,19 @@ namespace FlexDMD
             {
                 _runnables.Add(() =>
                 {
-                    log.Error("DisplayText [unsupported] '{0}', {1}, {2}", text, textBrightness, textOutlineBrightness);
-                    _scoreBoard._visible = false;
-                    // Direct rendering
+                    log.Error("DisplayText [untested, missing correct font size] '{0}', {1}, {2}", text, textBrightness, textOutlineBrightness);
+                    _scoreBoard.Visible = false;
+                    foreach (FontDef f in _singleLineFont)
+                    {
+                        var font = _assets.Load<Actors.Font>(new FontDef(f.PathType, f.Path, textBrightness, textOutlineBrightness)).Load();
+                        var label = new Label(font, text);
+                        label.SetPosition((_width - label.Width) / 2, (_height - label.Height) / 2);
+                        if (label.X >= 0 && label.Y >= 0)
+                        {
+                            label.Draw(_graphics);
+                            break;
+                        }
+                    }
                 });
             }
         }
@@ -554,8 +569,7 @@ namespace FlexDMD
                 _runnables.Add(() =>
                 {
                     log.Error("ScrollingCredits [unsupported] '{0}', '{1}', {2}", background, text, textBrightness);
-                    _scoreBoard._visible = false;
-                    // scene.SetSize(_width, _height);
+                    _scoreBoard.Visible = false;
                     // _queue.Enqueue(scene);
                 });
             }

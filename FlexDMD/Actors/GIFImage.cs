@@ -81,7 +81,7 @@ namespace FlexDMD
 
         public override void Draw(Graphics graphics)
         {
-            if (_visible && _image != null) graphics.DrawImage(_image, _x, _y, _image.Width, _image.Height);
+            if (Visible && _image != null) graphics.DrawImage(_image, X, Y, _image.Width, _image.Height);
         }
     }
 }

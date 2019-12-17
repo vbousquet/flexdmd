@@ -79,13 +79,14 @@ namespace FlexDMD
 
         private IMFSourceReader SetupDecoder(IMFSourceReader reader)
         {
-            HResult result = reader.GetNativeMediaType(0, 0, out IMFMediaType nativeType);
+            HResult result = reader.GetNativeMediaType((int)MF_SOURCE_READER.FirstVideoStream, 0, out IMFMediaType nativeType);
             if (result < 0)
             {
                 log.Error("Failed to get native media type of video: {0}", _path);
                 COMBase.SafeRelease(reader);
                 return null;
             }
+
             nativeType.GetMajorType(out Guid majorType);
             if (result < 0)
             {
@@ -94,6 +95,14 @@ namespace FlexDMD
                 COMBase.SafeRelease(reader);
                 return null;
             }
+            if (majorType != MFMediaType.Video)
+            {
+                log.Error("Unsupported stream type for video: {0}", _path);
+                COMBase.SafeRelease(nativeType);
+                COMBase.SafeRelease(reader);
+                return null;
+            }
+
             result = MFExtern.MFCreateMediaType(out IMFMediaType outputType);
             if (result < 0)
             {
@@ -102,37 +111,39 @@ namespace FlexDMD
                 COMBase.SafeRelease(reader);
                 return null;
             }
-            outputType.SetGUID(MFAttributesClsid.MF_MT_MAJOR_TYPE, majorType);
-            Guid subtype;
-            if (majorType == MFMediaType.Video)
-            {
-                subtype = MFMediaType.RGB24;
-            }
-            else if (majorType == MFMediaType.Audio)
-            {
-                subtype = MFMediaType.PCM;
-            }
-            else
-            {
-                log.Error("Unsupported stream type for video: {0}", _path);
-                COMBase.SafeRelease(nativeType);
-                COMBase.SafeRelease(outputType);
-                COMBase.SafeRelease(reader);
-                return null;
-            }
-            result = outputType.SetGUID(MFAttributesClsid.MF_MT_SUBTYPE, subtype);
+            result = outputType.SetGUID(MFAttributesClsid.MF_MT_MAJOR_TYPE, MFMediaType.Video);
             if (result < 0)
             {
-                log.Error("Failed to setup decoder type for video: {0}", _path);
+                log.Error("Failed to setup decoder major-type for video: {0}", _path);
                 COMBase.SafeRelease(nativeType);
                 COMBase.SafeRelease(outputType);
                 COMBase.SafeRelease(reader);
                 return null;
             }
-            result = reader.SetCurrentMediaType(0, null, outputType);
+            result = outputType.SetGUID(MFAttributesClsid.MF_MT_SUBTYPE, MFMediaType.RGB24);
+            if (result < 0)
+            {
+                log.Error("Failed to setup decoder sub-type for video: {0}", _path);
+                COMBase.SafeRelease(nativeType);
+                COMBase.SafeRelease(outputType);
+                COMBase.SafeRelease(reader);
+                return null;
+            }
+
+            result = reader.SetCurrentMediaType((int)MF_SOURCE_READER.FirstVideoStream, null, outputType);
             if (result < 0)
             {
                 log.Error("Failed to setup decoder for video: {0}", _path);
+                COMBase.SafeRelease(nativeType);
+                COMBase.SafeRelease(outputType);
+                COMBase.SafeRelease(reader);
+                return null;
+            }
+
+            result = reader.SetStreamSelection((int)MF_SOURCE_READER.FirstVideoStream, true);
+            if (result < 0)
+            {
+                log.Error("Failed to select stream for video: {0}", _path);
                 COMBase.SafeRelease(nativeType);
                 COMBase.SafeRelease(outputType);
                 COMBase.SafeRelease(reader);
@@ -211,7 +222,7 @@ namespace FlexDMD
 
         public override void Draw(Graphics graphics)
         {
-            if (_visible && _frame != null) graphics.DrawImage(_frame, _x, _y, 128, 32);
+            if (Visible && _frame != null) graphics.DrawImage(_frame, X, Y, 128, 32);
         }
 
         public override string ToString()
