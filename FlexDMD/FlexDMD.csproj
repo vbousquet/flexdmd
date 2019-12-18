@@ -112,6 +112,7 @@
     <Compile Include="FlexDMD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenes\BackgroundScene.cs" />
+    <Compile Include="Scenes\ScrollingCreditsScene.cs" />
     <Compile Include="Scenes\SingleLineScene.cs" />
     <Compile Include="Scenes\TwoLineScene.cs" />
     <Compile Include="WindowHandle.cs" />

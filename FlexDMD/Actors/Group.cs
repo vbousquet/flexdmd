@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -20,6 +21,8 @@ namespace FlexDMD
     class Group : Actor
     {
         private List<Actor> _children = new List<Actor>();
+
+        public List<Actor> Children { get => _children; }
 
         public override void Update(float delta)
         {
@@ -33,10 +36,9 @@ namespace FlexDMD
         {
             if (Visible)
             {
-                foreach (Actor child in _children)
-                {
-                    child.Draw(graphics);
-                }
+                graphics.TranslateTransform(X, Y);
+                foreach (Actor child in _children) child.Draw(graphics);
+                graphics.TranslateTransform(-X, -Y);
             }
         }
 

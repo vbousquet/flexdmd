@@ -20,6 +20,8 @@ namespace FlexDMD.Scenes
     {
         private readonly Label _text;
 
+        public float ScrollX { get; set; } = 0f;
+
         public SingleLineScene(Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {
             _text = new Label(font, text);
@@ -34,7 +36,7 @@ namespace FlexDMD.Scenes
         public override void Update(float delta)
         {
             base.Update(delta);
-            _text.SetPosition((Width - _text.Width) * 0.5f, (Height - _text.Height) * 0.5f);
+            _text.SetPosition((Width - _text.Width) * 0.5f + ScrollX, (Height - _text.Height) * 0.5f);
         }
     }
 }

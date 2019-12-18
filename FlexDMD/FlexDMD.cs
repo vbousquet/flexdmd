@@ -26,6 +26,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using static FlexDMD.DMDDevice;
+using MediaFoundation.Misc;
 
 namespace FlexDMD
 {
@@ -57,7 +58,7 @@ namespace FlexDMD
         private object[] _coloredPixels = null;
         private event OnDMDChangedDelegate OnDMDChanged;
         public delegate void OnDMDChangedDelegate();
-        
+
         public ushort DmdWidth
         {
             get => _width;
@@ -70,6 +71,7 @@ namespace FlexDMD
                 }
                 else
                 {
+                    log.Info("DMD width set to {0}", value);
                     _width = value;
                 }
             }
@@ -87,6 +89,7 @@ namespace FlexDMD
                 }
                 else
                 {
+                    log.Info("DMD height set to {0}", value);
                     _height = value;
                 }
             }
@@ -110,7 +113,7 @@ namespace FlexDMD
             }
         }
 
-         ~DMDObject()
+        ~DMDObject()
         {
             if (_processThread != null)
             {
@@ -131,7 +134,7 @@ namespace FlexDMD
             log.Info("Init {0}", gameName);
             _gameName = gameName;
             HResult hr = MFExtern.MFStartup(0x10070, MFStartup.Lite);
-            if (hr < 0) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
+            if (MFError.Failed(hr)) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
             _graphics = Graphics.FromImage(_frame);
             _scoreFontText = new FontDef(PathType.Resource, "FlexDMD.Resources.font-5.fnt", 0.66f);
@@ -183,6 +186,7 @@ namespace FlexDMD
         {
             Stopwatch stopWatch = new Stopwatch();
             double elapsedMs = 0.0;
+            double memDump = 1.0;
             WindowHandle visualPinball = null;
             while (_running)
             {
@@ -199,6 +203,12 @@ namespace FlexDMD
                     break;
                 }
                 float elapsedS = (float)(elapsedMs / 1000.0);
+                memDump -= elapsedS;
+                if (memDump < 0)
+                {
+                    memDump = 1.0;
+                    log.Debug("Memory used: {0}Mo", GC.GetTotalMemory(false) / (1024 * 1024));
+                }
                 _stage.SetSize(_width, _height);
                 lock (_runnables)
                 {
@@ -517,9 +527,14 @@ namespace FlexDMD
             {
                 _runnables.Add(() =>
                 {
-                    log.Error("DisplayScene01 [unsupported] '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
+                    // log.Error("DisplayScene01 '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
                     _scoreBoard.Visible = false;
-                    // _queue.Enqueue(scene);
+                    var font12 = _assets.Load<Actors.Font>(new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt", textBrightness / 15f, textOutlineBrightness / 15f)).Load();
+                    var scene = new SingleLineScene(ResolveImage(background), text, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                    scene.ScrollX = _width;
+                    // Not sure about the timing; UltraDMD moves text by 1.2 pixel per frame (no delta time) and seems to render based on the frame rate at 60FPS. Hence 3 * 128 / (60 * 1.2) = 5.333
+                    _tweener.Tween(scene, new { ScrollX = -_width }, 5.333f, 0f); 
+                    _queue.Enqueue(scene);
                 });
             }
         }
@@ -595,7 +610,13 @@ namespace FlexDMD
                 {
                     log.Error("ScrollingCredits [unsupported] '{0}', '{1}', {2}", background, text, textBrightness);
                     _scoreBoard.Visible = false;
-                    // _queue.Enqueue(scene);
+                    string[] lines = text.Split(new Char[] { '\n', '|' });
+                    var font12 = _assets.Load<Actors.Font>(new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt", textBrightness / 15f, -1)).Load();
+                    var scene = new ScrollingCreditsScene(ResolveImage(background), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
+                    scene.ScrollY = _height;
+                    // There is nothing obvious in UltraDMD that gives hint on the timing, so I choosed a default speed
+                    _tweener.Tween(scene, new { ScrollY = -scene.ContentHeight }, 3f + lines.Length * 0.4f, 0f);
+                    _queue.Enqueue(scene);
                 });
             }
         }

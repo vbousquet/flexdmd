@@ -56,11 +56,15 @@ namespace FlexDMD
 
         public void Close()
         {
+            if (_audioReader != null)
+            {
+                _audioReader.Dispose();
+                _audioReader = null;
+            }
+            if (_videoReader != null) ComClass.SafeRelease(ref _videoReader);
             _audioDevice.Dispose();
             _audioDevice = null;
             nOpenedVideos--;
-            if (_videoReader != null) ComClass.SafeRelease(ref _videoReader);
-            // WaveOut.ResetWODevice();
         }
 
         protected override void Rewind()
@@ -75,11 +79,8 @@ namespace FlexDMD
             else
             {
                 HResult hr = MFExtern.MFCreateSourceReaderFromURL(_path, null, out IMFSourceReader reader);
-                if (MFError.Succeeded(hr))
-                {
-                    _videoReader = SetupVideoDecoder(reader);
-                    log.Error("Failed to open video: {0}", _path);
-                }
+                if (MFError.Succeeded(hr)) _videoReader = SetupVideoDecoder(reader);
+                if (_videoReader == null) log.Error("Failed to open video: {0}", _path);
             }
             if (_audioReader != null)
             {

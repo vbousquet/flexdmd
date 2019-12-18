@@ -1,0 +1,55 @@
+﻿/* Copyright 2019 Vincent Bousquet
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+   */
+using FlexDMD.Actors;
+
+namespace FlexDMD.Scenes
+{
+    class ScrollingCreditsScene : BackgroundScene
+    {
+        private readonly Group _container = new Group();
+
+        public float ScrollY { get; set; } = 0f;
+
+        public float ContentHeight { get => _container.Height; }
+
+        public ScrollingCreditsScene(Actor background, string[] text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
+        {
+            AddActor(_container);
+            var y = 0f;
+            foreach (string line in text)
+            {
+                var label = new Label(font, line);
+                label.Y = y;
+                y += label.Height;
+                _container.AddActor(label);
+            }
+            _container.Height = y;
+        }
+
+        public override void Update(float delta)
+        {
+            base.Update(delta);
+            if (_container.Width != Width)
+            {
+                _container.Width = Width;
+                foreach (Actor line in _container.Children)
+                {
+                    line.X = (Width - line.Width) * 0.5f;
+                }
+            }
+            _container.Y = ScrollY;
+        }
+    }
+}
