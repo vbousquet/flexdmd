@@ -3,7 +3,7 @@ fileVersion=1
 
 # font settings
 fontName=ZX Spectrum
-fontFile=7px - zx_spectrum/zx-spectrum.ttf
+fontFile=TTF Fonts/7px - zx_spectrum/zx-spectrum.ttf
 charSet=0
 fontSize=-7
 aa=1

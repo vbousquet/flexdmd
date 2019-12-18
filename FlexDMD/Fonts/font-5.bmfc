@@ -3,7 +3,7 @@ fileVersion=1
 
 # font settings
 fontName=Teeny Tiny Pixls
-fontFile=5px - teeny_tiny_pixls/Teeny Tiny Pixls.otf
+fontFile=TTF Fonts/5px - teeny_tiny_pixls/Teeny Tiny Pixls.otf
 charSet=0
 fontSize=-5
 aa=1
