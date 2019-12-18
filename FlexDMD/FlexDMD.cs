@@ -12,7 +12,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using Glide;
 using FlexDMD.Actors;
 using FlexDMD.Scenes;
 using MediaFoundation;
@@ -38,7 +37,6 @@ namespace FlexDMD
         private readonly DMDDevice _dmd = new DMDDevice();
         private readonly AssetManager _assets = new AssetManager();
         private readonly SceneQueue _queue = new SceneQueue();
-        private readonly Tweener _tweener = new Tweener();
         private readonly Group _stage = new Group();
         private readonly int _frameRate = 60;
         private ScoreBoard _scoreBoard;
@@ -215,7 +213,6 @@ namespace FlexDMD
                     _runnables.ForEach(item => item());
                     _runnables.Clear();
                 }
-                _tweener.Update(elapsedS);
                 _stage.Update(elapsedS);
                 _scoreBoard.Visible &= !_queue.IsRendering();
                 if (_visible)
@@ -479,13 +476,13 @@ namespace FlexDMD
                     else if (toptext != null && toptext.Length > 0)
                     {
                         var font = GetFittedLabel(bottomtext, topBrightness / 15f, topOutlineBrightness / 15f).Font;
-                        var scene = new SingleLineScene(ResolveImage(background), toptext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                        var scene = new SingleLineScene(ResolveImage(background), toptext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, false, sceneId);
                         _queue.Enqueue(scene);
                     }
                     else if (bottomtext != null && bottomtext.Length > 0)
                     {
                         var font = GetFittedLabel(bottomtext, bottomBrightness / 15f, bottomOutlineBrightness / 15f).Font;
-                        var scene = new SingleLineScene(ResolveImage(background), bottomtext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                        var scene = new SingleLineScene(ResolveImage(background), bottomtext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, false, sceneId);
                         _queue.Enqueue(scene);
                     }
                     else
@@ -541,10 +538,7 @@ namespace FlexDMD
                     // log.Info("DisplayScene01 '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
                     _scoreBoard.Visible = false;
                     var font = GetFittedLabel(text, textBrightness / 15f, textOutlineBrightness / 15f).Font;
-                    var scene = new SingleLineScene(ResolveImage(background), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
-                    scene.ScrollX = _width;
-                    // Not sure about the timing; UltraDMD moves text by 1.2 pixel per frame (no delta time) and seems to render based on the frame rate at 60FPS. Hence 3 * 128 / (60 * 1.2) = 5.333
-                    _tweener.Tween(scene, new { ScrollX = -_width }, 5.333f, 0f);
+                    var scene = new SingleLineScene(ResolveImage(background), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
                     _queue.Enqueue(scene);
                 });
             }
@@ -614,9 +608,6 @@ namespace FlexDMD
                     string[] lines = text.Split(new Char[] { '\n', '|' });
                     var font12 = _assets.Load<Actors.Font>(new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt", textBrightness / 15f, -1)).Load();
                     var scene = new ScrollingCreditsScene(ResolveImage(background), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
-                    scene.ScrollY = _height;
-                    // There is nothing obvious in UltraDMD that gives hint on the timing, so I choosed one...
-                    _tweener.Tween(scene, new { ScrollY = -scene.ContentHeight }, 3f + lines.Length * 0.4f, 0f);
                     _queue.Enqueue(scene);
                 });
             }

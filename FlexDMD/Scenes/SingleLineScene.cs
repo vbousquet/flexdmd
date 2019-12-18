@@ -20,18 +20,33 @@ namespace FlexDMD.Scenes
     class SingleLineScene : BackgroundScene
     {
         private readonly Label _text;
+        private readonly bool _scroll;
 
         public float ScrollX { get; set; } = 0f;
 
-        public SingleLineScene(Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
+        public SingleLineScene(Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, bool scroll = false, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {
+            _scroll = scroll;
             _text = new Label(font, text);
             AddActor(_text);
+
         }
 
         public void SetText(string text)
         {
             _text.Text = text;
+        }
+
+        public override void Begin()
+        {
+            base.Begin();
+            if (_scroll)
+            {
+                // Not sure about the timing; UltraDMD moves text by 1.2 pixel per frame (no delta time) and seems to render based on the frame rate at 60FPS. Hence 3 * 128 / (60 * 1.2) = 5.333
+                // This could also be changed to take in account the size of the text (not done by UltraDMD)
+                ScrollX = Width;
+                _tweener.Tween(this, new { ScrollX = -Width }, 5.333f, 0f);
+            }
         }
 
         public override void Update(float delta)

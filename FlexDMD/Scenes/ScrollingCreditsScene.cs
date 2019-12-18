@@ -20,13 +20,12 @@ namespace FlexDMD.Scenes
     class ScrollingCreditsScene : BackgroundScene
     {
         private readonly Group _container = new Group();
-
-        public float ScrollY { get; set; } = 0f;
-
-        public float ContentHeight { get => _container.Height; }
+        private readonly float _length;
 
         public ScrollingCreditsScene(Actor background, string[] text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {
+            // There is nothing obvious in UltraDMD that gives hint on the timing, so I choosed one...
+            _length = 3f + text.Length * 0.4f;
             AddActor(_container);
             var y = 0f;
             foreach (string line in text)
@@ -37,6 +36,13 @@ namespace FlexDMD.Scenes
                 _container.AddActor(label);
             }
             _container.Height = y;
+        }
+
+        public override void Begin()
+        {
+            base.Begin();
+            _container.Y = Height;
+            _tweener.Tween(_container, new { Y = -_container.Height }, _length, 0f);
         }
 
         public override void Update(float delta)
@@ -50,7 +56,7 @@ namespace FlexDMD.Scenes
                     line.X = (Width - line.Width) * 0.5f;
                 }
             }
-            _container.Y = ScrollY;
+            _tweener.Update(delta);
         }
     }
 }
