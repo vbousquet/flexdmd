@@ -13,6 +13,8 @@
    limitations under the License.
    */
 
+using Glide;
+
 namespace FlexDMD.Scenes
 {
     class BackgroundScene : Scene

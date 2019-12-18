@@ -13,6 +13,7 @@
    limitations under the License.
    */
 using FlexDMD.Actors;
+using Glide;
 
 namespace FlexDMD.Scenes
 {

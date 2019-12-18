@@ -114,6 +114,8 @@ namespace FlexDMD
             if (MFError.Succeeded(hr))
                 hr = reader.SetCurrentMediaType((int)MF_SOURCE_READER.FirstVideoStream, null, outputType);
             if (MFError.Succeeded(hr))
+                hr = reader.SetStreamSelection((int)MF_SOURCE_READER.AllStreams, false);
+            if (MFError.Succeeded(hr))
                 hr = reader.SetStreamSelection((int)MF_SOURCE_READER.FirstVideoStream, true);
             ComClass.SafeRelease(ref outputType);
             if (MFError.Failed(hr))

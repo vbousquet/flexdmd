@@ -12,7 +12,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
+using Glide;
 using NLog;
+using System;
 
 namespace FlexDMD.Scenes
 {
@@ -20,6 +22,7 @@ namespace FlexDMD.Scenes
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         protected readonly string _id;
+        protected readonly Tweener _tweener = new Tweener();
         protected float _pauseS;
         protected AnimationType _animateIn;
         protected AnimationType _animateOut;
@@ -35,10 +38,6 @@ namespace FlexDMD.Scenes
             _animateOut = animateOut;
             _pauseS = pauseS;
             _id = id;
-            // Minions => Lots of ScrollOnLeft / ScrollOffLeft
-            // Kiss => Lots of ScrollOnUp / FadeOut
-            if (animateIn != AnimationType.None || animateOut != AnimationType.None)
-                log.Error("Unsupported animation in scene '{0}': {1} => {2}", id, animateIn, animateOut);
         }
 
         public void SetPause(float pauseS)
@@ -49,18 +48,110 @@ namespace FlexDMD.Scenes
         public virtual void Begin()
         {
             SetSize(Parent.Width, Parent.Height);
+            AddAnimation(_animateIn, false);
+            AddAnimation(_animateOut, true);
             _active = true;
+        }
+
+        // Minions => Lots of ScrollOnLeft / ScrollOffLeft
+        // Kiss => Lots of ScrollOnUp / FadeOut
+        private void AddAnimation(AnimationType animation, bool atEnd)
+        {
+            float scrollWLength = 0.5f;
+            float scrollHLength = 0.5f; // scrollWLength * Height / Width;
+            /* Missing animations : 
+             * FadeIn = 0,
+             * FadeOut = 1,
+             * ZoomIn = 2,
+             * ZoomOut = 3,
+             * FillFadeIn = 12,
+             * FillFadeOut = 13, 
+             */
+            switch (animation)
+            {
+                case AnimationType.ScrollOffLeft:
+                    DelayAnim(scrollWLength, atEnd, () =>
+                    {
+                        X = 0f;
+                        _tweener.Tween(this, new { X = -Width }, scrollWLength);
+                    });
+                    break;
+                case AnimationType.ScrollOffRight:
+                    DelayAnim(scrollWLength, atEnd, () =>
+                    {
+                        X = 0;
+                        _tweener.Tween(this, new { X = Width }, scrollWLength);
+                    });
+                    break;
+                case AnimationType.ScrollOnLeft:
+                    DelayAnim(scrollWLength, atEnd, () =>
+                    {
+                        X = -Width;
+                        _tweener.Tween(this, new { X = 0f }, scrollWLength);
+                    });
+                    break;
+                case AnimationType.ScrollOnRight:
+                    DelayAnim(scrollWLength, atEnd, () =>
+                    {
+                        X = Width;
+                        _tweener.Tween(this, new { X = 0f }, scrollWLength);
+                    });
+                    break;
+                case AnimationType.ScrollOffUp:
+                    DelayAnim(scrollHLength, atEnd, () =>
+                    {
+                        Y = 0f;
+                        _tweener.Tween(this, new { Y = -Height }, scrollHLength);
+                    });
+                    break;
+                case AnimationType.ScrollOffDown:
+                    DelayAnim(scrollHLength, atEnd, () =>
+                    {
+                        Y = 0f;
+                        _tweener.Tween(this, new { Y = Height }, scrollHLength);
+                    });
+                    break;
+                case AnimationType.ScrollOnUp:
+                    DelayAnim(scrollHLength, atEnd, () =>
+                    {
+                        Y = -Height;
+                        _tweener.Tween(this, new { Y = 0f }, scrollHLength);
+                    });
+                    break;
+                case AnimationType.ScrollOnDown:
+                    DelayAnim(scrollHLength, atEnd, () =>
+                    {
+                        Y = Height;
+                        _tweener.Tween(this, new { Y = 0f }, scrollHLength);
+                    });
+                    break;
+                case AnimationType.None:
+                    break;
+                default:
+                    log.Error("Unsupported animation in scene '{0}': {1}", _id, animation);
+                    break;
+            }
+        }
+
+        private void DelayAnim(float lengthS, bool atEnd, Action action)
+        {
+            if (atEnd)
+                _tweener.Timer(_pauseS - lengthS).OnComplete(action);
+            else
+                action.Invoke();
         }
 
         public virtual void End()
         {
             _active = false;
+            _tweener.Cancel();
         }
 
         public override void Update(float delta)
         {
             base.Update(delta);
             _time += delta;
+            _tweener.Update(delta);
         }
 
         public bool IsFinished()
