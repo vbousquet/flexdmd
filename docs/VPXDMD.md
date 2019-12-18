@@ -15,17 +15,17 @@ To add an embedded DMD to your table, follow these steps;
 Sub FlexDMDTimer_Timer
 	Dim DMDp
 	If UseDMD Then
-		DMDp = UltraDMD.RawDmdPixels
+		DMDp = UltraDMD.DmdPixels
 		If Not IsEmpty(DMDp) Then
-			DMDWidth = UltraDMD.RawDmdWidth
-			DMDHeight = UltraDMD.RawDmdHeight
+			DMDWidth = UltraDMD.DmdWidth
+			DMDHeight = UltraDMD.DmdHeight
 			DMDPixels = DMDp
 		End If
 	ElseIf UseColoredDMD Then
-		DMDp = UltraDMD.RawDmdColoredPixels
+		DMDp = UltraDMD.DmdColoredPixels
 		If Not IsEmpty(DMDp) Then
-			DMDWidth = UltraDMD.RawDmdWidth
-			DMDHeight = UltraDMD.RawDmdHeight
+			DMDWidth = UltraDMD.DmdWidth
+			DMDHeight = UltraDMD.DmdHeight
 			DMDColoredPixels = DMDp
 		End If
 	End If
