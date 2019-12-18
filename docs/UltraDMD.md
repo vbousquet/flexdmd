@@ -30,9 +30,8 @@ End Sub
 ```
 
 ## Differences between UltraDMD and FlexDMD
-Since the license from UltraDMD was unclear, FlexDMD was developed from scratch, without reusing any code or assets from UltraDMD. The only common part is the API. Therefore, you can expect a few differences when switching from one to the other. The main one are listed below;
+Since the license from UltraDMD was unclear, FlexDMD was developed from scratch, without reusing any code or assets from UltraDMD. The only common part is the API. Therefore, you can expect a few differences when switching from one to the other. The main ones are listed below;
 * FlexDMD uses its own fonts, which are not the one from UltraDMD. We are working to find the best matching ones (you can help !) but there are still differences.
 * UltraDMD uses only fixed width fonts whereas FlexDMD uses fixed or variable width fonts, hence leading to glyph layout differences.
 * FlexDMD animates background of the scoreboard where UltraDMD wont, even if the background is a video.
 * By default, FlexDMD renders score of the scoreboard with a comma separator (1000000 renders as 1,000,000). UltraDMD does not render with comma separator.
-* FlexDMD is an "in process COM object". UltraDMD is an "out of process COM object". Not sure if this will cause any difference but it might impact the object life cycle.
