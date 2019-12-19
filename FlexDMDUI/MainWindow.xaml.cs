@@ -15,13 +15,20 @@ namespace FlexDMDUI
     {
         const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
         const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
-        private string _installPath = "./";
+        private string _installPath;
 
         public MainWindow()
         {
             InitializeComponent();
             var flexPath = getComponentLocation(flexDMDclsid);
-            if (flexPath != null) _installPath = Directory.GetParent(flexPath).FullName;
+            if (flexPath != null)
+            {
+                _installPath = Directory.GetParent(flexPath).FullName;
+            }
+            else
+            {
+                _installPath = Path.GetFullPath("./");
+            }
             UpdateInstallPane();
         }
 
@@ -139,6 +146,7 @@ namespace FlexDMDUI
         public void OnRun(object sender, RoutedEventArgs e)
         {
             // FIXME run the script with wscript.exe, prepending it with the object creation, running once per output
+            // https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/wscript
         }
     }
 }
