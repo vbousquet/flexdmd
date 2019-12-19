@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlexDMDCmdTest", "FlexDMDCm
 		{B863555A-A234-43F4-A0FD-34E6A0E00547} = {B863555A-A234-43F4-A0FD-34E6A0E00547}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlexDMDUI", "FlexDMDUI\FlexDMDUI.csproj", "{681DED25-2396-4DBE-8B51-CFD841F6349E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{B947DFBE-010E-44F1-855C-AA38BCD4B5BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B947DFBE-010E-44F1-855C-AA38BCD4B5BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B947DFBE-010E-44F1-855C-AA38BCD4B5BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{681DED25-2396-4DBE-8B51-CFD841F6349E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{681DED25-2396-4DBE-8B51-CFD841F6349E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{681DED25-2396-4DBE-8B51-CFD841F6349E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{681DED25-2396-4DBE-8B51-CFD841F6349E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
