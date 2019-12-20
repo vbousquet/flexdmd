@@ -93,7 +93,7 @@ namespace FlexDMD
             }
         }
 
-        object IDMDObject.DmdColoredPixels
+        public object DmdColoredPixels
         {
             get
             {
@@ -102,7 +102,7 @@ namespace FlexDMD
             }
         }
 
-        object IDMDObject.DmdPixels
+        public object DmdPixels
         {
             get
             {

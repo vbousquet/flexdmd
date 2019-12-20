@@ -6,7 +6,12 @@ using System.Runtime.InteropServices;
 namespace FlexDMDTest
 {
     [ComImport, Guid("766e10d3-dfe3-4e1b-ac99-c4d2be16e91f")]
-    public class DMDObject
+    public class FlexDMDObject
+    {
+    }
+
+    [ComImport, Guid("766e10d3-dfe3-4e1b-ac99-c4d2be16e91f")]
+    public class UltraDMDObject
     {
     }
 
@@ -15,7 +20,7 @@ namespace FlexDMDTest
         static void Main(string[] args)
         {
             Logger log = LogManager.GetCurrentClassLogger();
-            IDMDObject dmd = (IDMDObject)(new DMDObject());
+            IDMDObject dmd = (IDMDObject)(new UltraDMDObject());
             // dmd.DmdWidth = 512;
             // dmd.DmdHeight = 128;
             dmd.Init();

@@ -32,21 +32,34 @@ namespace FlexDMD
     /// There is no direct access to the scene queue; but there is limited control through the ability to clear the queue, clear the
     /// currently rendering scene, or clear the currently rendering scene only if it matches a specific scene identifier.
     /// </summary>
-    [Guid("6de5b6e5-717b-48d3-a890-d1d2320ddc43"), ComVisible(true)]
+    [Guid("F7E68187-251F-4DFB-AF79-F1D4D69EE188"), ComVisible(true)]
+    /* [Guid("6de5b6e5-717b-48d3-a890-d1d2320ddc43"), ComVisible(true)] */
     public interface IDMDObject
     {
         #region Properties
 
+        /// <summary>
+        /// Defines or read the DMD width. Note that the width may only be changed on an unitiliazed DMD (i.e. before calling Init)
+        /// </summary>
         ushort DmdWidth { get; set; }
 
+        /// <summary>
+        /// Defines or read the DMD height. Note that the height may only be changed on an unitiliazed DMD (i.e. before calling Init)
+        /// </summary>
         ushort DmdHeight { get; set; }
 
+        /// <summary>
+        /// Returns the DMD content as an array of uint RGB pixels
+        /// </summary>
         object DmdColoredPixels
         {
             [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
             get;
         }
 
+        /// <summary>
+        /// Returns the DMD content as an array of byte pixels (0 => black, 255 => full light)
+        /// </summary>
         object DmdPixels
         {
             [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
@@ -57,7 +70,14 @@ namespace FlexDMD
 
         #region Methods
 
+        /// <summary>
+        /// Init must be called before any other method.  This variant allows to define the game name which will be shared with the rendering backend.
+        /// </summary>
         void InitForGame(string gameName);
+
+        #endregion
+
+        #region Methods
 
         void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight);
 
