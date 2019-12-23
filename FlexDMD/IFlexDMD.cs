@@ -13,6 +13,7 @@
    limitations under the License.
    */
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace FlexDMD
@@ -74,6 +75,13 @@ namespace FlexDMD
         /// Init must be called before any other method.  This variant allows to define the game name which will be shared with the rendering backend.
         /// </summary>
         void InitForGame(string gameName);
+
+        /// <summary>
+        /// The DMD is rendered with a 4 bit plane shade of gray. You can choose a 2 bit plane or a full RGB rendering here. This must be defined before calling Init.
+        /// </summary>
+        void SetRenderMode(RenderMode renderMode);
+
+        void SetDMDColor(Color color);
 
         #endregion
 

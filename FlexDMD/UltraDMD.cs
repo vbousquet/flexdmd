@@ -14,6 +14,7 @@
    */
 using FlexDMD;
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 /// <summary>
@@ -27,12 +28,16 @@ namespace UltraDMD
     {
         private FlexDMD.DMDObject _dmd = new FlexDMD.DMDObject();
 
+        // FlexDMD methods & properties
         public ushort DmdWidth { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ushort DmdHeight { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public object DmdColoredPixels => throw new NotImplementedException();
         public object DmdPixels => throw new NotImplementedException();
         public void InitForGame(string gameName) => throw new NotImplementedException();
+        public void SetRenderMode(RenderMode renderMode) => throw new NotImplementedException();
+        public void SetDMDColor(Color color) => throw new NotImplementedException();
 
+        // UltraDMD methods & properties
         public void Init() => _dmd.Init();
         public void Uninit() => _dmd.Uninit();
         public int GetMajorVersion() => _dmd.GetMajorVersion();

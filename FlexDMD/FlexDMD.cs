@@ -29,6 +29,12 @@ using MediaFoundation.Misc;
 
 namespace FlexDMD
 {
+
+    public enum RenderMode
+    {
+        GRAY_2, GRAY_4, RGB
+    }
+
     [Guid("766e10d3-dfe3-4e1b-ac99-c4d2be16e91f"), ComVisible(true), ClassInterface(ClassInterfaceType.None), ComSourceInterfaces(typeof(IDMDObjectEvents))]
     public class DMDObject : IDMDObject
     {
@@ -55,6 +61,10 @@ namespace FlexDMD
         private object[] _pixels = null;
         private object[] _coloredPixels = null;
         private event OnDMDChangedDelegate OnDMDChanged;
+        private IntPtr _bpFrame;
+        private RenderMode _renderMode = RenderMode.GRAY_4;
+        private Color _dmdColor = Color.FromArgb(0xFF, 0x58, 0x20);
+
         public delegate void OnDMDChangedDelegate();
 
         public ushort DmdWidth
@@ -120,6 +130,34 @@ namespace FlexDMD
             }
         }
 
+        public void SetRenderMode(RenderMode renderMode)
+        {
+            if (_renderMode == renderMode) return;
+            if (_processThread != null)
+            {
+                log.Error("Render mode changed after initialization.");
+            }
+            else
+            {
+                log.Info("Render mode set to {0}", renderMode);
+                _renderMode = renderMode;
+            }
+        }
+
+        public void SetDMDColor(Color color)
+        {
+            if (_dmdColor == color) return;
+            if (_processThread != null)
+            {
+                log.Error("Color changed after initialization.");
+            }
+            else
+            {
+                log.Info("Color set to {0}", color);
+                _dmdColor = color;
+            }
+        }
+
         public void Init()
         {
             InitForGame("");
@@ -135,6 +173,7 @@ namespace FlexDMD
             if (MFError.Failed(hr)) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
             _graphics = Graphics.FromImage(_frame);
+            _bpFrame = Marshal.AllocHGlobal(_width * _height);
             _scoreFontText = new FontDef(PathType.Resource, "FlexDMD.Resources.font-5.fnt", 0.66f);
             _scoreFontNormal = new FontDef(PathType.Resource, "FlexDMD.Resources.font-7.fnt", 0.66f);
             _scoreFontHighlight = new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt");
@@ -172,6 +211,7 @@ namespace FlexDMD
                 _processThread = null;
             }
             SetVisibleVirtualDMD(false);
+            Marshal.FreeHGlobal(_bpFrame);
             _graphics.Dispose();
             _graphics = null;
             _frame.Dispose();
@@ -219,33 +259,94 @@ namespace FlexDMD
                 {
                     _stage.Draw(_graphics);
                     Rectangle rect = new Rectangle(0, 0, _frame.Width, _frame.Height);
-                    BitmapData data = _frame.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, _frame.PixelFormat);
-                    _dmd.RenderRgb24(_width, _height, data.Scan0);
-                    if (_pixels != null)
+                    BitmapData data = _frame.LockBits(rect, ImageLockMode.ReadWrite, _frame.PixelFormat);
+                    switch (_renderMode)
                     {
-                        unsafe
-                        {
-                            byte* ptr = ((byte*)data.Scan0.ToPointer());
-                            int pos = 0;
-                            for (int y = 0; y < _height; y++)
+                        case RenderMode.GRAY_2:
+                            unsafe
                             {
-                                for (int x = 0; x < _width; x++)
+                                byte* dst = (byte*)_bpFrame.ToPointer();
+                                byte* ptr = ((byte*)data.Scan0.ToPointer());
+                                int pos = 0;
+                                for (int y = 0; y < _height; y++)
                                 {
-                                    byte r = *ptr;
-                                    ptr++;
-                                    byte g = *ptr;
-                                    ptr++;
-                                    byte b = *ptr;
-                                    ptr++;
-                                    // _pixels[y * _width + x] = (byte)((r + g + b) / 3);
-                                    float v = 0.2126f * r + 0.7152f * g + 0.0722f * b;
-                                    if (v > 0.99f) v = 0.99f;
-                                    _pixels[pos] = (byte)(v);
-                                    pos++;
+                                    for (int x = 0; x < _width; x++)
+                                    {
+                                        byte r = *ptr;
+                                        ptr++;
+                                        byte g = *ptr;
+                                        ptr++;
+                                        byte b = *ptr;
+                                        ptr++;
+                                        int v = (int)(0.2126f * r + 0.7152f * g + 0.0722f * b);
+                                        if (v > 255) v = 255;
+                                        dst[pos] = (byte)(v >> 6);
+                                        if (_pixels != null) _pixels[pos] = (byte)(v);
+                                        pos++;
+                                    }
+                                    ptr += data.Stride - 3 * _width;
                                 }
                             }
-                        }
+                            _dmd.RenderGray2(_width, _height, _bpFrame);
+                            break;
+
+                        case RenderMode.GRAY_4:
+                            unsafe
+                            {
+                                byte* dst = (byte*)_bpFrame.ToPointer();
+                                byte* ptr = ((byte*)data.Scan0.ToPointer());
+                                int pos = 0;
+                                for (int y = 0; y < _height; y++)
+                                {
+                                    for (int x = 0; x < _width; x++)
+                                    {
+                                        byte r = *ptr;
+                                        ptr++;
+                                        byte g = *ptr;
+                                        ptr++;
+                                        byte b = *ptr;
+                                        ptr++;
+                                        int v = (int)(0.2126f * r + 0.7152f * g + 0.0722f * b);
+                                        if (v > 255) v = 255;
+                                        dst[pos] = (byte)(v >> 4);
+                                        if (_pixels != null) _pixels[pos] = (byte)(v);
+                                        pos++;
+                                    }
+                                    ptr += data.Stride - 3 * _width;
+                                }
+                            }
+                            _dmd.RenderGray4(_width, _height, _bpFrame);
+                            break;
+
+                        case RenderMode.RGB:
+                            if (_pixels != null)
+                            {
+                                unsafe
+                                {
+                                    byte* ptr = ((byte*)data.Scan0.ToPointer());
+                                    int pos = 0;
+                                    for (int y = 0; y < _height; y++)
+                                    {
+                                        for (int x = 0; x < _width; x++)
+                                        {
+                                            byte r = *ptr;
+                                            ptr++;
+                                            byte g = *ptr;
+                                            ptr++;
+                                            byte b = *ptr;
+                                            ptr++;
+                                            float v = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+                                            if (v > 255.0f) v = 255.0f;
+                                            _pixels[pos] = (byte)(v);
+                                            pos++;
+                                        }
+                                    }
+                                }
+                            }
+                            _dmd.RenderRgb24(_width, _height, data.Scan0);
+                            break;
                     }
+
                     if (_coloredPixels != null)
                     {
                         unsafe
@@ -309,7 +410,24 @@ namespace FlexDMD
             if (!wasVisible && _visible)
             {
                 _dmd.Open();
-                var options = new PMoptions();
+                var options = new PMoptions
+                {
+                    Red = _dmdColor.R,
+                    Green = _dmdColor.G,
+                    Blue = _dmdColor.B,
+                    Perc66 = 66,
+                    Perc33 = 33,
+                    Perc0 = 0
+                };
+                options.Green0 = options.Perc0 * options.Green / 100;
+                options.Green33 = options.Perc33 * options.Green / 100;
+                options.Green66 = options.Perc66 * options.Green / 100;
+                options.Blue0 = options.Perc0 * options.Blue / 100;
+                options.Blue33 = options.Perc33 * options.Blue / 100;
+                options.Blue66 = options.Perc66 * options.Blue / 100;
+                options.Red0 = options.Perc0 * options.Red / 100;
+                options.Red33 = options.Perc33 * options.Red / 100;
+                options.Red66 = options.Perc66 * options.Red / 100;
                 _dmd.GameSettings(_gameName, 0, options);
             }
             else if (wasVisible && !_visible)
