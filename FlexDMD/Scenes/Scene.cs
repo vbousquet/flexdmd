@@ -12,9 +12,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
+using FlexDMD.Actors;
 using Glide;
 using NLog;
 using System;
+using System.Drawing;
 
 namespace FlexDMD.Scenes
 {
@@ -53,22 +55,35 @@ namespace FlexDMD.Scenes
             _active = true;
         }
 
-        // Minions => Lots of ScrollOnLeft / ScrollOffLeft
-        // Kiss => Lots of ScrollOnUp / FadeOut
+        // FIXME this way of adding the animation will not allow changing the pause time (see UltraDMD API)
         private void AddAnimation(AnimationType animation, bool atEnd)
         {
+            float alphaLength = 0.5f;
             float scrollWLength = 0.5f;
             float scrollHLength = 0.5f; // scrollWLength * Height / Width;
-            /* Missing animations : 
-             * FadeIn = 0, // fade color from black
-             * FadeOut = 1, // fade color to black
-             * ZoomIn = 2, // zoom from a centered small dmd to full size
-             * ZoomOut = 3, // zoom from a full sized dmd to an oversize one
-             * FillFadeIn = 12, // fade from black to white (the scene won't be seen)
-             * FillFadeOut = 13, // fade from white to black (the scene won't be seen)
-             */
+            // Missing animations: ZoomIn = 2, ZoomOut = 3
             switch (animation)
             {
+                case AnimationType.FadeIn:
+                    DelayAnim(alphaLength, atEnd, () =>
+                    {
+                        FadeOverlay fade = new FadeOverlay();
+                        AddActor(fade);
+                        fade.Alpha = 1f;
+                        fade.Color = Color.Black;
+                        _tweener.Tween(fade, new { Alpha = 0f }, alphaLength).OnComplete(() => { RemoveActor(fade); });
+                    });
+                    break;
+                case AnimationType.FadeOut:
+                    DelayAnim(alphaLength, atEnd, () =>
+                    {
+                        FadeOverlay fade = new FadeOverlay();
+                        AddActor(fade);
+                        fade.Alpha = 0f;
+                        fade.Color = Color.Black;
+                        _tweener.Tween(fade, new { Alpha = 1f }, alphaLength);
+                    });
+                    break;
                 case AnimationType.ScrollOffLeft:
                     DelayAnim(scrollWLength, atEnd, () =>
                     {
@@ -123,6 +138,34 @@ namespace FlexDMD.Scenes
                     {
                         Y = Height;
                         _tweener.Tween(this, new { Y = 0f }, scrollHLength);
+                    });
+                    break;
+                case AnimationType.FillFadeIn:
+                    DelayAnim(alphaLength, atEnd, () =>
+                    {
+                        FadeOverlay fade = new FadeOverlay();
+                        AddActor(fade);
+                        fade.Alpha = 1f;
+                        fade.Color = Color.Black;
+                        fade = new FadeOverlay();
+                        AddActor(fade);
+                        fade.Alpha = 0f;
+                        fade.Color = Color.White;
+                        _tweener.Tween(fade, new { Alpha = 1f }, alphaLength);
+                    });
+                    break;
+                case AnimationType.FillFadeOut:
+                    DelayAnim(alphaLength, atEnd, () =>
+                    {
+                        FadeOverlay fade = new FadeOverlay();
+                        AddActor(fade);
+                        fade.Alpha = 1f;
+                        fade.Color = Color.White;
+                        fade = new FadeOverlay();
+                        AddActor(fade);
+                        fade.Alpha = 0f;
+                        fade.Color = Color.Black;
+                        _tweener.Tween(fade, new { Alpha = 1f }, alphaLength);
                     });
                     break;
                 case AnimationType.None:

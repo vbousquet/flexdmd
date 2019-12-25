@@ -125,7 +125,7 @@
                         </StackPanel>
                     </Button>
                     <ScrollViewer Grid.ColumnSpan="4" Grid.Row="1">
-                        <TextBox x:Name="scriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" Text="DMD.DisplayScene01 &quot;&quot;, &quot;&quot;, &quot;FlexDMD Test&quot;, 7, 15, 14, 10000, 14&#xD;&#xA;DMD.DisplayScene00 &quot;&quot;, &quot;Scene 01&quot;, 15, &quot;.&quot;, 15, 14, 1000, 14&#xA;DMD.DisplayScene00 &quot;&quot;, &quot;Scene 02&quot;, 15, &quot;..&quot;, 15, 14, 1000, 14&#xA;DMD.DisplayScene00 &quot;&quot;, &quot;Scene 03&quot;, 15, &quot;...&quot;, 15, 14, 1000, 14&#xA;" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" TextChanged="scriptTextBox_TextChanged"/>
+                        <TextBox x:Name="scriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" Text="DMD.DisplayScene00 &quot;&quot;, &quot;Scene 01&quot;, 15, &quot;.&quot;, 15, 14, 1000, 14&#xA;DMD.DisplayScene00 &quot;&quot;, &quot;Scene 02&quot;, 15, &quot;..&quot;, 15, 14, 1000, 14&#xA;DMD.DisplayScene00 &quot;&quot;, &quot;Scene 03&quot;, 15, &quot;...&quot;, 15, 14, 1000, 14&#xA;" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" TextChanged="scriptTextBox_TextChanged"/>
                     </ScrollViewer>
                 </Grid>
             </TabItem>

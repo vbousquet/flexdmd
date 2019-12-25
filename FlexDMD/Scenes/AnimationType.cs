@@ -12,19 +12,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FlexDMD.Scenes
 {
 	public enum AnimationType {
-		FadeIn = 0,
-		FadeOut = 1,
-		ZoomIn = 2,
-		ZoomOut = 3,
+		FadeIn = 0, // Fade from black to scene
+		FadeOut = 1, // Fade from scene to black
+		ZoomIn = 2, // zoom from a centered small dmd to full size
+		ZoomOut = 3, // zoom from a full sized dmd to an oversize one
 		ScrollOffLeft = 4,
 		ScrollOffRight = 5,
 		ScrollOnLeft = 6,
@@ -33,8 +28,8 @@ namespace FlexDMD.Scenes
 		ScrollOffDown = 9,
 		ScrollOnUp = 10,
 		ScrollOnDown = 11,
-		FillFadeIn = 12,
-		FillFadeOut = 13,
+		FillFadeIn = 12, // fade from black to white (the scene won't be seen)
+		FillFadeOut = 13, // fade from white to black (the scene won't be seen)
 		None = 14
 	}
 }

@@ -101,6 +101,7 @@
     <Compile Include="Actors\Actor.cs" />
     <Compile Include="Actors\AnimatedActor.cs" />
     <Compile Include="Actors\AnimatedImage.cs" />
+    <Compile Include="Actors\FadeOverlay.cs" />
     <Compile Include="Actors\Font.cs" />
     <Compile Include="Actors\GraphicUtils.cs" />
     <Compile Include="Actors\Group.cs" />
