@@ -145,6 +145,13 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Resources\f12by24.png" />
+    <EmbeddedResource Include="Resources\f14by26.png" />
+    <EmbeddedResource Include="Resources\f4by5.png" />
+    <EmbeddedResource Include="Resources\f5by7.png" />
+    <EmbeddedResource Include="Resources\f6by12.png" />
+    <EmbeddedResource Include="Resources\f7by13.png" />
+    <EmbeddedResource Include="Resources\f7by5.png" />
     <EmbeddedResource Include="Resources\font-12_0.png" />
     <EmbeddedResource Include="Resources\font-5_0.png" />
     <EmbeddedResource Include="Resources\font-7_0.png" />
@@ -154,6 +161,13 @@
     <EmbeddedResource Include="Resources\font-12.fnt" />
     <EmbeddedResource Include="Resources\font-5.fnt" />
     <EmbeddedResource Include="Resources\font-7.fnt" />
+    <EmbeddedResource Include="Resources\f12by24.fnt" />
+    <EmbeddedResource Include="Resources\f14by26.fnt" />
+    <EmbeddedResource Include="Resources\f4by5.fnt" />
+    <EmbeddedResource Include="Resources\f5by7.fnt" />
+    <EmbeddedResource Include="Resources\f6by12.fnt" />
+    <EmbeddedResource Include="Resources\f7by13.fnt" />
+    <EmbeddedResource Include="Resources\f7by5.fnt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

@@ -187,7 +187,7 @@ namespace FlexDMD.Actors
                     }
                     _textures[i].UnlockBits(bmData);
                 }
-                var charDictionary = new Dictionary<char, Character>();
+                /* var charDictionary = new Dictionary<char, Character>();
                 foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
                 {
                     var character = glyph.Value;
@@ -195,7 +195,21 @@ namespace FlexDMD.Actors
                     character.XAdvance -= 1; // Adjust to remove the outline padding
                     charDictionary.Add(glyph.Key, character);
                 }
-                BitmapFont.Characters = charDictionary;
+                BitmapFont.Characters = charDictionary; */
+            }
+
+            // Render base font
+            else
+            {
+                /* var charDictionary = new Dictionary<char, Character>();
+                foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
+                {
+                    var character = glyph.Value;
+                    // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
+                    character.XAdvance -= 1; // Adjust to remove the outline padding
+                    charDictionary.Add(glyph.Key, character);
+                }
+                BitmapFont.Characters = charDictionary;*/
             }
         }
 
@@ -212,17 +226,34 @@ namespace FlexDMD.Actors
                     {
                         Character data = BitmapFont[character];
                         int kerning = BitmapFont.GetKerning(previousCharacter, character);
-                        graphics.DrawImage(_textures[data.TexturePage], new RectangleF((int)(x + data.Offset.X + kerning), (int)(y + data.Offset.Y), data.Bounds.Width, data.Bounds.Height), data.Bounds, GraphicsUnit.Pixel);
+                        graphics?.DrawImage(_textures[data.TexturePage], new RectangleF((int)(x + data.Offset.X + kerning), (int)(y + data.Offset.Y), data.Bounds.Width, data.Bounds.Height), data.Bounds, GraphicsUnit.Pixel);
+                        // graphics?.DrawImage(_textures[data.TexturePage], new RectangleF(x + data.Offset.X + kerning, y + data.Offset.Y, data.Bounds.Width, data.Bounds.Height), data.Bounds, GraphicsUnit.Pixel);
                         x += data.XAdvance + kerning;
                     }
                     catch (KeyNotFoundException)
                     {
-                        log.Error("Missing character #{0} replaced by ' ' for font {1}", (int)character, _fontDef.Path);
-                        BitmapFont.Characters[character] = BitmapFont[' '];
-                        if (character != ' ') DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
+                        if ('a' <= character && character <= 'z' && BitmapFont.Characters.ContainsKey(char.ToUpper(character)))
+                        {
+                            log.Error("Missing character '{0}' replaced by '{1}' for font {2}", character, char.ToUpper(character), _fontDef.Path);
+                            BitmapFont.Characters[character] = BitmapFont[char.ToUpper(character)];
+                            DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
+                        }
+                        else if (BitmapFont.Characters.ContainsKey(' '))
+                        {
+                            log.Error("Missing character #{0} replaced by ' ' for font {1}", (int)character, _fontDef.Path);
+                            BitmapFont.Characters[character] = BitmapFont[' '];
+                            DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
+                        }
                     }
                     break;
             }
+        }
+
+        public Size MeasureFont(string text)
+        {
+            // perform missing character swapping before measuring text
+            DrawText(null, 0, 0, text);
+            return BitmapFont.MeasureFont(text);
         }
 
         public void DrawText(Graphics graphics, float x, float y, string text)

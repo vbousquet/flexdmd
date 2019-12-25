@@ -14,6 +14,7 @@
    */
 using FlexDMD.Actors;
 using Glide;
+using NLog;
 
 namespace FlexDMD.Scenes
 {
@@ -35,6 +36,8 @@ namespace FlexDMD.Scenes
             _topText.Text = topText;
             _bottomText.Text = bottomText;
         }
+
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
         public override void Update(float delta)
         {

@@ -29,13 +29,13 @@ namespace UltraDMD
         private FlexDMD.DMDObject _dmd = new FlexDMD.DMDObject();
 
         // FlexDMD methods & properties
+        public string GameName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ushort DmdWidth { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ushort DmdHeight { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int RenderMode { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Color DmdColor { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public object DmdColoredPixels => throw new NotImplementedException();
         public object DmdPixels => throw new NotImplementedException();
-        public void InitForGame(string gameName) => throw new NotImplementedException();
-        public void SetRenderMode(RenderMode renderMode) => throw new NotImplementedException();
-        public void SetDMDColor(Color color) => throw new NotImplementedException();
 
         // UltraDMD methods & properties
         public void Init() => _dmd.Init();

@@ -219,7 +219,7 @@ namespace FlexDMDUI
             OnStopScript(sender, e);
             if (renderFlexDMDBtn.IsChecked == true)
             {
-                var script = "Dim DMD\nSet DMD = CreateObject(\"FlexDMD.DMDObject\")\nDMD.InitForGame \"debug\"\n" + scriptTextBox.Text + "\nWScript.Sleep 100000";
+                var script = "Dim DMD\nSet DMD = CreateObject(\"FlexDMD.DMDObject\")\nDMD.Init\n" + scriptTextBox.Text + "\nWScript.Sleep 100000";
                 System.IO.File.WriteAllText(_flexScriptFileName, script);
                 var psi = new ProcessStartInfo(Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\wscript.exe"), @"//Nologo " + _flexScriptFileName)
                 {
@@ -260,6 +260,11 @@ namespace FlexDMDUI
                 if (ultraDMDwnd != null) ultraDMDwnd.SendMessage(0x0010, 0, 0); // WM_CLOSE
                 if (File.Exists(_ultraScriptFileName)) File.Delete(_ultraScriptFileName);
             }
+        }
+
+        private void scriptTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
         }
     }
 }

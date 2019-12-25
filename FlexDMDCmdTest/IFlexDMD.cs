@@ -13,6 +13,7 @@
    limitations under the License.
    */
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace FlexDMD
@@ -39,14 +40,37 @@ namespace FlexDMD
         #region Properties
 
         /// <summary>
+        /// Define the game name which will be shared with the rendering backend.
+        /// Note that changing the game name after Init result in a DMD reinitialization.
+        /// </summary>
+        string GameName { get; set; }
+
+        /// <summary>
         /// Defines or read the DMD width. Note that the width may only be changed on an unitiliazed DMD (i.e. before calling Init)
+        /// Note that changing the width after Init result in a DMD reinitialization.
         /// </summary>
         ushort DmdWidth { get; set; }
 
         /// <summary>
         /// Defines or read the DMD height. Note that the height may only be changed on an unitiliazed DMD (i.e. before calling Init)
+        /// Note that changing the height after Init result in a DMD reinitialization.
         /// </summary>
         ushort DmdHeight { get; set; }
+
+        /// <summary>
+        /// The DMD is rendered with a 4 bit plane shade of gray. You can choose a 2 bit plane or a full RGB rendering here.
+        /// 0 is 2 bit planes
+        /// 1 is 4 bit planes, the default
+        /// 2 is full RGB
+        /// Note that changing the render mode after Init result in a DMD reinitialization.
+        /// </summary>
+        int RenderMode { get; set; }
+
+        /// <summary>
+        /// Defines the RGB color (only used for 2 & 4 bit planes render mode).
+        /// Note that changing the color after Init result in a DMD reinitialization.
+        /// </summary>
+        Color DmdColor { get; set; }
 
         /// <summary>
         /// Returns the DMD content as an array of uint RGB pixels
@@ -69,17 +93,6 @@ namespace FlexDMD
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Init must be called before any other method.  This variant allows to define the game name which will be shared with the rendering backend.
-        /// </summary>
-        void InitForGame(string gameName);
-
-        #endregion
-
-        #region Methods
-
-        void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight);
 
         /// <summary>
         /// Init must be called before any other method.  It initializes the scene queue and internal state.
@@ -218,6 +231,8 @@ namespace FlexDMD
         /// <param name="lowerLeft">Text will appear left aligned at the bottom left</param>
         /// <param name="lowerRight">Text will appear right aligned at the bottom right</param>
         void DisplayScoreboard(Int32 cPlayers, Int32 highlightedPlayer, Int32 score1, Int32 score2, Int32 score3, Int32 score4, string lowerLeft, string lowerRight);
+
+        void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight);
 
         /// <summary>
         /// Other than the scoreboard scene, Scene00 may be the only scene required for a pinball table.  It can

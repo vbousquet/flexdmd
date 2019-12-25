@@ -62,10 +62,31 @@ namespace FlexDMD
         private object[] _coloredPixels = null;
         private event OnDMDChangedDelegate OnDMDChanged;
         private IntPtr _bpFrame;
-        private RenderMode _renderMode = RenderMode.GRAY_4;
+        private RenderMode _renderMode = FlexDMD.RenderMode.GRAY_4;
         private Color _dmdColor = Color.FromArgb(0xFF, 0x58, 0x20);
 
         public delegate void OnDMDChangedDelegate();
+
+        public string GameName
+        {
+            get => _gameName;
+            set
+            {
+                if (_gameName == value) return;
+                if (_processThread != null)
+                {
+                    log.Warn("Game name after initialization. Reinitialization performed.");
+                    Uninit();
+                    _gameName = value;
+                    Init();
+                }
+                else
+                {
+                    log.Info("Game name set to {0}", value);
+                    _gameName = value;
+                }
+            }
+        }
 
         public ushort DmdWidth
         {
@@ -75,7 +96,10 @@ namespace FlexDMD
                 if (_width == value) return;
                 if (_processThread != null)
                 {
-                    log.Error("Width changed after initialization.");
+                    log.Warn("Width changed after initialization. Reinitialization performed.");
+                    Uninit();
+                    _width = value;
+                    Init();
                 }
                 else
                 {
@@ -93,12 +117,58 @@ namespace FlexDMD
                 if (_height == value) return;
                 if (_processThread != null)
                 {
-                    log.Error("Height changed after initialization.");
+                    log.Warn("Height changed after initialization. Reinitialization performed.");
+                    Uninit();
+                    _height = value;
+                    Init();
                 }
                 else
                 {
                     log.Info("DMD height set to {0}", value);
                     _height = value;
+                }
+            }
+        }
+
+        public int RenderMode
+        {
+            get => (int)_renderMode;
+            set
+            {
+                RenderMode mode = (RenderMode)value;
+                if (_renderMode == mode) return;
+                if (_processThread != null)
+                {
+                    log.Warn("Render mode changed after initialization. Reinitialization performed.");
+                    Uninit();
+                    _renderMode = mode;
+                    Init();
+                }
+                else
+                {
+                    log.Info("Render mode set to {0}", value);
+                    _renderMode = mode;
+                }
+            }
+        }
+
+        public Color DmdColor
+        {
+            get => _dmdColor;
+            set
+            {
+                if (_dmdColor == value) return;
+                if (_processThread != null)
+                {
+                    log.Warn("Color changed after initialization. Reinitialization performed.");
+                    Uninit();
+                    _dmdColor = value;
+                    Init();
+                }
+                else
+                {
+                    log.Info("Color set to {0}", value);
+                    _dmdColor = value;
                 }
             }
         }
@@ -130,58 +200,29 @@ namespace FlexDMD
             }
         }
 
-        public void SetRenderMode(RenderMode renderMode)
-        {
-            if (_renderMode == renderMode) return;
-            if (_processThread != null)
-            {
-                log.Error("Render mode changed after initialization.");
-            }
-            else
-            {
-                log.Info("Render mode set to {0}", renderMode);
-                _renderMode = renderMode;
-            }
-        }
-
-        public void SetDMDColor(Color color)
-        {
-            if (_dmdColor == color) return;
-            if (_processThread != null)
-            {
-                log.Error("Color changed after initialization.");
-            }
-            else
-            {
-                log.Info("Color set to {0}", color);
-                _dmdColor = color;
-            }
-        }
-
         public void Init()
-        {
-            InitForGame("");
-        }
-
-        public void InitForGame(string gameName)
         {
             if (_running) return;
             _running = true;
-            log.Info("Init {0}", gameName);
-            _gameName = gameName;
+            log.Info("Init {0}", _gameName);
             HResult hr = MFExtern.MFStartup(0x10070, MFStartup.Lite);
             if (MFError.Failed(hr)) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
             _graphics = Graphics.FromImage(_frame);
-            _bpFrame = Marshal.AllocHGlobal(_width * _height);
-            _scoreFontText = new FontDef(PathType.Resource, "FlexDMD.Resources.font-5.fnt", 0.66f);
-            _scoreFontNormal = new FontDef(PathType.Resource, "FlexDMD.Resources.font-7.fnt", 0.66f);
-            _scoreFontHighlight = new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt");
+            if (_renderMode != FlexDMD.RenderMode.RGB) _bpFrame = Marshal.AllocHGlobal(_width * _height);
+            // UltraDMD uses f4by5 / f5by7 / f6by12
+            _scoreFontText = new FontDef(PathType.Resource, "FlexDMD.Resources.f4by5.fnt", 0.66f);
+            _scoreFontNormal = new FontDef(PathType.Resource, "FlexDMD.Resources.f5by7.fnt", 0.66f);
+            _scoreFontHighlight = new FontDef(PathType.Resource, "FlexDMD.Resources.f6by12.fnt");
             // UltraDMD uses f14by26 or f12by24 or f7by13 to fit in
-            _singleLineFont = new FontDef[] { new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt") };
+            _singleLineFont = new FontDef[] {
+                new FontDef(PathType.Resource, "FlexDMD.Resources.f14by26.fnt"),
+                new FontDef(PathType.Resource, "FlexDMD.Resources.f12by24.fnt"),
+                new FontDef(PathType.Resource, "FlexDMD.Resources.f7by13.fnt")
+            };
             // UltraDMD uses f5by7 / f6by12 for top / bottom line
-            _twoLinesFontTop = new FontDef(PathType.Resource, "FlexDMD.Resources.font-7.fnt");
-            _twoLinesFontBottom = new FontDef(PathType.Resource, "FlexDMD.Resources.font-12.fnt");
+            _twoLinesFontTop = new FontDef(PathType.Resource, "FlexDMD.Resources.f5by7.fnt");
+            _twoLinesFontBottom = new FontDef(PathType.Resource, "FlexDMD.Resources.f6by12.fnt");
             _scoreBoard = new ScoreBoard(
                 _assets.Load<Actors.Font>(_scoreFontNormal).Load(),
                 _assets.Load<Actors.Font>(_scoreFontHighlight).Load(),
@@ -211,7 +252,7 @@ namespace FlexDMD
                 _processThread = null;
             }
             SetVisibleVirtualDMD(false);
-            Marshal.FreeHGlobal(_bpFrame);
+            if (_bpFrame != null) Marshal.FreeHGlobal(_bpFrame);
             _graphics.Dispose();
             _graphics = null;
             _frame.Dispose();
@@ -262,7 +303,7 @@ namespace FlexDMD
                     BitmapData data = _frame.LockBits(rect, ImageLockMode.ReadWrite, _frame.PixelFormat);
                     switch (_renderMode)
                     {
-                        case RenderMode.GRAY_2:
+                        case FlexDMD.RenderMode.GRAY_2:
                             unsafe
                             {
                                 byte* dst = (byte*)_bpFrame.ToPointer();
@@ -290,7 +331,7 @@ namespace FlexDMD
                             _dmd.RenderGray2(_width, _height, _bpFrame);
                             break;
 
-                        case RenderMode.GRAY_4:
+                        case FlexDMD.RenderMode.GRAY_4:
                             unsafe
                             {
                                 byte* dst = (byte*)_bpFrame.ToPointer();
@@ -318,7 +359,7 @@ namespace FlexDMD
                             _dmd.RenderGray4(_width, _height, _bpFrame);
                             break;
 
-                        case RenderMode.RGB:
+                        case FlexDMD.RenderMode.RGB:
                             if (_pixels != null)
                             {
                                 unsafe
@@ -552,7 +593,7 @@ namespace FlexDMD
                 label.SetPosition((_width - label.Width) / 2, (_height - label.Height) / 2);
                 if ((label.X >= 0 && label.Y >= 0) || f == _singleLineFont[_singleLineFont.Length - 1]) return label;
             }
-            throw new InvalidProgramException("How did you get there ?");
+            return null;
         }
 
         public void DisplayVersionInfo()
@@ -593,7 +634,7 @@ namespace FlexDMD
                     }
                     else if (toptext != null && toptext.Length > 0)
                     {
-                        var font = GetFittedLabel(bottomtext, topBrightness / 15f, topOutlineBrightness / 15f).Font;
+                        var font = GetFittedLabel(toptext, topBrightness / 15f, topOutlineBrightness / 15f).Font;
                         var scene = new SingleLineScene(ResolveImage(background), toptext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, false, sceneId);
                         _queue.Enqueue(scene);
                     }
@@ -655,7 +696,7 @@ namespace FlexDMD
                 {
                     // log.Info("DisplayScene01 '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
                     _scoreBoard.Visible = false;
-                    var font = GetFittedLabel(text, textBrightness / 15f, textOutlineBrightness / 15f).Font;
+                    var font = _assets.Load<Actors.Font>(new FontDef(_singleLineFont[0].PathType, _singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f)).Load();
                     var scene = new SingleLineScene(ResolveImage(background), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
                     _queue.Enqueue(scene);
                 });

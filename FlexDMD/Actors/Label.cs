@@ -12,9 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using Cyotek.Drawing.BitmapFont;
 using NLog;
-using System;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
@@ -67,13 +65,12 @@ namespace FlexDMD.Actors
             }
         }
 
-        private void UpdateBounds()
+        public void UpdateBounds()
         {
             if (_text == null || _font == null) return;
-            var size = _font.BitmapFont.MeasureFont(_text);
+            var size = _font.MeasureFont(_text);
             Width = size.Width;
             Height = size.Height;
-            // log.Info("Label '{0}' {1}x{2}", _text, _width, _height);
         }
 
         public override void Draw(Graphics graphics)

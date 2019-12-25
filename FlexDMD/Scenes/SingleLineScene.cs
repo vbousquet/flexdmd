@@ -42,10 +42,10 @@ namespace FlexDMD.Scenes
             base.Begin();
             if (_scroll)
             {
-                // Not sure about the timing; UltraDMD moves text by 1.2 pixel per frame (no delta time) and seems to render based on the frame rate at 60FPS. Hence 3 * 128 / (60 * 1.2) = 5.333
+                // Not sure about the timing; UltraDMD moves text by 1.2 pixel per frame (no delta time) and seems to render based on the frame rate at 60FPS.
                 // This could also be changed to take in account the size of the text (not done by UltraDMD)
                 ScrollX = Width;
-                _tweener.Tween(this, new { ScrollX = -Width }, 5.333f, 0f);
+                _tweener.Tween(this, new { ScrollX = -_text.Width }, (Width + _text.Width) / (60 * 1.2f), 0f);
             }
         }
 

@@ -60,12 +60,12 @@ namespace FlexDMD.Scenes
             float scrollWLength = 0.5f;
             float scrollHLength = 0.5f; // scrollWLength * Height / Width;
             /* Missing animations : 
-             * FadeIn = 0,
-             * FadeOut = 1,
-             * ZoomIn = 2,
-             * ZoomOut = 3,
-             * FillFadeIn = 12,
-             * FillFadeOut = 13, 
+             * FadeIn = 0, // fade color from black
+             * FadeOut = 1, // fade color to black
+             * ZoomIn = 2, // zoom from a centered small dmd to full size
+             * ZoomOut = 3, // zoom from a full sized dmd to an oversize one
+             * FillFadeIn = 12, // fade from black to white (the scene won't be seen)
+             * FillFadeOut = 13, // fade from white to black (the scene won't be seen)
              */
             switch (animation)
             {
