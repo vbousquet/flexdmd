@@ -104,11 +104,14 @@ namespace FlexDMD.Actors
         {
             base.Update(delta);
             float yText = Height - TextFont.BitmapFont.BaseHeight - 1;
-            float yLine2 = (1 + yText) * 0.5f;
-            _scores[0].SetPosition(1, 1);
-            _scores[1].SetPosition(Width - _scores[1].Width - 1, 1);
-            _scores[2].SetPosition(1, yLine2);
-            _scores[3].SetPosition(Width - _scores[3].Width - 1, yLine2);
+            // float yLine2 = 1 + HighlightFont.BitmapFont.BaseHeight + (Height - 2 - TextFont.BitmapFont.BaseHeight - 2 * HighlightFont.BitmapFont.BaseHeight) / 2;
+            float yLine2 = (Height - TextFont.BitmapFont.BaseHeight) / 2;
+            float dec = (HighlightFont.BitmapFont.BaseHeight - ScoreFont.BitmapFont.BaseHeight) / 2;
+            // float yLine2 = (1 + yText) * 0.5f;
+            _scores[0].SetPosition(1, 1 + (_highlightedPlayer == 1 ? 0 : dec));
+            _scores[1].SetPosition(Width - _scores[1].Width - 1, 1 + (_highlightedPlayer == 2 ? 0 : dec));
+            _scores[2].SetPosition(1, yLine2 + (_highlightedPlayer == 3 ? 0 : dec));
+            _scores[3].SetPosition(Width - _scores[3].Width - 1, yLine2 + (_highlightedPlayer == 4 ? 0 : dec));
             _lowerLeft.SetPosition(1, yText);
             _lowerRight.SetPosition(Width - _lowerRight.Width - 1, yText);
         }
