@@ -23,20 +23,49 @@ using System.Reflection;
 
 namespace FlexDMD
 {
+
+    public enum FileType
+    {
+        Unknow, Image, Gif, Video
+    }
+
+    public interface IBitmapFilter
+    {
+        Bitmap Filter(Bitmap src);
+    }
+
+    public class DotFilter : IBitmapFilter
+    {
+        public int _dotSize = 2;
+
+        public Bitmap Filter(Bitmap src)
+        {
+            var dst = new Bitmap(src.Width / _dotSize, src.Height / _dotSize, PixelFormat.Format24bppRgb);
+            for (int y = 0; y < dst.Height; y++)
+            {
+                for (int x = 0; x < dst.Width; x++)
+                {
+                    dst.SetPixel(x, y, src.GetPixel(x * _dotSize + (_dotSize - 1), y * _dotSize + (_dotSize - 1)));
+                }
+            }
+            return dst;
+        }
+    }
+
     public class AnimatedImageDef
-	{
-		public List<string> _images;
-		public int Fps { get; set; } = 25;
-		public bool Loop { get; set; } = true;
-		
-		public AnimatedImageDef(string images, int fps, bool loop)
-		{
-			_images = new List<string>();
+    {
+        public List<string> _images;
+        public int Fps { get; set; } = 25;
+        public bool Loop { get; set; } = true;
+
+        public AnimatedImageDef(string images, int fps, bool loop)
+        {
+            _images = new List<string>();
             foreach (string image in images.Split(','))
                 _images.Add(image.Trim());
-			Fps = fps;
-			Loop = loop;
-		}
+            Fps = fps;
+            Loop = loop;
+        }
 
         public override bool Equals(object obj)
         {
@@ -55,7 +84,7 @@ namespace FlexDMD
             return hashCode;
         }
     }
-	
+
     public class FontDef
     {
         public float FillBrightness { get; set; } = 1f;
@@ -117,7 +146,7 @@ namespace FlexDMD
                 return _value;
             }
         }
-		
+
         public T Load()
         {
             if (!_loaded)
@@ -125,8 +154,10 @@ namespace FlexDMD
                 if (typeof(T) == typeof(Bitmap) && _id.GetType() == typeof(string))
                 {
                     log.Info("New bitmap added to asset manager: {0}", _id);
-					// FIXME stream should closed on unload (but kept open for the lifetime of the Bitmap)
+                    // TODO stream should closed on unload (but kept open for the lifetime of the Bitmap)
                     Bitmap image = new Bitmap(_assets.OpenStream((string)_id));
+                    foreach (IBitmapFilter filter in _assets.GetFilters((string)_id))
+                        image = filter.Filter(image);
                     if (!Array.Exists(image.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
                     {
                         // Only convert for still image; animate ones are converted when played
@@ -148,14 +179,14 @@ namespace FlexDMD
                 }
                 else if (typeof(T) == typeof(AnimatedImage) && _id.GetType() == typeof(AnimatedImageDef))
                 {
-					AnimatedImageDef def = (AnimatedImageDef) _id;
-					List<Bitmap> images = new List<Bitmap>();
-					foreach (string filename in def._images)
-					{
-						var bmp = _assets.Load<Bitmap>(filename).Load();
-						images.Add(bmp);
-					}
-					AnimatedImage actor = new AnimatedImage(images, def.Fps, def.Loop);
+                    AnimatedImageDef def = (AnimatedImageDef)_id;
+                    List<Bitmap> images = new List<Bitmap>();
+                    foreach (string filename in def._images)
+                    {
+                        var bmp = _assets.Load<Bitmap>(filename).Load();
+                        images.Add(bmp);
+                    }
+                    AnimatedImage actor = new AnimatedImage(images, def.Fps, def.Loop);
                     _value = (T)Convert.ChangeType(actor, typeof(T));
                     _loaded = true;
                 }
@@ -166,125 +197,202 @@ namespace FlexDMD
             }
             return _value;
         }
-		
+
         public void Unload()
         {
-			if (_loaded && _value != null)
-			{
-                if (typeof(T) == typeof(Bitmap) && _value is Bitmap bmp) 
-				{
-					bmp.Dispose();
-				}
-				_value = default(T);
-			}
-			_loaded = false;
-		}
+            if (_loaded && _value != null)
+            {
+                if (typeof(T) == typeof(Bitmap) && _value is Bitmap bmp)
+                {
+                    bmp.Dispose();
+                }
+                _value = default;
+            }
+            _loaded = false;
+        }
     }
 
     public class AssetManager : IDisposable
     {
         private readonly Dictionary<object, object> _cache = new Dictionary<object, object>();
-		private VPXFile _vpxFile = null;
-		
+        private VPXFile _vpxFile = null;
+
         public string BasePath { get; set; } = "./";
         public string TableFile { get; set; } = null;
 
         public AssetManager()
         {
         }
-		
-		public void Dispose()
-		{
-			
-		}
 
-		/// <summary>
-		/// Resolve then open a stream for the given path. It is the responsibility of the caller to close the stream.
-		///
-		/// File names are resolved using the following rules:
-		/// <list type="bullet">
-		/// <item>
-		/// <description>If the file name starts with 'FlexDMD.Resources.' then the file is searched inside FlexDMD's embedded resources,</description>
-		/// </item>
-		/// <item>
-		/// <description>If the file name starts with 'VPX.' then the file is searched inside the VPX table file,</description>
-		/// </item>
-		/// <item>
-		/// <description>Otherwise, the file is searched in the project folder (see FlexDMD.SetProjectFolder).</description>
-		/// </item>
-		/// </list>
-		///
-		/// Note that for the time being, for videos, only files placed in the project folder are supported.
-		///
-		/// </summary>
-		public Stream OpenStream(string path, string siblingPath = null)
-		{
-			if (siblingPath != null)
-			{
-				if (siblingPath.StartsWith("FlexDMD.Resources.")) 
-					path = "FlexDMD.Resources." + path;
-				else if (siblingPath.StartsWith("VPX.")) 
-					path = "VPX." + path;
-				else
-					path = System.IO.Path.Combine(siblingPath, "..", path);
-			}
-			if (path.StartsWith("FlexDMD.Resources."))
-			{
+        public void Dispose()
+        {
+
+        }
+
+        /// <summary>
+        /// Resolve then open a stream for the given path. It is the responsibility of the caller to close the stream.
+        ///
+        /// File names are resolved using the following rules:
+        /// <list type="bullet">
+        /// <item>
+        /// <description>If the file name starts with 'FlexDMD.Resources.' then the file is searched inside FlexDMD's embedded resources,</description>
+        /// </item>
+        /// <item>
+        /// <description>If the file name starts with 'VPX.' then the file is searched inside the VPX table file,</description>
+        /// </item>
+        /// <item>
+        /// <description>Otherwise, the file is searched in the project folder (see FlexDMD.SetProjectFolder).</description>
+        /// </item>
+        /// </list>
+        ///
+        /// Note that for the time being, for videos, only files placed in the project folder are supported.
+        ///
+        /// </summary>
+        public Stream OpenStream(string path, string siblingPath = null)
+        {
+            if (siblingPath != null)
+            {
+                if (siblingPath.StartsWith("FlexDMD.Resources."))
+                    path = "FlexDMD.Resources." + path;
+                else if (siblingPath.StartsWith("VPX."))
+                    path = "VPX." + path;
+                else
+                    path = System.IO.Path.Combine(siblingPath, "..", path);
+            }
+            if (path.StartsWith("FlexDMD.Resources."))
+            {
                 return Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
-			}
-			else if (path.StartsWith("VPX."))
-			{
-				if (_vpxFile == null && TableFile != null && File.Exists(System.IO.Path.Combine(BasePath, TableFile)))
-				{
-					_vpxFile = new VPXFile(System.IO.Path.Combine(BasePath, TableFile));
-				}
-				if (_vpxFile != null)
-				{
-					return _vpxFile.OpenStream(path.Substring(4));
-				}
-				return null;
-			}
-			else
-			{
+            }
+            else if (path.StartsWith("VPX."))
+            {
+                if (_vpxFile == null && TableFile != null && File.Exists(System.IO.Path.Combine(BasePath, TableFile)))
+                {
+                    _vpxFile = new VPXFile(System.IO.Path.Combine(BasePath, TableFile));
+                }
+                if (_vpxFile != null)
+                {
+                    return _vpxFile.OpenStream(GetVPXId(path));
+                }
+                return null;
+            }
+            else
+            {
                 var fullPath = System.IO.Path.Combine(BasePath, path);
-				return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
-			}
-		}
-		
-		public bool FileExists(string path, string siblingPath = null)
-		{
-			if (siblingPath != null)
-			{
-				if (siblingPath.StartsWith("FlexDMD.Resources.")) 
-					path = "FlexDMD.Resources." + path;
-				else if (siblingPath.StartsWith("VPX.")) 
-					path = "VPX." + path;
-				else
-					path = System.IO.Path.Combine(siblingPath, "..", path);
-			}
-			if (path.StartsWith("FlexDMD.Resources."))
-			{
+                return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+            }
+        }
+
+        public bool FileExists(string path, string siblingPath = null)
+        {
+            if (siblingPath != null)
+            {
+                if (siblingPath.StartsWith("FlexDMD.Resources."))
+                    path = "FlexDMD.Resources." + path;
+                else if (siblingPath.StartsWith("VPX."))
+                    path = "VPX." + path;
+                else
+                    path = System.IO.Path.Combine(siblingPath, "..", path);
+            }
+            if (path.StartsWith("FlexDMD.Resources."))
+            {
                 return Assembly.GetExecutingAssembly().GetManifestResourceInfo(path) != null;
-			}
-			else if (path.StartsWith("VPX."))
-			{
-				if (_vpxFile == null && TableFile != null && File.Exists(System.IO.Path.Combine(BasePath, TableFile)))
-				{
-					_vpxFile = new VPXFile(System.IO.Path.Combine(BasePath, TableFile));
-				}
-				if (_vpxFile != null)
-				{
-					return _vpxFile.Contains(path.Substring(4));
-				}
-				return false;
-			}
-			else
-			{
+            }
+            else if (path.StartsWith("VPX."))
+            {
+                if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
+                {
+                    _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
+                }
+                if (_vpxFile != null)
+                {
+                    return _vpxFile.Contains(GetVPXId(path));
+                }
+                return false;
+            }
+            else
+            {
                 var fullPath = System.IO.Path.Combine(BasePath, path);
-				return File.Exists(fullPath);
-			}
-		}
-		
+                return File.Exists(fullPath);
+            }
+        }
+
+        public FileType GetFileType(string path, string siblingPath = null)
+        {
+            if (siblingPath != null)
+            {
+                if (siblingPath.StartsWith("FlexDMD.Resources."))
+                    path = "FlexDMD.Resources." + path;
+                else if (siblingPath.StartsWith("VPX."))
+                    path = "VPX." + path;
+                else
+                    path = System.IO.Path.Combine(siblingPath, "..", path);
+            }
+            if (path.StartsWith("FlexDMD.Resources."))
+            {
+                return GetTypeFromExt(path);
+            }
+            else if (path.StartsWith("VPX."))
+            {
+                if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
+                {
+                    _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
+                }
+                if (_vpxFile != null)
+                {
+                    var file = _vpxFile.GetImportFile(GetVPXId(path));
+                    if (file != null) return GetTypeFromExt(file);
+                }
+                return FileType.Unknow;
+            }
+            else
+            {
+                var fullPath = System.IO.Path.Combine(BasePath, path);
+                return GetTypeFromExt(fullPath);
+            }
+        }
+
+        private string GetVPXId(string path)
+        {
+            return path.Split('&')[0].Substring(4);
+        }
+
+        public List<object> GetFilters(string path)
+        {
+            var filters = new List<object>();
+            foreach (string definition in path.Split('&'))
+            {
+                if (definition.StartsWith("dmd=") && Int32.TryParse(definition.Substring(4), out int dotSize))
+                {
+                    var filter = new DotFilter();
+                    filter._dotSize = dotSize;
+                    filters.Add(filter);
+                }
+                else if (definition.StartsWith("sub="))
+                {
+                    // TODO parse sub rect
+                }
+            }
+            return filters;
+        }
+
+        private FileType GetTypeFromExt(string file)
+        {
+            string extension = Path.GetExtension(file).ToLowerInvariant();
+            if (extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".bmp"))
+            {
+                return FileType.Image;
+            }
+            else if (extension.Equals(".gif"))
+            {
+                return FileType.Gif;
+            }
+            else if (extension.Equals(".wmv") || extension.Equals(".avi") || extension.Equals(".mp4"))
+            {
+                return FileType.Video;
+            }
+            return FileType.Unknow;
+        }
+
         public Asset<T> Load<T>(object id)
         {
             if (_cache.ContainsKey(id))
@@ -343,7 +451,7 @@ namespace FlexDMD
                 if (asset._refCount == 0)
                 {
                     _cache.Remove(id);
-					asset.Unload();
+                    asset.Unload();
                 }
                 else if (asset._refCount < 0)
                 {
