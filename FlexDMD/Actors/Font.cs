@@ -181,6 +181,7 @@ namespace FlexDMD.Actors
             else
             {
                 var charDictionary = new Dictionary<char, Character>();
+                // TODO remove this; tests shows that the font are correct if generated from AngelCode's BMFont. It's the manual drawn UltraDMD clone font which are wrong => correct these only
                 foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
                 {
                     var character = glyph.Value;

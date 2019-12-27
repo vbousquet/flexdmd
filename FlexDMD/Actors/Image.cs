@@ -29,7 +29,7 @@ namespace FlexDMD
             _image = image;
         }
 
-        public Image(string path) 
+        public Image(string path)
         {
             // log.Info("Initalizing image: {0}", path);
             _image = new Bitmap(path);
@@ -41,7 +41,7 @@ namespace FlexDMD
 
         public override void Draw(Graphics graphics)
         {
-            if (Visible && _image != null) graphics.DrawImage(_image, X, Y, _image.Width, _image.Height);
+            if (Visible && _image != null) graphics.DrawImage(_image, (int)X, (int)Y, (int)Width, (int)Height);
         }
     }
 }

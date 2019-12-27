@@ -52,6 +52,17 @@ If FlexDMDMode Then
     DMD.TableFile = ""Miraculous.vpx""
     'DMD.SetTwoLineFonts ""DMD.Resources.font-12.fnt"", ""DMD.Resources.font-7.fnt""
     'DMD.SetSingleLineFonts Array(CStr(""DMD.Resources.font-12.fnt""), CStr(""DMD.Resources.font-7.fnt""), CStr(""DMD.Resources.font-5.fnt""))
+    
+    Dim topLine(16)
+    Dim botLine(20)
+    For i = 0 to 15
+        topLine(i) = CStr(""VPX.d0&dmd=2"")
+    Next
+    For i = 0 to 19
+        botLine(i) = CStr(""VPX.d1&dmd=2"")
+    Next
+    DMD.DisplayJPSScene ""jps"", ""VPX.extraball&dmd=2"", topLine, botLine, 14, 10000, 14
+
     DMD.DisplayScene00 ""VPX.extraball&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
     DMD.DisplayScene00 ""VPX.gameover&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
     DMD.DisplayScene00 ""VPX.tilt&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14

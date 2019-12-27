@@ -23,7 +23,7 @@ namespace FlexDMD.Scenes
 
         public JPSScene(Actor background, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {
-            _images = new Image[2, 20];
+            _images = new Actor[2, 20];
             for (int col = 0; col < 16; col++)
             {
                 _images[0, col] = new Actor();
@@ -40,7 +40,7 @@ namespace FlexDMD.Scenes
         {
             RemoveActor(_images[row, column]);
             _images[row, column] = image;
-            AddActorAt(_images[row, column], row * 16 + column);
+            AddActorAt(_images[row, column], 1 + row * 16 + column);
         }
 
         public override void Update(float delta)
@@ -62,7 +62,7 @@ namespace FlexDMD.Scenes
             y = padY * 2 + topH;
             for (int col = 0; col < 20; col++)
             {
-                _images[0, col].SetBounds(x, y, botW, botH);
+                _images[1, col].SetBounds(x, y, botW, botH);
                 x += botW;
             }
         }

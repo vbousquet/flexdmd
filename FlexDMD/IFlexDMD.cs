@@ -128,7 +128,7 @@ namespace FlexDMD
 		/// If the scene, identified by its id, is already in the scene queue, it will be modified and not 
 		/// reseted to avoid restarting any ongoing animation (video background for example).
         /// </summary>
-		void DisplayJPSScene(string id, string background, string[] top, string[] bottom, Int32 animateIn, Int32 pauseTime, Int32 animateOut);
+		void DisplayJPSScene(string id, string background, [MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] object top, [MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] object bottom, Int32 animateIn, Int32 pauseTime, Int32 animateOut);
 
         #endregion
 

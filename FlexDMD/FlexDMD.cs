@@ -857,7 +857,7 @@ namespace FlexDMD
             }
         }
 
-        public void DisplayJPSScene(string id, string background, string[] top, string[] bottom, Int32 animateIn, Int32 pauseTime, Int32 animateOut)
+        public void DisplayJPSScene(string id, string background, object top, object bottom, Int32 animateIn, Int32 pauseTime, Int32 animateOut)
         {
             lock (_runnables)
             {
@@ -882,9 +882,9 @@ namespace FlexDMD
                         _queue.Enqueue(scene);
                     }
                     for (int col = 0; col < 16; col++)
-                        scene.SetImage(0, col, ResolveImage(top[col]));
+                        scene.SetImage(0, col, ResolveImage(((object[])top)[col].ToString()));
                     for (int col = 0; col < 20; col++)
-                        scene.SetImage(1, col, ResolveImage(bottom[col]));
+                        scene.SetImage(1, col, ResolveImage(((object[])bottom)[col].ToString()));
                 });
             }
         }
