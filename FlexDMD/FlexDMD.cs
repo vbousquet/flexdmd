@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using static FlexDMD.DMDDevice;
@@ -63,7 +62,6 @@ namespace FlexDMD
         private object[] _pixels = null;
         private object[] _coloredPixels = null;
         private event OnDMDChangedDelegate OnDMDChanged;
-        private IntPtr _bpFrame;
         private RenderMode _renderMode = FlexDMD.RenderMode.GRAY_4;
         private Color _dmdColor = Color.FromArgb(0xFF, 0x58, 0x20);
 
@@ -154,6 +152,16 @@ namespace FlexDMD
             }
         }
 
+        public string TableFile
+        {
+            get => _assets.TableFile;
+            set
+            {
+                log.Info("Table File defined to {0}", value);
+                _assets.TableFile = value;
+            }
+        }
+
         public Color DmdColor
         {
             get => _dmdColor;
@@ -179,7 +187,7 @@ namespace FlexDMD
         {
             get
             {
-                if (_coloredPixels == null) _coloredPixels = new object[_width * _height];
+                if (_coloredPixels == null || _coloredPixels.Length != _width * _height) _coloredPixels = new object[_width * _height];
                 return _coloredPixels;
             }
         }
@@ -188,30 +196,15 @@ namespace FlexDMD
         {
             get
             {
-                if (_pixels == null) _pixels = new object[_width * _height];
+                if (_pixels == null || _pixels.Length != _width * _height) _pixels = new object[_width * _height];
                 return _pixels;
             }
         }
 
-        ~DMDObject()
+        public DMDObject()
         {
-            if (_processThread != null)
-            {
-                log.Error("Destructor called before Uninit");
-                Uninit();
-            }
-        }
-
-        public void Init()
-        {
-            if (_running) return;
-            _running = true;
-            log.Info("Init {0}", _gameName);
             HResult hr = MFExtern.MFStartup(0x10070, MFStartup.Lite);
             if (MFError.Failed(hr)) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
-            _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
-            _graphics = Graphics.FromImage(_frame);
-            if (_renderMode != FlexDMD.RenderMode.RGB) _bpFrame = Marshal.AllocHGlobal(_width * _height);
             // UltraDMD uses f4by5 / f5by7 / f6by12
             _scoreFontText = new FontDef("FlexDMD.Resources.f4by5.fnt", 0.66f);
             _scoreFontNormal = new FontDef("FlexDMD.Resources.f5by7.fnt", 0.66f);
@@ -225,53 +218,60 @@ namespace FlexDMD
             // UltraDMD uses f5by7 / f6by12 for top / bottom line
             _twoLinesFontTop = new FontDef("FlexDMD.Resources.f5by7.fnt");
             _twoLinesFontBottom = new FontDef("FlexDMD.Resources.f6by12.fnt");
+            // Core rendering tree
             _scoreBoard = new ScoreBoard(
                 _assets.Load<Actors.Font>(_scoreFontNormal).Load(),
                 _assets.Load<Actors.Font>(_scoreFontHighlight).Load(),
                 _assets.Load<Actors.Font>(_scoreFontText).Load()
                 );
-            _scoreBoard.SetSize(_width, _height);
             _stage.AddActor(_scoreBoard);
             _stage.AddActor(_queue);
+        }
+
+        ~DMDObject()
+        {
+            if (_running)
+            {
+                log.Error("Destructor called before Uninit");
+                Uninit();
+            }
+            HResult hr = MFExtern.MFShutdown();
+            if (hr < 0) log.Error("Failed to dispose Microsoft Media Foundation: {0}", hr);
+        }
+
+        public void Init()
+        {
+            if (_running) return;
+            log.Info("Init {0}", _gameName);
+            _running = true;
             _dmd = new DMDDevice();
             SetVisibleVirtualDMD(true);
-            Clear();
-            _processThread = new Thread(new ThreadStart(RenderLoop))
-            {
-                IsBackground = true
-            };
+            _processThread = new Thread(new ThreadStart(RenderLoop));
+            _processThread.IsBackground = true;
             _processThread.Start();
         }
 
         public void Uninit()
         {
             if (!_running) return;
-            _running = false;
             log.Info("Uninit");
-            CancelRendering();
-            if (_processThread != null)
-            {
-                _processThread.Join();
-                _processThread = null;
-            }
+            _running = false;
+            _processThread?.Join();
             SetVisibleVirtualDMD(false);
             _dmd.Dispose();
             _dmd = null;
-            if (_bpFrame != null) Marshal.FreeHGlobal(_bpFrame);
-            _graphics.Dispose();
-            _graphics = null;
-            _frame.Dispose();
-            _frame = null;
-            HResult hr = MFExtern.MFShutdown();
-            if (hr < 0) log.Error("Failed to dispose Microsoft Media Foundation: {0}", hr);
         }
 
         public void RenderLoop()
         {
+            _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
+            _graphics = Graphics.FromImage(_frame);
+            _stage.SetSize(_width, _height);
+            _scoreBoard.SetSize(_width, _height);
             Stopwatch stopWatch = new Stopwatch();
-            double elapsedMs = 0.0;
-            // double memDump = 1.0;
             WindowHandle visualPinball = null;
+            IntPtr _bpFrame = _renderMode != FlexDMD.RenderMode.RGB ? _bpFrame = Marshal.AllocHGlobal(_width * _height) : IntPtr.Zero;
+            double elapsedMs = 0.0;
             while (_running)
             {
                 stopWatch.Restart();
@@ -282,133 +282,25 @@ namespace FlexDMD
                 else if (!visualPinball.IsWindow())
                 {
                     log.Info("Closing FlexDMD since Visual Pinball Player window was closed");
-                    _processThread = null;
                     Uninit();
                     break;
                 }
-                float elapsedS = (float)(elapsedMs / 1000.0);
-                /* memDump -= elapsedS;
-                if (memDump < 0)
-                {
-                    memDump = 1.0;
-                    log.Debug("Memory used: {0}Mo", GC.GetTotalMemory(false) / (1024 * 1024));
-                }*/
-                _stage.SetSize(_width, _height);
                 lock (_runnables)
                 {
                     _runnables.ForEach(item => item());
                     _runnables.Clear();
                 }
-                _stage.Update(elapsedS);
+                _stage.Update((float)(elapsedMs / 1000.0));
                 _scoreBoard.Visible &= !_queue.IsRendering();
-                if (_visible)
+                _stage.Draw(_graphics);
+                Rectangle rect = new Rectangle(0, 0, _frame.Width, _frame.Height);
+                BitmapData data = _frame.LockBits(rect, ImageLockMode.ReadWrite, _frame.PixelFormat);
+                switch (_renderMode)
                 {
-                    _stage.Draw(_graphics);
-                    Rectangle rect = new Rectangle(0, 0, _frame.Width, _frame.Height);
-                    BitmapData data = _frame.LockBits(rect, ImageLockMode.ReadWrite, _frame.PixelFormat);
-                    switch (_renderMode)
-                    {
-                        case FlexDMD.RenderMode.GRAY_2:
-                            unsafe
-                            {
-                                byte* dst = (byte*)_bpFrame.ToPointer();
-                                byte* ptr = ((byte*)data.Scan0.ToPointer());
-                                int pos = 0;
-                                for (int y = 0; y < _height; y++)
-                                {
-                                    for (int x = 0; x < _width; x++)
-                                    {
-                                        byte r = *ptr;
-                                        ptr++;
-                                        byte g = *ptr;
-                                        ptr++;
-                                        byte b = *ptr;
-                                        ptr++;
-                                        int v = (int)(0.2126f * r + 0.7152f * g + 0.0722f * b);
-                                        if (v > 255) v = 255;
-                                        dst[pos] = (byte)(v >> 6);
-                                        if (_pixels != null) _pixels[pos] = (byte)(v);
-                                        pos++;
-                                    }
-                                    ptr += data.Stride - 3 * _width;
-                                }
-                            }
-                            try
-                            {
-                                _dmd.RenderGray2(_width, _height, _bpFrame);
-                            }
-                            catch (Exception) { }
-                            break;
-
-                        case FlexDMD.RenderMode.GRAY_4:
-                            unsafe
-                            {
-                                byte* dst = (byte*)_bpFrame.ToPointer();
-                                byte* ptr = ((byte*)data.Scan0.ToPointer());
-                                int pos = 0;
-                                for (int y = 0; y < _height; y++)
-                                {
-                                    for (int x = 0; x < _width; x++)
-                                    {
-                                        byte r = *ptr;
-                                        ptr++;
-                                        byte g = *ptr;
-                                        ptr++;
-                                        byte b = *ptr;
-                                        ptr++;
-                                        int v = (int)(0.2126f * r + 0.7152f * g + 0.0722f * b);
-                                        if (v > 255) v = 255;
-                                        dst[pos] = (byte)(v >> 4);
-                                        if (_pixels != null) _pixels[pos] = (byte)(v);
-                                        pos++;
-                                    }
-                                    ptr += data.Stride - 3 * _width;
-                                }
-                            }
-                            try
-                            {
-                                _dmd.RenderGray4(_width, _height, _bpFrame);
-                            }
-                            catch (Exception) { }
-                            break;
-
-                        case FlexDMD.RenderMode.RGB:
-                            if (_pixels != null)
-                            {
-                                unsafe
-                                {
-                                    byte* ptr = ((byte*)data.Scan0.ToPointer());
-                                    int pos = 0;
-                                    for (int y = 0; y < _height; y++)
-                                    {
-                                        for (int x = 0; x < _width; x++)
-                                        {
-                                            byte r = *ptr;
-                                            ptr++;
-                                            byte g = *ptr;
-                                            ptr++;
-                                            byte b = *ptr;
-                                            ptr++;
-                                            float v = 0.2126f * r + 0.7152f * g + 0.0722f * b;
-                                            if (v > 255.0f) v = 255.0f;
-                                            _pixels[pos] = (byte)(v);
-                                            pos++;
-                                        }
-                                    }
-                                }
-                            }
-                            try
-                            {
-                                _dmd.RenderRgb24(_width, _height, data.Scan0);
-                            }
-                            catch (Exception) { }
-                            break;
-                    }
-
-                    if (_coloredPixels != null)
-                    {
+                    case FlexDMD.RenderMode.GRAY_2:
                         unsafe
                         {
+                            byte* dst = (byte*)_bpFrame.ToPointer();
                             byte* ptr = ((byte*)data.Scan0.ToPointer());
                             int pos = 0;
                             for (int y = 0; y < _height; y++)
@@ -421,15 +313,111 @@ namespace FlexDMD
                                     ptr++;
                                     byte b = *ptr;
                                     ptr++;
-                                    _coloredPixels[pos] = (uint)((b << 16) + (g << 8) + r);
+                                    int v = (int)(0.2126f * r + 0.7152f * g + 0.0722f * b);
+                                    if (v > 255) v = 255;
+                                    dst[pos] = (byte)(v >> 6);
+                                    if (_pixels != null) _pixels[pos] = (byte)(v);
                                     pos++;
+                                }
+                                ptr += data.Stride - 3 * _width;
+                            }
+                        }
+                        try
+                        {
+                            if (_visible) _dmd.RenderGray2(_width, _height, _bpFrame);
+                        }
+                        catch (Exception) { }
+                        break;
+
+                    case FlexDMD.RenderMode.GRAY_4:
+                        unsafe
+                        {
+                            byte* dst = (byte*)_bpFrame.ToPointer();
+                            byte* ptr = ((byte*)data.Scan0.ToPointer());
+                            int pos = 0;
+                            for (int y = 0; y < _height; y++)
+                            {
+                                for (int x = 0; x < _width; x++)
+                                {
+                                    byte r = *ptr;
+                                    ptr++;
+                                    byte g = *ptr;
+                                    ptr++;
+                                    byte b = *ptr;
+                                    ptr++;
+                                    int v = (int)(0.2126f * r + 0.7152f * g + 0.0722f * b);
+                                    if (v > 255) v = 255;
+                                    dst[pos] = (byte)(v >> 4);
+                                    if (_pixels != null) _pixels[pos] = (byte)(v);
+                                    pos++;
+                                }
+                                ptr += data.Stride - 3 * _width;
+                            }
+                        }
+                        try
+                        {
+                            if (_visible) _dmd.RenderGray4(_width, _height, _bpFrame);
+                        }
+                        catch (Exception) { }
+                        break;
+
+                    case FlexDMD.RenderMode.RGB:
+                        if (_pixels != null)
+                        {
+                            unsafe
+                            {
+                                byte* ptr = ((byte*)data.Scan0.ToPointer());
+                                int pos = 0;
+                                for (int y = 0; y < _height; y++)
+                                {
+                                    for (int x = 0; x < _width; x++)
+                                    {
+                                        byte r = *ptr;
+                                        ptr++;
+                                        byte g = *ptr;
+                                        ptr++;
+                                        byte b = *ptr;
+                                        ptr++;
+                                        float v = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+                                        if (v > 255.0f) v = 255.0f;
+                                        _pixels[pos] = (byte)(v);
+                                        pos++;
+                                    }
                                 }
                             }
                         }
-                    }
-                    _frame.UnlockBits(data);
-                    OnDMDChanged?.Invoke();
+                        try
+                        {
+                            if (_visible) _dmd.RenderRgb24(_width, _height, data.Scan0);
+                        }
+                        catch (Exception) { }
+                        break;
                 }
+
+                if (_coloredPixels != null)
+                {
+                    unsafe
+                    {
+                        byte* ptr = ((byte*)data.Scan0.ToPointer());
+                        int pos = 0;
+                        for (int y = 0; y < _height; y++)
+                        {
+                            for (int x = 0; x < _width; x++)
+                            {
+                                byte r = *ptr;
+                                ptr++;
+                                byte g = *ptr;
+                                ptr++;
+                                byte b = *ptr;
+                                ptr++;
+                                _coloredPixels[pos] = (uint)((b << 16) + (g << 8) + r);
+                                pos++;
+                            }
+                        }
+                    }
+                }
+                _frame.UnlockBits(data);
+                OnDMDChanged?.Invoke();
                 double renderingDuration = stopWatch.Elapsed.TotalMilliseconds;
 
                 int sleepMs = (1000 / _frameRate) - (int)renderingDuration;
@@ -437,6 +425,12 @@ namespace FlexDMD
                 elapsedMs = stopWatch.Elapsed.TotalMilliseconds;
                 // log.Info("Elapsed: {0}ms", elapsedMs);
             }
+            if (_bpFrame != IntPtr.Zero) Marshal.FreeHGlobal(_bpFrame);
+            _graphics.Dispose();
+            _graphics = null;
+            _frame.Dispose();
+            _frame = null;
+            _processThread = null;
         }
 
         public int GetMajorVersion()
@@ -549,12 +543,6 @@ namespace FlexDMD
             _assets.BasePath = basePath;
         }
 
-        public void SetTableFile(string tableFile)
-        {
-            log.Info("SetTableFile {0}", tableFile);
-            _assets.TableFile = tableFile;
-        }
-
         public void SetVideoStretchMode(int mode)
         {
             log.Info("SetVideoStretchMode {0}", mode);
@@ -613,19 +601,14 @@ namespace FlexDMD
                 }
                 else if (_assets.FileExists(filename))
                 {
-                    string extension = Path.GetExtension(filename).ToLowerInvariant();
-                    if (extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".bmp"))
+                    switch (_assets.GetFileType(filename))
                     {
-                        return new Image(_assets.Load<Bitmap>(filename).Load());
-                    }
-                    else if (extension.Equals(".gif"))
-                    {
-                        return new GIFImage(_assets.Load<Bitmap>(filename).Load());
-                    }
-                    else if (extension.Equals(".wmv") || extension.Equals(".avi") || extension.Equals(".mp4"))
-                    {
-                        var fullPath = System.IO.Path.Combine(_assets.BasePath, filename);
-                        return new Video(fullPath, false, _stretchMode);
+                        case FileType.Image:
+                            return new Image(_assets.Load<Bitmap>(filename).Load());
+                        case FileType.Gif:
+                            return new GIFImage(_assets.Load<Bitmap>(filename).Load());
+                        case FileType.Video:
+                            return new Video(System.IO.Path.Combine(_assets.BasePath, filename), false, _stretchMode);
                     }
                 }
                 else if (filename.Contains(","))
@@ -638,9 +621,9 @@ namespace FlexDMD
             {
                 log.Error(e, "Exception while resolving image: '{0}'", filename);
             }
-            // FIXME UltraDMD returns a clear frame in this situation
+            // Returns a 2 pixel wide frame in this situation
             log.Error("Missing resource '{0}'", filename);
-            return new Actor();
+            return new Frame(2);
         }
 
         private Label GetFittedLabel(string text, float fillBrightness, float outlineBrightness)
@@ -860,15 +843,16 @@ namespace FlexDMD
             }
         }
 
-        public void SetSingleLineFonts(string[] fonts)
+        public void SetSingleLineFonts(object fonts)
         {
             lock (_runnables)
             {
                 _runnables.Add(() =>
                 {
-                    _singleLineFont = new FontDef[fonts.Length];
-                    for (int i = 0; i < fonts.Length; i++)
-                        _singleLineFont[i] = new FontDef(fonts[i]);
+                    var fts = (object[])fonts;
+                    _singleLineFont = new FontDef[fts.Length];
+                    for (int i = 0; i < fts.Length; i++)
+                        _singleLineFont[i] = new FontDef(fts[i].ToString());
                 });
             }
         }
@@ -905,4 +889,5 @@ namespace FlexDMD
             }
         }
     }
+
 }
