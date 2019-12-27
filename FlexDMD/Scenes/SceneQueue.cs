@@ -20,52 +20,50 @@ using System.Linq;
 
 namespace FlexDMD.Actors
 {
-    class SceneQueue : Actor
+    class SceneQueue : Group
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private readonly List<Scene> _queue = new List<Scene>();
         private bool _isRendering = false;
 
         public void Enqueue(Scene scene)
         {
             _isRendering = true;
-            scene.Parent = this;
-            _queue.Add(scene);
+            AddActor(scene);
         }
 
         public void CancelRendering()
         {
-            foreach (Scene s in _queue)
-            {
-                s.Parent = null;
+            foreach (Scene s in Children)
                 if (s._active) s.End();
-            }
             _isRendering = false;
-            _queue.Clear();
+            RemoveAll();
         }
 
         public void CancelRendering(string sceneId)
         {
-			int index = _queue.FindIndex(s => s.Id == sceneId);
-			if (index >= 0) {
-				if (_queue[index]._active) _queue[index].End();
-				_queue.RemoveAt(index);
-				_isRendering = _queue.Count() > 0;
-			}
+            int index = Children.FindIndex(s => ((Scene)s).Id == sceneId);
+            if (index >= 0)
+            {
+                Scene scene = (Scene)Children[index];
+                if (scene._active) scene.End();
+                scene.Parent = null;
+                Children.RemoveAt(index);
+                _isRendering = Children.Count() > 0;
+            }
         }
 
         public Scene GetSceneById(string sceneId)
         {
-			int index = _queue.FindIndex(s => s.Id == sceneId);
-			if (index >= 0) return _queue[index];
-			return null;
+            int index = Children.FindIndex(s => ((Scene)s).Id == sceneId);
+            if (index >= 0) return (Scene)Children[index];
+            return null;
         }
 
         public Scene GetActiveScene()
         {
-            if (_queue.Count() > 0)
+            if (Children.Count() > 0)
             {
-                var s = _queue[0];
+                var s = (Scene)Children[0];
                 if (!s._active) s.Begin();
                 return s;
             }
@@ -82,22 +80,21 @@ namespace FlexDMD.Actors
 
         public override void Update(float delta)
         {
-            base.Update(delta);
             SetSize(Parent.Width, Parent.Height);
-            if (_queue.Count() > 0)
+            if (Children.Count() > 0)
             {
-                var scene = _queue[0];
+                var scene = ((Scene)Children[0]);
                 if (!scene._active) scene.Begin();
                 scene.Update(delta);
                 if (scene.IsFinished())
                 {
-                    _queue.RemoveAt(0);
+                    Children.RemoveAt(0);
                     scene.Parent = null;
                     scene.End();
-                    _isRendering = _queue.Count() > 0;
+                    _isRendering = Children.Count() > 0;
                     if (_isRendering)
                     {
-                        scene = _queue[0];
+                        scene = ((Scene)Children[0]);
                         scene.Begin();
                         scene.Update(0);
                     }
@@ -106,11 +103,8 @@ namespace FlexDMD.Actors
         }
         public override void Draw(Graphics graphics)
         {
-            base.Draw(graphics);
-            if (Visible && _queue.Count() > 0)
-            {
-                _queue[0].Draw(graphics);
-            }
+            if (Visible && Children.Count() > 0)
+                Children[0].Draw(graphics);
         }
     }
 }
