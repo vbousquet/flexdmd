@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Reflection;
 
 namespace FlexDMD.Actors
 {
@@ -56,7 +55,7 @@ namespace FlexDMD.Actors
             for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 _textures[i] = new Bitmap(_assets.OpenStream(BitmapFont.Pages[i].FileName, FontDef.Path));
 
-            // Render outlines font (note that the outline is created in the glyph padding area, so the font must have at least a padding of 1 pixel per char on all sides)
+            // Render outlines font (note that the outline is created in the glyph padding area, so the font must have a padding of 1 pixel per char on all sides)
             if (_outlineBrightness >= 0f)
             {
                 uint outlineValue = (uint)(255 * _outlineBrightness);
@@ -167,29 +166,29 @@ namespace FlexDMD.Actors
                     }
                     _textures[i].UnlockBits(bmData);
                 }
-                /* var charDictionary = new Dictionary<char, Character>();
+                var charDictionary = new Dictionary<char, Character>();
                 foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
                 {
                     var character = glyph.Value;
                     // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
-                    character.XAdvance -= 1; // Adjust to remove the outline padding
+                    character.XAdvance -= 2; // Adjust to remove the outline padding
                     charDictionary.Add(glyph.Key, character);
                 }
-                BitmapFont.Characters = charDictionary; */
+                BitmapFont.Characters = charDictionary;
             }
 
             // Render base font
             else
             {
-                /* var charDictionary = new Dictionary<char, Character>();
+                var charDictionary = new Dictionary<char, Character>();
                 foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
                 {
                     var character = glyph.Value;
                     // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
-                    character.XAdvance -= 1; // Adjust to remove the outline padding
+                    character.XAdvance -= 2; // Adjust to remove the outline padding
                     charDictionary.Add(glyph.Key, character);
                 }
-                BitmapFont.Characters = charDictionary;*/
+                BitmapFont.Characters = charDictionary;
             }
         }
 
