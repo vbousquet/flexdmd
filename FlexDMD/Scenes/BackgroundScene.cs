@@ -21,7 +21,25 @@ namespace FlexDMD.Scenes
     {
         private Actor _background;
 
-        public Actor Background { get => _background; }
+        public Actor Background
+        {
+            get => _background;
+            set
+            {
+                if (_background == value) return;
+                if (_background != null)
+                {
+                    RemoveActor(_background);
+                    if (_active && _background is Video v) v.Close();
+                }
+                _background = value;
+                if (_background != null)
+                {
+                    AddActorAt(_background, 0);
+                    if (_active && _background is Video v) v.Open();
+                }
+            }
+        }
 
         public BackgroundScene(Actor background, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(animateIn, pauseS, animateOut, id)
         {

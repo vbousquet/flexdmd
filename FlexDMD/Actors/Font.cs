@@ -26,31 +26,24 @@ namespace FlexDMD.Actors
     class Font
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private readonly FontDef _fontDef;
         private Bitmap[] _textures;
         private readonly float _fillBrightness;
         private readonly float _outlineBrightness;
+        private readonly AssetManager _assets;
 
         public FontDef FontDef { get; }
         public BitmapFont BitmapFont { get; }
 
-        public Font(FontDef fontDef, float fillBrightness = 1f, float outlineBrightness = -1f)
+        public Font(AssetManager assets, FontDef fontDef, float fillBrightness = 1f, float outlineBrightness = -1f)
         {
-            _fontDef = fontDef;
+            _assets = assets;
+            FontDef = fontDef;
             _fillBrightness = fillBrightness;
             _outlineBrightness = outlineBrightness;
             BitmapFont = new BitmapFont();
-            if (fontDef.PathType == PathType.Resource)
+            using (Stream stream = assets.OpenStream(fontDef.Path))
             {
-                var assembly = Assembly.GetExecutingAssembly();
-                using (Stream stream = assembly.GetManifestResourceStream(fontDef.Path))
-                {
-                    BitmapFont.LoadText(stream);
-                }
-            }
-            else if (fontDef.PathType == PathType.FilePath)
-            {
-                BitmapFont.Load(fontDef.Path);
+                BitmapFont.LoadText(stream);
             }
         }
 
@@ -59,22 +52,9 @@ namespace FlexDMD.Actors
             if (_textures != null) return;
             _textures = new Bitmap[BitmapFont.Pages.Length];
 
-            // Load base textures
-            if (_fontDef.PathType == PathType.Resource)
-            {
-                var assembly = Assembly.GetExecutingAssembly();
-                for (int i = 0; i < BitmapFont.Pages.Length; i++)
-                {
-                    _textures[i] = new Bitmap(assembly.GetManifestResourceStream("FlexDMD.Resources." + BitmapFont.Pages[i].FileName));
-                }
-            }
-            else if (_fontDef.PathType == PathType.FilePath)
-            {
-                for (int i = 0; i < BitmapFont.Pages.Length; i++)
-                {
-                    _textures[i] = new Bitmap(BitmapFont.Pages[i].FileName);
-                }
-            }
+            // Load textures (relative to the main font path)
+            for (int i = 0; i < BitmapFont.Pages.Length; i++)
+                _textures[i] = new Bitmap(_assets.OpenStream(BitmapFont.Pages[i].FileName, FontDef.Path));
 
             // Render outlines font (note that the outline is created in the glyph padding area, so the font must have at least a padding of 1 pixel per char on all sides)
             if (_outlineBrightness >= 0f)
@@ -222,28 +202,25 @@ namespace FlexDMD.Actors
                     y += BitmapFont.LineHeight;
                     break;
                 default:
-                    try
+                    Character data;
+                    if (BitmapFont.Characters.TryGetValue(character, out data))
                     {
-                        Character data = BitmapFont[character];
                         int kerning = BitmapFont.GetKerning(previousCharacter, character);
                         graphics?.DrawImage(_textures[data.TexturePage], new RectangleF((int)(x + data.Offset.X + kerning), (int)(y + data.Offset.Y), data.Bounds.Width, data.Bounds.Height), data.Bounds, GraphicsUnit.Pixel);
                         // graphics?.DrawImage(_textures[data.TexturePage], new RectangleF(x + data.Offset.X + kerning, y + data.Offset.Y, data.Bounds.Width, data.Bounds.Height), data.Bounds, GraphicsUnit.Pixel);
                         x += data.XAdvance + kerning;
                     }
-                    catch (KeyNotFoundException)
+                    else if ('a' <= character && character <= 'z' && BitmapFont.Characters.ContainsKey(char.ToUpper(character)))
                     {
-                        if ('a' <= character && character <= 'z' && BitmapFont.Characters.ContainsKey(char.ToUpper(character)))
-                        {
-                            log.Error("Missing character '{0}' replaced by '{1}' for font {2}", character, char.ToUpper(character), _fontDef.Path);
-                            BitmapFont.Characters[character] = BitmapFont[char.ToUpper(character)];
-                            DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
-                        }
-                        else if (BitmapFont.Characters.ContainsKey(' '))
-                        {
-                            log.Error("Missing character #{0} replaced by ' ' for font {1}", (int)character, _fontDef.Path);
-                            BitmapFont.Characters[character] = BitmapFont[' '];
-                            DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
-                        }
+                        log.Error("Missing character '{0}' replaced by '{1}' for font {2}", character, char.ToUpper(character), FontDef.Path);
+                        BitmapFont.Characters[character] = BitmapFont[char.ToUpper(character)];
+                        DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
+                    }
+                    else if (BitmapFont.Characters.ContainsKey(' '))
+                    {
+                        log.Error("Missing character #{0} replaced by ' ' for font {1}", (int)character, FontDef.Path);
+                        BitmapFont.Characters[character] = BitmapFont[' '];
+                        DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
                     }
                     break;
             }
@@ -252,7 +229,7 @@ namespace FlexDMD.Actors
         public Size MeasureFont(string text)
         {
             // perform missing character swapping before measuring text
-            DrawText(null, 0, 0, text);
+            DrawText(null, 0f, 0f, text);
             return BitmapFont.MeasureFont(text);
         }
 

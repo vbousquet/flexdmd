@@ -32,7 +32,7 @@ namespace FlexDMD
         public static extern bool FreeLibrary(IntPtr hModule);
     }
 
-    public class DMDDevice
+    public class DMDDevice : IDisposable
     {
         // see https://github.com/Studiofreya/code-samples/blob/master/samples/dynamic-loading-of-native-dlls/NativeConsumer/Program.cs
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -79,9 +79,15 @@ namespace FlexDMD
             }
         }
 
-        ~DMDDevice()
+        public void Dispose()
         {
             if (_dllhandle != IntPtr.Zero) NativeLibrary.FreeLibrary(_dllhandle);
+            _dllhandle = IntPtr.Zero;
+        }
+
+        ~DMDDevice()
+        {
+            Dispose();
         }
 
         public int Open()

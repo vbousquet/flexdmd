@@ -25,6 +25,15 @@ namespace FlexDMD
         public float Height { get; set; } = 0f;
         public Actor Parent { get; set; } = null;
         public bool Visible { get; set; } = true;
+		public object Info { get; set; } = null;
+
+        public void SetBounds(float x, float y, float width, float height)
+        {
+            X = x;
+            Y = y;
+            Width = width;
+            Height = height;
+        }
 
         public void SetPosition(float x, float y)
         {

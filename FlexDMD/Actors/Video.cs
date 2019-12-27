@@ -45,6 +45,11 @@ namespace FlexDMD
             _loop = loop;
             _stretchMode = stretchMode;
         }
+		
+		public Video newInstance()
+		{
+			return new Video(_path, _loop, _stretchMode);
+		}
 
         public void Open()
         {

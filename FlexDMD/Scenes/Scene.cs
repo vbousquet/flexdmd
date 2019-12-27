@@ -20,15 +20,24 @@ using System.Drawing;
 
 namespace FlexDMD.Scenes
 {
+    /// <summary>
+    /// The shared scene implementation
+    /// 
+    /// A scene starts with an 'in' animation, then last for 'pauseS' seconds, and ends with an 'out' animation. 
+    /// If the pause is negative, then the scene never ends.
+    /// </summary>
     abstract class Scene : Group
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         protected readonly string _id;
         protected readonly Tweener _tweener = new Tweener();
         protected float _pauseS;
+        protected float _inAnimLength;
+        protected float _outAnimLength;
         protected AnimationType _animateIn;
         protected AnimationType _animateOut;
         protected float _time;
+
         public bool _active = false;
 
         public string Id { get => _id; }
@@ -49,99 +58,87 @@ namespace FlexDMD.Scenes
 
         public virtual void Begin()
         {
-            SetSize(Parent.Width, Parent.Height);
-            AddAnimation(_animateIn, false);
-            AddAnimation(_animateOut, true);
             _active = true;
+            SetSize(Parent.Width, Parent.Height);
+            _inAnimLength = StartAnimation(_animateIn);
+            _outAnimLength = -1;
         }
 
-        // FIXME this way of adding the animation will not allow changing the pause time (see UltraDMD API)
-        private void AddAnimation(AnimationType animation, bool atEnd)
+        private float StartAnimation(AnimationType animation)
         {
             float alphaLength = 0.5f;
             float scrollWLength = 0.5f;
-            float scrollHLength = 0.5f; // scrollWLength * Height / Width;
-            // Missing animations: ZoomIn = 2, ZoomOut = 3
+            float scrollHLength = scrollWLength * Height / Width;
+            // FIXME Missing animations: ZoomIn = 2, ZoomOut = 3
             switch (animation)
             {
                 case AnimationType.FadeIn:
-                    DelayAnim(alphaLength, atEnd, () =>
                     {
                         FadeOverlay fade = new FadeOverlay();
                         AddActor(fade);
                         fade.Alpha = 1f;
                         fade.Color = Color.Black;
-                        _tweener.Tween(fade, new { Alpha = 0f }, alphaLength).OnComplete(() => { RemoveActor(fade); });
-                    });
-                    break;
+                        _tweener.Tween(fade, new { Alpha = 0f }, alphaLength);
+                        return alphaLength;
+                    }
                 case AnimationType.FadeOut:
-                    DelayAnim(alphaLength, atEnd, () =>
                     {
                         FadeOverlay fade = new FadeOverlay();
                         AddActor(fade);
                         fade.Alpha = 0f;
                         fade.Color = Color.Black;
                         _tweener.Tween(fade, new { Alpha = 1f }, alphaLength);
-                    });
-                    break;
+                        return alphaLength;
+                    }
                 case AnimationType.ScrollOffLeft:
-                    DelayAnim(scrollWLength, atEnd, () =>
                     {
                         X = 0f;
                         _tweener.Tween(this, new { X = -Width }, scrollWLength);
-                    });
-                    break;
+                        return scrollWLength;
+                    }
                 case AnimationType.ScrollOffRight:
-                    DelayAnim(scrollWLength, atEnd, () =>
                     {
                         X = 0;
                         _tweener.Tween(this, new { X = Width }, scrollWLength);
-                    });
-                    break;
+                        return scrollWLength;
+                    }
                 case AnimationType.ScrollOnLeft:
-                    DelayAnim(scrollWLength, atEnd, () =>
-                    {
-                        X = -Width;
-                        _tweener.Tween(this, new { X = 0f }, scrollWLength);
-                    });
-                    break;
-                case AnimationType.ScrollOnRight:
-                    DelayAnim(scrollWLength, atEnd, () =>
                     {
                         X = Width;
                         _tweener.Tween(this, new { X = 0f }, scrollWLength);
-                    });
-                    break;
+                        return scrollWLength;
+                    }
+                case AnimationType.ScrollOnRight:
+                    {
+                        X = -Width;
+                        _tweener.Tween(this, new { X = 0f }, scrollWLength);
+                        return scrollWLength;
+                    }
                 case AnimationType.ScrollOffUp:
-                    DelayAnim(scrollHLength, atEnd, () =>
                     {
                         Y = 0f;
                         _tweener.Tween(this, new { Y = -Height }, scrollHLength);
-                    });
-                    break;
+                        return scrollHLength;
+                    }
                 case AnimationType.ScrollOffDown:
-                    DelayAnim(scrollHLength, atEnd, () =>
                     {
                         Y = 0f;
                         _tweener.Tween(this, new { Y = Height }, scrollHLength);
-                    });
-                    break;
+                        return scrollHLength;
+                    }
                 case AnimationType.ScrollOnUp:
-                    DelayAnim(scrollHLength, atEnd, () =>
-                    {
-                        Y = -Height;
-                        _tweener.Tween(this, new { Y = 0f }, scrollHLength);
-                    });
-                    break;
-                case AnimationType.ScrollOnDown:
-                    DelayAnim(scrollHLength, atEnd, () =>
                     {
                         Y = Height;
                         _tweener.Tween(this, new { Y = 0f }, scrollHLength);
-                    });
-                    break;
+                        return scrollHLength;
+                    }
+                case AnimationType.ScrollOnDown:
+                    {
+                        Y = -Height;
+                        _tweener.Tween(this, new { Y = 0f }, scrollHLength);
+                        return scrollHLength;
+                    }
                 case AnimationType.FillFadeIn:
-                    DelayAnim(alphaLength, atEnd, () =>
                     {
                         FadeOverlay fade = new FadeOverlay();
                         AddActor(fade);
@@ -152,10 +149,9 @@ namespace FlexDMD.Scenes
                         fade.Alpha = 0f;
                         fade.Color = Color.White;
                         _tweener.Tween(fade, new { Alpha = 1f }, alphaLength);
-                    });
-                    break;
+                        return alphaLength;
+                    }
                 case AnimationType.FillFadeOut:
-                    DelayAnim(alphaLength, atEnd, () =>
                     {
                         FadeOverlay fade = new FadeOverlay();
                         AddActor(fade);
@@ -166,22 +162,14 @@ namespace FlexDMD.Scenes
                         fade.Alpha = 0f;
                         fade.Color = Color.Black;
                         _tweener.Tween(fade, new { Alpha = 1f }, alphaLength);
-                    });
-                    break;
+                        return alphaLength;
+                    }
                 case AnimationType.None:
-                    break;
+                    return 0f;
                 default:
                     log.Error("Unsupported animation in scene '{0}': {1}", _id, animation);
-                    break;
+                    return 0f;
             }
-        }
-
-        private void DelayAnim(float lengthS, bool atEnd, Action action)
-        {
-            if (atEnd)
-                _tweener.Timer(_pauseS - lengthS).OnComplete(action);
-            else
-                action.Invoke();
         }
 
         public virtual void End()
@@ -194,12 +182,14 @@ namespace FlexDMD.Scenes
         {
             base.Update(delta);
             _time += delta;
+            if (_pauseS >= 0f && _outAnimLength < 0 && _time >= _inAnimLength + _pauseS)
+                _outAnimLength = StartAnimation(_animateOut);
             _tweener.Update(delta);
         }
 
         public bool IsFinished()
         {
-            return _time > _pauseS;
+            return _pauseS >= 0f && _outAnimLength >= 0 && _time >= _inAnimLength + _pauseS + _outAnimLength;
         }
     }
 }

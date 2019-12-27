@@ -54,6 +54,13 @@ namespace FlexDMD.Actors
 			}
         }
 
+        public Scene GetSceneById(string sceneId)
+        {
+			int index = _queue.FindIndex(s => s.Id == sceneId);
+			if (index >= 0) return _queue[index];
+			return null;
+        }
+
         public Scene GetActiveScene()
         {
             if (_queue.Count() > 0)
@@ -68,7 +75,7 @@ namespace FlexDMD.Actors
             }
         }
 
-            public bool IsRendering()
+        public bool IsRendering()
         {
             return _isRendering;
         }

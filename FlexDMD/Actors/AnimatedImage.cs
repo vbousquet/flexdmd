@@ -25,16 +25,24 @@ namespace FlexDMD
         private int _frame;
         private List<Image> _frames = new List<Image>();
 
-        public AnimatedImage(string basePath, string imagelist, int fps = 25, bool loop = false)
+        public AnimatedImage(List<Bitmap> images, int fps = 25, bool loop = true)
         {
-            log.Info("Initalizing image list: {0}", imagelist);
+            log.Info("Initalizing image list: {0}", images);
             _fps = fps;
             _loop = loop;
-            foreach (string path in imagelist.Split(','))
-                _frames.Add(new Image(System.IO.Path.Combine(basePath, path.Trim())));
+            foreach (Bitmap bmp in images)
+                _frames.Add(new Image(bmp));
             _frame = 0;
             _frameDuration = 1.0f / fps;
         }
+		
+		public AnimatedImage newInstance()
+		{
+			List<Bitmap> bmps = new List<Bitmap>();
+            foreach (Image img in _frames)
+                bmps.Add(img._image);
+			return new AnimatedImage(bmps, _fps, _loop);
+		}
 
         protected override void Rewind()
         {

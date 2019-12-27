@@ -18,36 +18,55 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Reflection;
 
 namespace FlexDMD
 {
-    public enum PathType
-    {
-        Resource = 0,
-        FilePath = 1
-    }
+    public class AnimatedImageDef
+	{
+		public List<string> _images;
+		public int Fps { get; set; } = 25;
+		public bool Loop { get; set; } = true;
+		
+		public AnimatedImageDef(string images, int fps, bool loop)
+		{
+			_images = new List<string>();
+            foreach (string image in images.Split(','))
+                _images.Add(image.Trim());
+			Fps = fps;
+			Loop = loop;
+		}
 
+        public override bool Equals(object obj)
+        {
+            return obj is AnimatedImageDef def &&
+                   EqualityComparer<List<string>>.Default.Equals(_images, def._images) &&
+                   Fps == def.Fps &&
+                   Loop == def.Loop;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -2035125405;
+            hashCode = hashCode * -1521134295 + EqualityComparer<List<string>>.Default.GetHashCode(_images);
+            hashCode = hashCode * -1521134295 + Fps.GetHashCode();
+            hashCode = hashCode * -1521134295 + Loop.GetHashCode();
+            return hashCode;
+        }
+    }
+	
     public class FontDef
     {
         public float FillBrightness { get; set; } = 1f;
         public float OutlineBrightness { get; set; } = -1f;
-        public PathType PathType { get; set; } = PathType.FilePath;
         public string Path { get; set; } = "";
 
-        public FontDef(PathType pathType, string path, float fillBrightness, float outlineBrightness)
+        public FontDef(string path, float fillBrightness = 1f, float outlineBrightness = -1f)
         {
             Path = path;
             FillBrightness = fillBrightness;
             OutlineBrightness = outlineBrightness;
-            PathType = pathType;
-        }
-
-        public FontDef(PathType pathType, string path, float brightness) : this(pathType, path, brightness, -1f)
-        {
-        }
-
-        public FontDef(PathType pathType, string path) : this(pathType, path, 1f, -1f)
-        {
         }
 
         public override bool Equals(object obj)
@@ -55,7 +74,6 @@ namespace FlexDMD
             return obj is FontDef def &&
                    FillBrightness == def.FillBrightness &&
                    OutlineBrightness == def.OutlineBrightness &&
-                   PathType == def.PathType &&
                    Path == def.Path;
         }
 
@@ -64,14 +82,13 @@ namespace FlexDMD
             var hashCode = -1876634251;
             hashCode = hashCode * -1521134295 + FillBrightness.GetHashCode();
             hashCode = hashCode * -1521134295 + OutlineBrightness.GetHashCode();
-            hashCode = hashCode * -1521134295 + PathType.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
             return hashCode;
         }
 
         public override string ToString()
         {
-            return string.Format("FontDef [type={0}, path={1}, fill={2}, outline={3}]", PathType, Path, FillBrightness, OutlineBrightness);
+            return string.Format("FontDef [path={0}, fill={1}, outline={2}]", Path, FillBrightness, OutlineBrightness);
         }
 
     }
@@ -100,7 +117,7 @@ namespace FlexDMD
                 return _value;
             }
         }
-
+		
         public T Load()
         {
             if (!_loaded)
@@ -108,11 +125,11 @@ namespace FlexDMD
                 if (typeof(T) == typeof(Bitmap) && _id.GetType() == typeof(string))
                 {
                     log.Info("New bitmap added to asset manager: {0}", _id);
-                    var fullPath = System.IO.Path.Combine(_assets.BasePath, (string)_id);
-                    Bitmap image = new Bitmap(fullPath);
+					// FIXME stream should closed on unload (but kept open for the lifetime of the Bitmap)
+                    Bitmap image = new Bitmap(_assets.OpenStream((string)_id));
                     if (!Array.Exists(image.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
                     {
-                        // Only convert for still image; animate done are converted when played
+                        // Only convert for still image; animate ones are converted when played
                         Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
                         BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
                         GraphicUtils.BGRtoRGB(data.Scan0, data.Stride, image.Width, image.Height);
@@ -125,8 +142,21 @@ namespace FlexDMD
                 {
                     var fontDef = (FontDef)_id;
                     log.Info("New font added to asset manager: {0}", fontDef);
-                    var font = new Actors.Font(fontDef, fontDef.FillBrightness, fontDef.OutlineBrightness);
+                    var font = new Actors.Font(_assets, fontDef, fontDef.FillBrightness, fontDef.OutlineBrightness);
                     _value = (T)Convert.ChangeType(font, typeof(T));
+                    _loaded = true;
+                }
+                else if (typeof(T) == typeof(AnimatedImage) && _id.GetType() == typeof(AnimatedImageDef))
+                {
+					AnimatedImageDef def = (AnimatedImageDef) _id;
+					List<Bitmap> images = new List<Bitmap>();
+					foreach (string filename in def._images)
+					{
+						var bmp = _assets.Load<Bitmap>(filename).Load();
+						images.Add(bmp);
+					}
+					AnimatedImage actor = new AnimatedImage(images, def.Fps, def.Loop);
+                    _value = (T)Convert.ChangeType(actor, typeof(T));
                     _loaded = true;
                 }
                 else
@@ -136,17 +166,125 @@ namespace FlexDMD
             }
             return _value;
         }
+		
+        public void Unload()
+        {
+			if (_loaded && _value != null)
+			{
+                if (typeof(T) == typeof(Bitmap) && _value is Bitmap bmp) 
+				{
+					bmp.Dispose();
+				}
+				_value = default(T);
+			}
+			_loaded = false;
+		}
     }
 
-    public class AssetManager
+    public class AssetManager : IDisposable
     {
         private readonly Dictionary<object, object> _cache = new Dictionary<object, object>();
+		private VPXFile _vpxFile = null;
+		
         public string BasePath { get; set; } = "./";
+        public string TableFile { get; set; } = null;
 
         public AssetManager()
         {
         }
+		
+		public void Dispose()
+		{
+			
+		}
 
+		/// <summary>
+		/// Resolve then open a stream for the given path. It is the responsibility of the caller to close the stream.
+		///
+		/// File names are resolved using the following rules:
+		/// <list type="bullet">
+		/// <item>
+		/// <description>If the file name starts with 'FlexDMD.Resources.' then the file is searched inside FlexDMD's embedded resources,</description>
+		/// </item>
+		/// <item>
+		/// <description>If the file name starts with 'VPX.' then the file is searched inside the VPX table file,</description>
+		/// </item>
+		/// <item>
+		/// <description>Otherwise, the file is searched in the project folder (see FlexDMD.SetProjectFolder).</description>
+		/// </item>
+		/// </list>
+		///
+		/// Note that for the time being, for videos, only files placed in the project folder are supported.
+		///
+		/// </summary>
+		public Stream OpenStream(string path, string siblingPath = null)
+		{
+			if (siblingPath != null)
+			{
+				if (siblingPath.StartsWith("FlexDMD.Resources.")) 
+					path = "FlexDMD.Resources." + path;
+				else if (siblingPath.StartsWith("VPX.")) 
+					path = "VPX." + path;
+				else
+					path = System.IO.Path.Combine(siblingPath, "..", path);
+			}
+			if (path.StartsWith("FlexDMD.Resources."))
+			{
+                return Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
+			}
+			else if (path.StartsWith("VPX."))
+			{
+				if (_vpxFile == null && TableFile != null && File.Exists(System.IO.Path.Combine(BasePath, TableFile)))
+				{
+					_vpxFile = new VPXFile(System.IO.Path.Combine(BasePath, TableFile));
+				}
+				if (_vpxFile != null)
+				{
+					return _vpxFile.OpenStream(path.Substring(4));
+				}
+				return null;
+			}
+			else
+			{
+                var fullPath = System.IO.Path.Combine(BasePath, path);
+				return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+			}
+		}
+		
+		public bool FileExists(string path, string siblingPath = null)
+		{
+			if (siblingPath != null)
+			{
+				if (siblingPath.StartsWith("FlexDMD.Resources.")) 
+					path = "FlexDMD.Resources." + path;
+				else if (siblingPath.StartsWith("VPX.")) 
+					path = "VPX." + path;
+				else
+					path = System.IO.Path.Combine(siblingPath, "..", path);
+			}
+			if (path.StartsWith("FlexDMD.Resources."))
+			{
+                return Assembly.GetExecutingAssembly().GetManifestResourceInfo(path) != null;
+			}
+			else if (path.StartsWith("VPX."))
+			{
+				if (_vpxFile == null && TableFile != null && File.Exists(System.IO.Path.Combine(BasePath, TableFile)))
+				{
+					_vpxFile = new VPXFile(System.IO.Path.Combine(BasePath, TableFile));
+				}
+				if (_vpxFile != null)
+				{
+					return _vpxFile.Contains(path.Substring(4));
+				}
+				return false;
+			}
+			else
+			{
+                var fullPath = System.IO.Path.Combine(BasePath, path);
+				return File.Exists(fullPath);
+			}
+		}
+		
         public Asset<T> Load<T>(object id)
         {
             if (_cache.ContainsKey(id))
@@ -205,7 +343,7 @@ namespace FlexDMD
                 if (asset._refCount == 0)
                 {
                     _cache.Remove(id);
-                    if (asset is IDisposable d) d.Dispose();
+					asset.Unload();
                 }
                 else if (asset._refCount < 0)
                 {

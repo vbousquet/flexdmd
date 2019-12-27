@@ -22,7 +22,6 @@ using System.Runtime.InteropServices;
 /// </summary>
 namespace UltraDMD
 {
-    // [Guid("766e10d4-dfe3-4e1b-ac99-c4d2be16e91f"), ComVisible(true), ClassInterface(ClassInterfaceType.None), ComSourceInterfaces(typeof(IDMDObjectEvents))]
     [Guid("E1612654-304A-4E07-A236-EB64D6D4F511"), ComVisible(true), ClassInterface(ClassInterfaceType.None), ComSourceInterfaces(typeof(IDMDObjectEvents))]
     public class DMDObject : IDMDObject
     {
@@ -36,6 +35,11 @@ namespace UltraDMD
         public Color DmdColor { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public object DmdColoredPixels => throw new NotImplementedException();
         public object DmdPixels => throw new NotImplementedException();
+        public void SetTableFile(string tableFile) => throw new NotImplementedException();
+        public void SetScoreFonts(string textFont, string normalFont, string highlightFont, int selectedBrightness, int unselectedBrightness) => throw new NotImplementedException();
+        public void SetTwoLineFonts(string topFont, string bottomFont) => throw new NotImplementedException();
+        public void SetSingleLineFonts(string[] fonts) => throw new NotImplementedException();
+        public void DisplayJPSScene(string id, string background, string[] top, string[] bottom, int animateIn, int pauseTime, int animateOut) => throw new NotImplementedException();
 
         // UltraDMD methods & properties
         public void Init() => _dmd.Init();

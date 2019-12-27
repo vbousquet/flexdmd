@@ -72,8 +72,8 @@ namespace Glide
 	        /// <para>To tween static properties/fields, pass the type of the object, using typeof(ObjectType) or object.GetType().</para>
 	        /// </summary>
 	        /// <param name="target">The object or type to tween.</param>
-	        /// <param name="values">The values to tween to, in an anonymous type ( new { prop1 = 100, prop2 = 0} ).</param>
 	        /// <param name="duration">Duration of the tween in seconds.</param>
+	        /// <param name="values">The values to tween to, in an anonymous type ( new { prop1 = 100, prop2 = 0} ).</param>
 	        /// <param name="delay">Delay before the tween starts, in seconds.</param>
 	        /// <param name="overwrite">Whether pre-existing tweens should be overwritten if this tween involves the same properties.</param>
 	        /// <returns>The tween created, for setting properties on.</returns>

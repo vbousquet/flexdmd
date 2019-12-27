@@ -40,7 +40,7 @@ namespace FlexDMD
         #region Properties
 
         /// <summary>
-        /// Define the game name which will be shared with the rendering backend.
+        /// Define the game name which will be shared with the rendering backend to allow contextual skinning.
         /// Note that changing the game name after Init result in a DMD reinitialization.
         /// </summary>
         string GameName { get; set; }
@@ -92,6 +92,46 @@ namespace FlexDMD
 
         #endregion
 
+        #region Methods
+		
+        /// <summary>
+        /// Defines the table file name (relative to the project folder, see SetProjectFolder).
+		/// You need to define the table file, if you intend to use images stored inside the table file (for example 'VPX.image.png' with image.png stored in the table file)
+        /// </summary>
+        void SetTableFile(string tableFile);
+		
+        /// <summary>
+        /// Defines the fonts used for the scoreboard scene.
+        /// </summary>
+		void SetScoreFonts(string textFont, string normalFont, string highlightFont, int selectedBrightness, int unselectedBrightness);
+		
+        /// <summary>
+        /// Defines the fonts used for scenes with 2 lines of text.
+        /// </summary>
+		void SetTwoLineFonts(string topFont, string bottomFont);
+		
+        /// <summary>
+        /// Defines the fonts used for scenes with a single line of text. This is a list of decreasing 
+		/// size fonts used to find a size that allows to fit the text in the DMD.
+        /// </summary>
+		void SetSingleLineFonts(string[] fonts);
+
+        /// <summary>
+        /// Display a scene composed of a background image and 2 lines of images. This scene corresponds 
+		/// to the simple DMD JPSalas include in some of his original tables (Miraculous, Serious Sam I 
+		/// & II, Pokemon,...). In these tables, VPX renders the DMD using either EMReel or Flasher objects 
+		/// on the cab apron or on the desktop background. This scene allows to add a DMD display to these 
+		/// tables very easily. Modified scripts for these tables are provided with the FlexDMD project.
+		///
+		/// If the scene, identified by its id, is already in the scene queue, it will be modified and not 
+		/// reseted to avoid restarting any ongoing animation (video background for example).
+        /// </summary>
+		void DisplayJPSScene(string id, string background, string[] top, string[] bottom, Int32 animateIn, Int32 pauseTime, Int32 animateOut);
+		
+        #endregion
+
+		// Below this point, you will find the original UltraDMD API
+		
         #region Methods
 
         /// <summary>
@@ -200,7 +240,7 @@ namespace FlexDMD
         /// <param name="loop">An animation can loop indefinitely</param>
         /// <param name="imagelist">Comma separated list of image file names</param>
         /// <returns>The returned animation identifier may be converted to a string, then passed in as a background</returns>
-        Int32 CreateAnimationFromImages(Int32 fps, bool loop, string imagelist);//returns an identifier which may be cast to a string and passed as a background.  The imageList is a space separated list of png (or other) files
+        Int32 CreateAnimationFromImages(Int32 fps, bool loop, string imagelist);
 
         /// <summary>
         /// Register a video into the DMD cache.
