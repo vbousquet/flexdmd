@@ -23,7 +23,7 @@ namespace FlexDMD
         public float Y { get; set; } = 0f;
         public float Width { get; set; } = 0f;
         public float Height { get; set; } = 0f;
-        public Actor Parent { get; set; } = null;
+        public Group Parent { get; set; } = null;
         public bool Visible { get; set; } = true;
 		public object Info { get; set; } = null;
 
@@ -47,7 +47,7 @@ namespace FlexDMD
             Height = height;
         }
 
-        public virtual void Update(float delta)
+        public virtual void Update(float secondsElapsed)
         {
         }
 

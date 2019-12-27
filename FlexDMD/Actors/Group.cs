@@ -44,12 +44,14 @@ namespace FlexDMD
 
         public void AddActor(Actor child)
         {
+            if (child.Parent != null) child.Parent.RemoveActor(child);
             child.Parent = this;
             _children.Add(child);
         }
 
         public void AddActorAt(Actor child, int index)
         {
+            if (child.Parent != null) child.Parent.RemoveActor(child);
             child.Parent = this;
             _children.Insert(index, child);
         }
@@ -62,6 +64,7 @@ namespace FlexDMD
 
         public void RemoveAll()
         {
+            _children.ForEach(item => item.Parent = null);
             _children.Clear();
         }
 
