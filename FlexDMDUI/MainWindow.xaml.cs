@@ -23,7 +23,7 @@ namespace FlexDMDUI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// 
-    /// FIXME
+    /// TODO fix register/unregister
     /// For the time begin, registration will fail depending on the security setup of the computer (even when run with admin rights).
     /// On computer where it fails, regasm from x64 framework will fail too, whereas regasm from x86 framework will succeeded.
     /// </summary>
@@ -44,12 +44,23 @@ namespace FlexDMDUI
             InitializeComponent();
             scriptTextBox.Text =
 @"' Demo script
+DMD.SetProjectFolder(""D:\Games\Visual Pinball\Tables"")
+
 If FlexDMDMode Then
-    DMD.DisplayScene00 """", ""FlexDMD"", 15, ""."", 15, 14, 1000, 14
+    DMD.DmdHeight = 36
+    DMD.RenderMode = 2
+    DMD.TableFile = ""Miraculous.vpx""
+    'DMD.SetTwoLineFonts ""DMD.Resources.font-12.fnt"", ""DMD.Resources.font-7.fnt""
+    'DMD.SetSingleLineFonts Array(CStr(""DMD.Resources.font-12.fnt""), CStr(""DMD.Resources.font-7.fnt""), CStr(""DMD.Resources.font-5.fnt""))
+    DMD.DisplayScene00 ""VPX.extraball&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
+    DMD.DisplayScene00 ""VPX.gameover&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
+    DMD.DisplayScene00 ""VPX.tilt&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
 Else
     DMD.DisplayScene00 """", ""UltraDMD"", 15, ""."", 15, 14, 1000, 14
 End If
-'DMD.DisplayScene01 """", """", ""Scrolling Text"", 15, -1, 14, 3000, 14
+
+' Scrolling text scene
+DMD.DisplayScene01 """", ""Diablo.UltraDMD/black.jpg"", ""Scrolling Text"", 15, -1, 14, 5000, 14
 
 ' Animations :
 '  FadeIn = 0, // Fade from black to scene
@@ -72,7 +83,13 @@ DMD.DisplayScene00 """", ""Scroll On/Off Right"", 15, ""..."", 15, 7, 1000, 5
 DMD.DisplayScene00 """", ""Scroll On/Off Left"", 15, ""..."", 15, 6, 1000, 4
 DMD.DisplayScene00 """", ""Scroll On/Off Down"", 15, ""..."", 15, 11, 1000, 9
 DMD.DisplayScene00 """", ""Scroll On/Off Up"", 15, ""..."", 15, 10, 1000, 8
-DMD.DisplayScene00 """", ""Fade In / Out"", 15, "".."", 15, 12, 1000, 13
+DMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
+
+' Scoreboard
+'DMD.CancelRendering
+'DMD.Clear
+'DMD.DisplayScoreboard 4, 4, 1000, 2000, 3000, 4000, ""Ball 1"", ""Credit 2""
+
 ";
             var flexPath = GetComponentLocation(flexDMDclsid);
             if (flexPath != null)
@@ -351,7 +368,7 @@ DMD.DisplayScene00 """", ""Fade In / Out"", 15, "".."", 15, 12, 1000, 13
             if (renderFlexDMDBtn.IsChecked == true)
             {
                 RunVBScript("StartFlex()\nFlexDMDMode = True\n" + 
-                    (_ultraDMDStarted || renderUltraDMDBtn.IsChecked != true ? "" : @"FlexDMD.DisplayScene00 """", ""Wait for UltraDMD"", 15, """", 15, 14, 5500, 14") + "\n" +
+                    (_ultraDMDStarted || renderUltraDMDBtn.IsChecked != true ? "" : @"FlexDMD.DisplayScene00 """", ""Waiting for"", 15, ""UltraDMD..."", 15, 14, 5500, 14") + "\n" +
                     scriptTextBox.Text.Replace("DMD.", "FlexDMD."));
             }
             if (renderUltraDMDBtn.IsChecked == true)

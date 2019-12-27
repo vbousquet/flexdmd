@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 /// </summary>
 namespace UltraDMD
 {
-    [Guid("E1612654-304A-4E07-A236-EB64D6D4F511"), ComVisible(true), ClassInterface(ClassInterfaceType.None), ComSourceInterfaces(typeof(IDMDObjectEvents))]
+    /* [Guid("E1612654-304A-4E07-A236-EB64D6D4F511"), ComVisible(true), ClassInterface(ClassInterfaceType.None), ComSourceInterfaces(typeof(IDMDObjectEvents))]
     public class DMDObject : IDMDObject
     {
         private FlexDMD.DMDObject _dmd = new FlexDMD.DMDObject();
@@ -69,5 +69,5 @@ namespace UltraDMD
         public void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight) => _dmd.DisplayScoreboard00(cPlayers, highlightedPlayer, score1, score2, score3, score4, lowerLeft, lowerRight);
         public void DisplayText(string text, int textBrightness, int textOutlineBrightness) => _dmd.DisplayText(text, textBrightness, textOutlineBrightness);
         public void ScrollingCredits(string background, string text, int textBrightness, int animateIn, int pauseTime, int animateOut) => _dmd.ScrollingCredits(background, text, textBrightness, animateIn, pauseTime, animateOut);
-    }
+    }*/
 }

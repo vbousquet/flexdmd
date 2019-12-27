@@ -37,7 +37,7 @@ namespace FlexDMD
         private WaveOutEvent _audioDevice;
         private Bitmap _frame;
 
-        // FIXME initialize/dispose when entering/exiting rendering graph (MMF has limited number of concurrently opened sources)
+        // TODO initialize/dispose when entering/exiting rendering graph (MMF has a limited number of concurrently opened sources)
 
         public Video(string path, bool loop = false, int stretchMode = 0)
         {

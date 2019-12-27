@@ -36,7 +36,7 @@ namespace FlexDMD.Scenes
         protected float _outAnimLength;
         protected AnimationType _animateIn;
         protected AnimationType _animateOut;
-        protected float _time;
+        private float _time;
 
         public bool _active = false;
 
@@ -69,7 +69,7 @@ namespace FlexDMD.Scenes
             float alphaLength = 0.5f;
             float scrollWLength = 0.5f;
             float scrollHLength = scrollWLength * Height / Width;
-            // FIXME Missing animations: ZoomIn = 2, ZoomOut = 3
+            // TODO Missing animations: ZoomIn = 2, ZoomOut = 3
             switch (animation)
             {
                 case AnimationType.FadeIn:
@@ -178,13 +178,13 @@ namespace FlexDMD.Scenes
             _tweener.Cancel();
         }
 
-        public override void Update(float delta)
+        public override void Update(float secondsElapsed)
         {
-            base.Update(delta);
-            _time += delta;
+            base.Update(secondsElapsed);
+            _time += secondsElapsed;
             if (_pauseS >= 0f && _outAnimLength < 0 && _time >= _inAnimLength + _pauseS)
                 _outAnimLength = StartAnimation(_animateOut);
-            _tweener.Update(delta);
+            _tweener.Update(secondsElapsed);
         }
 
         public bool IsFinished()

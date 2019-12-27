@@ -67,6 +67,12 @@ namespace FlexDMD
         int RenderMode { get; set; }
 
         /// <summary>
+        /// Defines the table file name (relative to the project folder, see SetProjectFolder).
+		/// You need to define the table file, if you intend to use images stored inside the table file (for example 'VPX.image.png' with image.png stored in the table file)
+        /// </summary>
+        string TableFile { get; set; }
+
+        /// <summary>
         /// Defines the RGB color (only used for 2 & 4 bit planes render mode).
         /// Note that changing the color after Init result in a DMD reinitialization.
         /// </summary>
@@ -93,28 +99,24 @@ namespace FlexDMD
         #endregion
 
         #region Methods
-		
-        /// <summary>
-        /// Defines the table file name (relative to the project folder, see SetProjectFolder).
-		/// You need to define the table file, if you intend to use images stored inside the table file (for example 'VPX.image.png' with image.png stored in the table file)
-        /// </summary>
-        void SetTableFile(string tableFile);
-		
+
         /// <summary>
         /// Defines the fonts used for the scoreboard scene.
         /// </summary>
-		void SetScoreFonts(string textFont, string normalFont, string highlightFont, int selectedBrightness, int unselectedBrightness);
-		
+        void SetScoreFonts(string textFont, string normalFont, string highlightFont, int selectedBrightness, int unselectedBrightness);
+
         /// <summary>
         /// Defines the fonts used for scenes with 2 lines of text.
         /// </summary>
-		void SetTwoLineFonts(string topFont, string bottomFont);
-		
+        void SetTwoLineFonts(string topFont, string bottomFont);
+
         /// <summary>
         /// Defines the fonts used for scenes with a single line of text. This is a list of decreasing 
-		/// size fonts used to find a size that allows to fit the text in the DMD.
+        /// size fonts used to find a size that allows to fit the text in the DMD.
+        /// 
+        /// For example: SetSingleLineFonts Array(CStr("FlexDMD.Resources.font-12.fnt"), CStr("FlexDMD.Resources.font-7.fnt"), CStr("FlexDMD.Resources.font-5.fnt"))
         /// </summary>
-		void SetSingleLineFonts(string[] fonts);
+        void SetSingleLineFonts([MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] object fonts);
 
         /// <summary>
         /// Display a scene composed of a background image and 2 lines of images. This scene corresponds 
@@ -127,11 +129,11 @@ namespace FlexDMD
 		/// reseted to avoid restarting any ongoing animation (video background for example).
         /// </summary>
 		void DisplayJPSScene(string id, string background, string[] top, string[] bottom, Int32 animateIn, Int32 pauseTime, Int32 animateOut);
-		
+
         #endregion
 
-		// Below this point, you will find the original UltraDMD API
-		
+        // Below this point, you will find the original UltraDMD API
+
         #region Methods
 
         /// <summary>
