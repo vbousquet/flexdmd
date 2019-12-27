@@ -3,10 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FlexDMDUI"
+        xmlns:main="clr-namespace:FlexDMDUI"
         mc:Ignorable="d"
         Title="FlexDMD Helper Application" Height="520" Width="800"
         Closing="OnWindowClosing">
+    <Window.CommandBindings>
+        <CommandBinding Command="main:Command.RunCmd" Executed="OnRunCmd" />
+        <CommandBinding Command="main:Command.StopCmd" Executed="OnStopCmd" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="main:Command.RunCmd" />
+        <KeyBinding Key="F6" Command="main:Command.StopCmd" />
+    </Window.InputBindings>
     <Grid>
         <TabControl>
             <TabItem Header="Installer">
@@ -125,7 +133,7 @@
                         </StackPanel>
                     </Button>
                     <ScrollViewer Grid.ColumnSpan="4" Grid.Row="1">
-                        <TextBox x:Name="scriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" Text="DMD.DisplayScene00 &quot;&quot;, &quot;Scene 01&quot;, 15, &quot;.&quot;, 15, 14, 1000, 14&#xA;DMD.DisplayScene00 &quot;&quot;, &quot;Scene 02&quot;, 15, &quot;..&quot;, 15, 14, 1000, 14&#xA;DMD.DisplayScene00 &quot;&quot;, &quot;Scene 03&quot;, 15, &quot;...&quot;, 15, 14, 1000, 14&#xA;" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" TextChanged="scriptTextBox_TextChanged"/>
+                        <TextBox x:Name="scriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True"/>
                     </ScrollViewer>
                 </Grid>
             </TabItem>
