@@ -8,6 +8,8 @@ To convert a table to FlexDMD, load the table in VPX, open the script, then find
 
 Additionally, you should share the game name with the render device (This allows virtual DMD to adapt their rendering to the played games with contextual frame,...). To do so, simply add `UltraDMD.GameName = cGameName` before `Init`.
 
+Finally, UltraDMD does not define if the table is monochrome or color from the script but from its UI. FlexDMD lets this choice to the table designer. So, to enable colors, you have to add `UltraDMD.RenderMode = 2` before `Init`.
+
 As an example, here is the modification for the [great Diablo III table](https://www.vpforums.org/index.php?app=downloads&showfile=12750) from JPSalas:
 ```VBScript
 Sub DMD_Init
@@ -19,6 +21,7 @@ Sub DMD_Init
     End If
 
     UltraDMD.GameName = cGameName
+    UltraDMD.RenderMode = 2
     UltraDMD.Init
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."
