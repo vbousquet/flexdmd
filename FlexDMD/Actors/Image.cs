@@ -19,7 +19,7 @@ using System.Drawing.Imaging;
 
 namespace FlexDMD
 {
-    class Image : Actor
+    public class Image : Actor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         public Bitmap _image = null;
@@ -27,16 +27,6 @@ namespace FlexDMD
         public Image(Bitmap image)
         {
             _image = image;
-        }
-
-        public Image(string path)
-        {
-            // log.Info("Initalizing image: {0}", path);
-            _image = new Bitmap(path);
-            Rectangle rect = new Rectangle(0, 0, _image.Width, _image.Height);
-            BitmapData data = _image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-            GraphicUtils.BGRtoRGB(data.Scan0, data.Stride, _image.Width, _image.Height);
-            _image.UnlockBits(data);
         }
 
         public override void Draw(Graphics graphics)

@@ -199,6 +199,7 @@ Sub Table1_exit()
     If UltraDMD.IsRendering Then
       UltraDMD.CancelRendering
     End If
+	UltraDMD.Uninit
     UltraDMD = NULL
   End If
 End Sub

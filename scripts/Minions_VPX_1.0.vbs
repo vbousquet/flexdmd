@@ -81,6 +81,7 @@ Const UltraDMD_Animation_None = 14
 Sub LoadUltraDMD
     'Set UltraDMD = CreateObject("UltraDMD.DMDObject")
     Set UltraDMD = CreateObject("FlexDMD.DMDObject")
+    UltraDMD.GameName = cGameName
     UltraDMD.Init
 
     Dim fso
@@ -560,6 +561,7 @@ Sub Table1_Exit():
 		If UltraDMD.IsRendering Then
 			UltraDMD.CancelRendering
 		End If
+		UltraDMD.Uninit
 		UltraDMD = NULL
 	End If
 End Sub

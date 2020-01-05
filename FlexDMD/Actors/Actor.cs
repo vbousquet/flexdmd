@@ -12,12 +12,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using NLog;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace FlexDMD
 {
-    class Actor
+    public class Actor
     {
         public float X { get; set; } = 0f;
         public float Y { get; set; } = 0f;

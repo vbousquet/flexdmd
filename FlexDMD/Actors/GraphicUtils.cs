@@ -13,11 +13,50 @@
    limitations under the License.
    */
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 
-namespace FlexDMD.Actors
+namespace FlexDMD
 {
     class GraphicUtils
     {
+        public static void BGRtoRGB(Bitmap image)
+        {
+            Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+            if (image.PixelFormat == PixelFormat.Format32bppArgb)
+            {
+                BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                GraphicUtils.ABGRtoARGB(data.Scan0, data.Stride, image.Width, image.Height);
+                image.UnlockBits(data);
+            }
+            else
+            {
+                BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+                GraphicUtils.BGRtoRGB(data.Scan0, data.Stride, image.Width, image.Height);
+                image.UnlockBits(data);
+            }
+        }
+
+        public static void ABGRtoARGB(IntPtr scanLine0, int pitch, int width, int height)
+        {
+            unsafe
+            {
+                int offset = pitch - 4 * width;
+                byte* ptr = ((byte*)scanLine0.ToPointer());
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte r = *ptr;
+                        *ptr = *(ptr + 2);
+                        *(ptr + 2) = r;
+                        ptr += 4;
+                    }
+                    ptr += offset;
+                }
+            }
+        }
+
         public static void BGRtoRGB(IntPtr scanLine0, int pitch, int width, int height)
         {
             unsafe

@@ -2039,17 +2039,17 @@ Malthael = Array("mal-0.jpg", "mal-10.jpg", "mal-20.jpg", "mal-30.jpg", "mal-40.
 Sub FlexDMDTimer_Timer
 	Dim DMDp
 	If UseDMD Then
-		DMDp = UltraDMD.RawDmdPixels
+		DMDp = UltraDMD.DmdPixels
 		If Not IsEmpty(DMDp) Then
-			DMDWidth = UltraDMD.RawDmdWidth
-			DMDHeight = UltraDMD.RawDmdHeight
+			DMDWidth = UltraDMD.DmdWidth
+			DMDHeight = UltraDMD.DmdHeight
 			DMDPixels = DMDp
 		End If
 	ElseIf UseColoredDMD Then
-		DMDp = UltraDMD.RawDmdColoredPixels
+		DMDp = UltraDMD.DmdColoredPixels
 		If Not IsEmpty(DMDp) Then
-			DMDWidth = UltraDMD.RawDmdWidth
-			DMDHeight = UltraDMD.RawDmdHeight
+			DMDWidth = UltraDMD.DmdWidth
+			DMDHeight = UltraDMD.DmdHeight
 			DMDColoredPixels = DMDp
 		End If
 	End If
@@ -2065,7 +2065,9 @@ Sub DMD_Init
         Exit Sub
     End If
 
-    UltraDMD.Init cGameName
+    UltraDMD.GameName = cGameName
+	UltraDMD.RenderMode = 2
+    UltraDMD.Init
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."
         Exit Sub

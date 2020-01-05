@@ -40,7 +40,7 @@ namespace FlexDMD
 
         public Bitmap Filter(Bitmap src)
         {
-            var dst = new Bitmap(src.Width / _dotSize, src.Height / _dotSize, PixelFormat.Format24bppRgb);
+            var dst = new Bitmap(src.Width / _dotSize, src.Height / _dotSize, src.PixelFormat);
             for (int y = 0; y < dst.Height; y++)
             {
                 for (int x = 0; x < dst.Width; x++)
@@ -161,19 +161,16 @@ namespace FlexDMD
                     if (!Array.Exists(image.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
                     {
                         // Only convert for still image; animate ones are converted when played
-                        Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
-                        BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-                        GraphicUtils.BGRtoRGB(data.Scan0, data.Stride, image.Width, image.Height);
-                        image.UnlockBits(data);
+                        GraphicUtils.BGRtoRGB(image);
                     }
                     _value = (T)Convert.ChangeType(image, typeof(T));
                     _loaded = true;
                 }
-                else if (typeof(T) == typeof(Actors.Font) && _id.GetType() == typeof(FontDef))
+                else if (typeof(T) == typeof(Font) && _id.GetType() == typeof(FontDef))
                 {
                     var fontDef = (FontDef)_id;
                     log.Info("New font added to asset manager: {0}", fontDef);
-                    var font = new Actors.Font(_assets, fontDef, fontDef.FillBrightness, fontDef.OutlineBrightness);
+                    var font = new Font(_assets, fontDef, fontDef.FillBrightness, fontDef.OutlineBrightness);
                     _value = (T)Convert.ChangeType(font, typeof(T));
                     _loaded = true;
                 }

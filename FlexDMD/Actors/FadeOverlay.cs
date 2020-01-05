@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace FlexDMD.Actors
+namespace FlexDMD
 {
     class FadeOverlay : Actor
     {

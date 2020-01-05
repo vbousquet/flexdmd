@@ -2127,7 +2127,9 @@ Sub DMD_Init
         Exit Sub
     End If
 
-    UltraDMD.Init cGameName
+    UltraDMD.GameName = cGameName
+	UltraDMD.RenderMode = 2
+    UltraDMD.Init
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."
         Exit Sub
@@ -7527,5 +7529,8 @@ End Sub
 Sub Table1_exit()
   Controller.Pause = False
   Controller.Stop
+    If UltraDMD is Nothing Then
+		UltraDMD.Uninit
+    End If
 End Sub
 

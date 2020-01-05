@@ -15,18 +15,17 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace FlexDMD
 {
-    class Group : Actor
+    public class Group : Actor
     {
-        private List<Actor> _children = new List<Actor>();
-
-        public List<Actor> Children { get => _children; }
+        public List<Actor> Children { get; } = new List<Actor>();
 
         public override void Update(float delta)
         {
-            foreach (Actor child in _children)
+            foreach (Actor child in Children)
             {
                 child.Update(delta);
             }
@@ -37,7 +36,7 @@ namespace FlexDMD
             if (Visible)
             {
                 graphics.TranslateTransform(X, Y);
-                foreach (Actor child in _children) child.Draw(graphics);
+                foreach (Actor child in Children) child.Draw(graphics);
                 graphics.TranslateTransform(-X, -Y);
             }
         }
@@ -46,26 +45,26 @@ namespace FlexDMD
         {
             if (child.Parent != null) child.Parent.RemoveActor(child);
             child.Parent = this;
-            _children.Add(child);
+            Children.Add(child);
         }
 
         public void AddActorAt(Actor child, int index)
         {
             if (child.Parent != null) child.Parent.RemoveActor(child);
             child.Parent = this;
-            _children.Insert(index, child);
+            Children.Insert(index, child);
         }
 
         public void RemoveActor(Actor child)
         {
             child.Parent = null;
-            _children.Remove(child);
+            Children.Remove(child);
         }
 
         public void RemoveAll()
         {
-            _children.ForEach(item => item.Parent = null);
-            _children.Clear();
+            Children.ForEach(item => item.Parent = null);
+            Children.Clear();
         }
 
     }

@@ -16,7 +16,7 @@ using NLog;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
-namespace FlexDMD.Actors
+namespace FlexDMD
 {
     class Label : Actor
     {

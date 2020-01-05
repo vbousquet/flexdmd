@@ -27,31 +27,28 @@ namespace FlexDMDUI
     /// For the time begin, registration will fail depending on the security setup of the computer (even when run with admin rights).
     /// On computer where it fails, regasm from x64 framework will fail too, whereas regasm from x86 framework will succeeded.
     /// </summary>
-    public partial class MainWindow : Window, IActiveScriptSite
+    public partial class MainWindow : Window //, IActiveScriptSite
     {
         private const bool useLocalMachine = true;
         private const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
         private const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
-        private readonly string _flexScriptFileName = Path.GetTempPath() + "dmd_flex.vbs";
-        private readonly string _ultraScriptFileName = Path.GetTempPath() + "dmd_ultra.vbs";
         private string _installPath;
-        private IActiveScript _scriptEngine;
-        private VBScriptEngine _scriptEngineObject;
-        private ActiveScriptParseWrapper _scriptParser;
+        private ScriptThread _flexScript, _ultraScript;
 
         public MainWindow()
         {
             InitializeComponent();
             scriptTextBox.Text =
 @"' Demo script
-DMD.SetProjectFolder(""D:\Games\Visual Pinball\Tables"")
 
-If FlexDMDMode Then
+Public Sub FlexDemo()
+    DMD.SetProjectFolder(""D:\Games\Visual Pinball\Tables"")
+
     DMD.DmdHeight = 36
     DMD.RenderMode = 2
     DMD.TableFile = ""Miraculous.vpx""
-    'DMD.SetTwoLineFonts ""DMD.Resources.font-12.fnt"", ""DMD.Resources.font-7.fnt""
-    'DMD.SetSingleLineFonts Array(CStr(""DMD.Resources.font-12.fnt""), CStr(""DMD.Resources.font-7.fnt""), CStr(""DMD.Resources.font-5.fnt""))
+    'DMD.SetTwoLineFonts ""FlexDMD.Resources.font-12.fnt"", ""FlexDMD.Resources.font-7.fnt""
+    'DMD.SetSingleLineFonts Array(CStr(""FlexDMD.Resources.font-12.fnt""), CStr(""FlexDMD.Resources.font-7.fnt""), CStr(""FlexDMD.Resources.font-5.fnt""))
     
     Dim topLine(16)
     Dim botLine(20)
@@ -66,41 +63,45 @@ If FlexDMDMode Then
     DMD.DisplayScene00 ""VPX.extraball&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
     DMD.DisplayScene00 ""VPX.gameover&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
     DMD.DisplayScene00 ""VPX.tilt&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
+End Sub
+
+' Check that FlexDMD renders the same as UltraDMD
+Public Sub CompareUltraFlex()
+    ' Animations :
+    '  FadeIn = 0, // Fade from black to scene
+    '  FadeOut = 1, // Fade from scene to black
+    '  ZoomIn = 2, // zoom from a centered small dmd to full size
+    '  ZoomOut = 3, // zoom from a full sized dmd to an oversize one
+    '  ScrollOffLeft = 4,
+    '  ScrollOffRight = 5,
+    '  ScrollOnLeft = 6,
+    '  ScrollOnRight = 7,
+    '  ScrollOffUp = 8,
+    '  ScrollOffDown = 9,
+    '  ScrollOnUp = 10,
+    '  ScrollOnDown = 11,
+    '  FillFadeIn = 12, // fade from black to white (the scene won't be seen)
+    '  FillFadeOut = 13, // fade from white to black (the scene won't be seen)
+    '  None = 14
+    DMD.DisplayScene00 """", ""Fade In / Out"", 15, "".."", 15, 0, 1000, 1
+    DMD.DisplayScene00 """", ""Scroll On/Off Right"", 15, ""..."", 15, 7, 1000, 5
+    DMD.DisplayScene00 """", ""Scroll On/Off Left"", 15, ""..."", 15, 6, 1000, 4
+    DMD.DisplayScene00 """", ""Scroll On/Off Down"", 15, ""..."", 15, 11, 1000, 9
+    DMD.DisplayScene00 """", ""Scroll On/Off Up"", 15, ""..."", 15, 10, 1000, 8
+    DMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
+
+    ' Scrolling text scene
+    DMD.DisplayScene01 """", """", ""Scrolling Text"", 15, -1, 14, 5000, 14
+
+End Sub
+
+If FlexDMDMode And UltraDMDMode Then
+    CompareUltraFlex()
+ElseIf FlexDMDMode Then
+    FlexDemo()
 Else
     DMD.DisplayScene00 """", ""UltraDMD"", 15, ""."", 15, 14, 1000, 14
 End If
-
-' Scrolling text scene
-DMD.DisplayScene01 """", ""Diablo.UltraDMD/black.jpg"", ""Scrolling Text"", 15, -1, 14, 5000, 14
-
-' Animations :
-'  FadeIn = 0, // Fade from black to scene
-'  FadeOut = 1, // Fade from scene to black
-'  ZoomIn = 2, // zoom from a centered small dmd to full size
-'  ZoomOut = 3, // zoom from a full sized dmd to an oversize one
-'  ScrollOffLeft = 4,
-'  ScrollOffRight = 5,
-'  ScrollOnLeft = 6,
-'  ScrollOnRight = 7,
-'  ScrollOffUp = 8,
-'  ScrollOffDown = 9,
-'  ScrollOnUp = 10,
-'  ScrollOnDown = 11,
-'  FillFadeIn = 12, // fade from black to white (the scene won't be seen)
-'  FillFadeOut = 13, // fade from white to black (the scene won't be seen)
-'  None = 14
-DMD.DisplayScene00 """", ""Fade In / Out"", 15, "".."", 15, 0, 1000, 1
-DMD.DisplayScene00 """", ""Scroll On/Off Right"", 15, ""..."", 15, 7, 1000, 5
-DMD.DisplayScene00 """", ""Scroll On/Off Left"", 15, ""..."", 15, 6, 1000, 4
-DMD.DisplayScene00 """", ""Scroll On/Off Down"", 15, ""..."", 15, 11, 1000, 9
-DMD.DisplayScene00 """", ""Scroll On/Off Up"", 15, ""..."", 15, 10, 1000, 8
-DMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
-
-' Scoreboard
-'DMD.CancelRendering
-'DMD.Clear
-'DMD.DisplayScoreboard 4, 4, 1000, 2000, 3000, 4000, ""Ball 1"", ""Credit 2""
-
 ";
             var flexPath = GetComponentLocation(flexDMDclsid);
             if (flexPath != null)
@@ -116,62 +117,6 @@ DMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
             UpdateInstallPane();
-            _scriptEngineObject = new VBScriptEngine();
-            _scriptEngine = (IActiveScript)_scriptEngineObject;
-            _scriptParser = new ActiveScriptParseWrapper(_scriptEngine);
-            _scriptParser.InitNew();
-            _scriptEngine.SetScriptSite(this);
-            _scriptEngine.SetScriptState(ScriptState.Started);
-            _scriptEngine.SetScriptState(ScriptState.Connected);
-            RunVBScript(@"
-                Dim FlexDMD
-                Dim UltraDMD
-
-                Set FlexDMD = Nothing
-                Set UltraDMD = Nothing
-
-                Public Function StartFlex()
-                  If FlexDMD is Nothing Then
-                    Set FlexDMD = CreateObject(""FlexDMD.DMDObject"")
-                    FlexDMD.Init
-                  End If
-                End Function
-
-                Public Function ResetFlex()
-                  If Not FlexDMD is Nothing Then
-                    FlexDMD.CancelRendering
-                  End If
-                End Function
-
-                Public Function StopFlex()
-                  If Not FlexDMD is Nothing Then
-                    FlexDMD.Uninit
-                    FlexDMD.Dispose
-                    Set FlexDMD = Nothing
-                  End If
-                End Function
-
-                Public Function StartUltra()
-                  If UltraDMD is Nothing Then
-                    Set UltraDMD = CreateObject(""UltraDMD.DMDObject"")
-                    UltraDMD.Init
-                  End If
-                End Function
-
-                Public Function ResetUltra()
-                  If Not UltraDMD is Nothing Then
-                    UltraDMD.CancelRendering
-                  End If
-                End Function
-
-                Public Function StopUltra()
-                  If Not UltraDMD is Nothing Then
-                    UltraDMD.Uninit
-                    UltraDMD.Dispose
-                    Set UltraDMD = Nothing
-                  End If
-                End Function
-            ");
         }
 
         private void OnUpdateTimer(object sender, EventArgs e)
@@ -181,16 +126,11 @@ DMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            OnStopScript(sender, null);
-            RunVBScript("StopFlex()\nStopUltra()");
+            OnFlexDMDUnselected(null, null);
+            OnUltraDMDUnselected(null, null);
             // Window Class: WindowsForms10.Window.8.app.0.21af1a5_r9_ad1 Name: Virtual DMD
             var ultraDMDwnd = WindowHandle.FindWindow(wnd => wnd.GetWindowText() == "Virtual DMD");
             ultraDMDwnd?.SendMessage(0x0010, 0, 0); // WM_CLOSE
-            _scriptEngine.Close();
-            _scriptParser.ReleaseComObject();
-            Marshal.ReleaseComObject(_scriptEngine);
-            Marshal.ReleaseComObject(_scriptEngineObject);
-            _scriptEngine = null;
             new Thread(new ThreadStart(CloseRunnable))
             {
                 IsBackground = true
@@ -371,27 +311,46 @@ DMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
             key.OpenSubKey("Wow6432Node", true).OpenSubKey("CLSID", true).DeleteSubKeyTree(guid, false);
         }
 
-        private bool _ultraDMDStarted = false;
-
-        public void OnRunScript(object sender, RoutedEventArgs e)
+        private void OnFlexDMDSelected(object sender, RoutedEventArgs args)
         {
-            OnStopScript(sender, e);
-            if (renderFlexDMDBtn.IsChecked == true)
+            _flexScript = new ScriptThread("FlexDMD Script Thread");
+            _flexScript.Post(@"
+                Dim DMD
+                Set DMD = CreateObject(""FlexDMD.DMDObject"")
+                DMD.Init
+                ");
+        }
+
+        private void OnFlexDMDUnselected(object sender, RoutedEventArgs args)
+        {
+            if (_flexScript != null)
             {
-                RunVBScript("StartFlex()\nFlexDMDMode = True\n" + 
-                    (_ultraDMDStarted || renderUltraDMDBtn.IsChecked != true ? "" : @"FlexDMD.DisplayScene00 """", ""Waiting for"", 15, ""UltraDMD..."", 15, 14, 5500, 14") + "\n" +
-                    scriptTextBox.Text.Replace("DMD.", "FlexDMD."));
-            }
-            if (renderUltraDMDBtn.IsChecked == true)
-            {
-                RunVBScript("StartUltra()\nFlexDMDMode = False\n\n" + scriptTextBox.Text.Replace("DMD.", "UltraDMD."));
-                _ultraDMDStarted = true;
+                _flexScript.Interrupt();
+                _flexScript.Post("If Not DMD is Nothing Then DMD.Uninit");
+                _flexScript.Close(true, true);
+                _flexScript = null;
             }
         }
 
-        public void OnStopScript(object sender, RoutedEventArgs e)
+        private void OnUltraDMDSelected(object sender, RoutedEventArgs args)
         {
-            RunVBScript("ResetFlex()\nResetUltra()");
+            _ultraScript = new ScriptThread("FlexDMD Script Thread");
+            _ultraScript.Post(@"
+                Dim DMD
+                Set DMD = CreateObject(""UltraDMD.DMDObject"")
+                DMD.Init
+                ");
+        }
+
+        private void OnUltraDMDUnselected(object sender, RoutedEventArgs args)
+        {
+            if (_ultraScript != null)
+            {
+                _ultraScript.Interrupt();
+                _ultraScript.Post("If Not DMD is Nothing Then DMD.Uninit");
+                _ultraScript.Close(true, true);
+                _ultraScript = null;
+            }
         }
 
         private void OnRunCmd(object sender, ExecutedRoutedEventArgs args)
@@ -399,93 +358,27 @@ DMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
             OnRunScript(sender, null);
         }
 
+        public void OnRunScript(object sender, RoutedEventArgs e)
+        {
+            var script = string.Format(@"
+                FlexDMDMode = {0}
+                UltraDMDMode = {1}
+                {2}
+                ", (renderFlexDMDBtn.IsChecked == true ? "True" : "False"), (renderUltraDMDBtn.IsChecked == true ? "True" : "False"), scriptTextBox.Text);
+            if (_flexScript != null) _flexScript.Post(script);
+            if (_ultraScript != null) _ultraScript.Post(script);
+        }
+
         private void OnStopCmd(object sender, ExecutedRoutedEventArgs args)
         {
             OnStopScript(sender, null);
         }
 
-        private void RunVBScript(string code)
+        public void OnStopScript(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                _scriptParser.ParseScriptText(code, null, null, null, IntPtr.Zero, 0, ScriptText.IsVisible, out object result, out EXCEPINFO ei);
-            }
-            catch (Exception)
-            {
-            }
+            if (_flexScript != null) _flexScript.Interrupt();
+            if (_ultraScript != null) _ultraScript.Interrupt();
         }
-
-        #region Implementation of IActiveScriptSite
-
-        void IActiveScriptSite.GetLCID(out int lcid)
-        {
-            lcid = Thread.CurrentThread.CurrentUICulture.LCID;
-        }
-
-        void IActiveScriptSite.GetItemInfo(string name, ScriptInfo returnMask, object[] item, IntPtr[] typeInfo)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(@"name");
-            }
-
-            if (name != @"Context")
-            {
-                throw new COMException(null, (int)HRESULT.TYPE_E_ELEMENTNOTFOUND);
-            }
-
-            if ((returnMask & ScriptInfo.IUnknown) != 0)
-            {
-                if (item == null)
-                {
-                    throw new ArgumentNullException(@"item");
-                }
-
-                item[0] = this;
-            }
-
-            if ((returnMask & ScriptInfo.ITypeInfo) != 0)
-            {
-                if (typeInfo == null)
-                {
-                    throw new ArgumentNullException(@"typeInfo");
-                }
-
-                typeInfo[0] = IntPtr.Zero;
-            }
-        }
-
-        void IActiveScriptSite.GetDocVersionString(out string version)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnScriptTerminate(object result, EXCEPINFO exceptionInfo)
-        {
-        }
-
-        void IActiveScriptSite.OnStateChange(ScriptState scriptState)
-        {
-        }
-
-        void IActiveScriptSite.OnScriptError(IActiveScriptError scriptError)
-        {
-            scriptError.GetExceptionInfo(out EXCEPINFO exceptionInfo);
-            scriptError.GetSourcePosition(out uint sourceContext, out uint lineNumber, out int characterPosition);
-            scriptError.GetSourceLineText(out string sourceLine);
-            System.Windows.Forms.MessageBox.Show(string.Format("'{0}' at line {1}, character {2}:\n\n{3}",
-                exceptionInfo.bstrDescription, lineNumber - 2, characterPosition, sourceLine), exceptionInfo.bstrSource);
-        }
-
-        void IActiveScriptSite.OnEnterScript()
-        {
-        }
-
-        void IActiveScriptSite.OnLeaveScript()
-        {
-        }
-
-        #endregion
 
     }
 }

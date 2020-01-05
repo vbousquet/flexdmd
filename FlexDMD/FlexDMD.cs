@@ -220,9 +220,9 @@ namespace FlexDMD
             _twoLinesFontBottom = new FontDef("FlexDMD.Resources.f6by12.fnt");
             // Core rendering tree
             _scoreBoard = new ScoreBoard(
-                _assets.Load<Actors.Font>(_scoreFontNormal).Load(),
-                _assets.Load<Actors.Font>(_scoreFontHighlight).Load(),
-                _assets.Load<Actors.Font>(_scoreFontText).Load()
+                _assets.Load<Font>(_scoreFontNormal).Load(),
+                _assets.Load<Font>(_scoreFontHighlight).Load(),
+                _assets.Load<Font>(_scoreFontText).Load()
                 );
             _stage.AddActor(_scoreBoard);
             _stage.AddActor(_queue);
@@ -621,16 +621,17 @@ namespace FlexDMD
             {
                 log.Error(e, "Exception while resolving image: '{0}'", filename);
             }
-            // Returns a 2 pixel wide frame in this situation
+            // TODO Returns a 2 pixel wide frame in this situation (for some scene only to be compatible with UltraDMD)
             log.Error("Missing resource '{0}'", filename);
-            return new Frame(2);
+            // return new Actor();
+            return new Frame();
         }
 
         private Label GetFittedLabel(string text, float fillBrightness, float outlineBrightness)
         {
             foreach (FontDef f in _singleLineFont)
             {
-                var font = _assets.Load<Actors.Font>(new FontDef(f.Path, fillBrightness, outlineBrightness)).Load();
+                var font = _assets.Load<Font>(new FontDef(f.Path, fillBrightness, outlineBrightness)).Load();
                 var label = new Label(font, text);
                 label.SetPosition((_width - label.Width) / 2, (_height - label.Height) / 2);
                 if ((label.X >= 0 && label.Y >= 0) || f == _singleLineFont[_singleLineFont.Length - 1]) return label;
@@ -669,8 +670,8 @@ namespace FlexDMD
                     }
                     if (toptext != null && toptext.Length > 0 && bottomtext != null && bottomtext.Length > 0)
                     {
-                        var fontTop = _assets.Load<Actors.Font>(new FontDef(_twoLinesFontTop.Path, topBrightness / 15f, topOutlineBrightness / 15f)).Load();
-                        var fontBottom = _assets.Load<Actors.Font>(new FontDef(_twoLinesFontBottom.Path, bottomBrightness / 15f, bottomOutlineBrightness / 15f)).Load();
+                        var fontTop = _assets.Load<Font>(new FontDef(_twoLinesFontTop.Path, topBrightness / 15f, topOutlineBrightness / 15f)).Load();
+                        var fontBottom = _assets.Load<Font>(new FontDef(_twoLinesFontBottom.Path, bottomBrightness / 15f, bottomOutlineBrightness / 15f)).Load();
                         var scene = new TwoLineScene(ResolveImage(background), toptext, fontTop, bottomtext, fontBottom, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
                         _queue.Enqueue(scene);
                     }
@@ -738,7 +739,7 @@ namespace FlexDMD
                 {
                     // log.Info("DisplayScene01 '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
                     _scoreBoard.Visible = false;
-                    var font = _assets.Load<Actors.Font>(new FontDef(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f)).Load();
+                    var font = _assets.Load<Font>(new FontDef(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f)).Load();
                     var scene = new SingleLineScene(ResolveImage(background), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
                     _queue.Enqueue(scene);
                 });
@@ -753,9 +754,9 @@ namespace FlexDMD
                 {
                     _scoreBoard.SetBackground(ResolveImage(filename));
                     _scoreBoard.SetFonts(
-                        _assets.Load<Actors.Font>(new FontDef(_scoreFontNormal.Path, unselectedBrightness)).Load(),
-                        _assets.Load<Actors.Font>(new FontDef(_scoreFontHighlight.Path, selectedBrightness)).Load(),
-                        _assets.Load<Actors.Font>(new FontDef(_scoreFontText.Path, unselectedBrightness)).Load());
+                        _assets.Load<Font>(new FontDef(_scoreFontNormal.Path, unselectedBrightness)).Load(),
+                        _assets.Load<Font>(new FontDef(_scoreFontHighlight.Path, selectedBrightness)).Load(),
+                        _assets.Load<Font>(new FontDef(_scoreFontText.Path, unselectedBrightness)).Load());
                 });
             }
         }
@@ -807,7 +808,7 @@ namespace FlexDMD
                     // log.Info("ScrollingCredits '{0}', '{1}', {2}", background, text, textBrightness);
                     _scoreBoard.Visible = false;
                     string[] lines = text.Split(new Char[] { '\n', '|' });
-                    var font12 = _assets.Load<Actors.Font>(new FontDef("FlexDMD.Resources.font-12.fnt", textBrightness / 15f, -1)).Load();
+                    var font12 = _assets.Load<Font>(new FontDef("FlexDMD.Resources.font-12.fnt", textBrightness / 15f, -1)).Load();
                     var scene = new ScrollingCreditsScene(ResolveImage(background), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
                     _queue.Enqueue(scene);
                 });
@@ -824,9 +825,9 @@ namespace FlexDMD
                     _scoreFontNormal = new FontDef(normalFont);
                     _scoreFontHighlight = new FontDef(highlightFont);
                     _scoreBoard.SetFonts(
-                        _assets.Load<Actors.Font>(new FontDef(_scoreFontNormal.Path, unselectedBrightness)).Load(),
-                        _assets.Load<Actors.Font>(new FontDef(_scoreFontHighlight.Path, selectedBrightness)).Load(),
-                        _assets.Load<Actors.Font>(new FontDef(_scoreFontText.Path, unselectedBrightness)).Load());
+                        _assets.Load<Font>(new FontDef(_scoreFontNormal.Path, unselectedBrightness)).Load(),
+                        _assets.Load<Font>(new FontDef(_scoreFontHighlight.Path, selectedBrightness)).Load(),
+                        _assets.Load<Font>(new FontDef(_scoreFontText.Path, unselectedBrightness)).Load());
                 });
             }
         }
@@ -863,7 +864,7 @@ namespace FlexDMD
             {
                 _runnables.Add(() =>
                 {
-                    log.Error("DisplayJPScene [alpha stuff] '{0}', {1}, {2}", background, top, bottom);
+                    // log.Info("DisplayJPScene [alpha stuff] id={0} background={1}, {2}, {3}", id, background, top, bottom);
                     _scoreBoard.Visible = false;
                     JPSScene scene = null;
                     if (id != null && id.Length > 0)

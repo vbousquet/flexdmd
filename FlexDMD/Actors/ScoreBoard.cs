@@ -15,7 +15,7 @@
 using NLog;
 using System.Drawing;
 
-namespace FlexDMD.Actors
+namespace FlexDMD
 {
     class ScoreBoard : Group
     {

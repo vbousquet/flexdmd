@@ -127,7 +127,8 @@ namespace FlexDMDUI
 		void GetCurrentScriptThreadID(out uint thread);
 		void GetScriptThreadID(uint win32ThreadId, out uint thread);
 		void GetScriptThreadState(uint thread, out ScriptThreadState state);
-		void InterruptScriptThread(uint thread, out EXCEPINFO exceptionInfo, uint flags);
+		// void InterruptScriptThread(uint thread, out EXCEPINFO exceptionInfo, uint flags);
+		void InterruptScriptThread(uint thread, ref EXCEPINFO exceptionInfo, uint flags);
 		void Clone(out IActiveScript script);
 	}
 

@@ -118,8 +118,8 @@
                         <RowDefinition Height="60"/>
                         <RowDefinition Height="1*" />
                     </Grid.RowDefinitions>
-                    <CheckBox x:Name="renderFlexDMDBtn" Grid.Row="0" Grid.Column="0" Content="Render in FlexDMD" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True" Margin="10,10,0,0"/>
-                    <CheckBox x:Name="renderUltraDMDBtn" Grid.Row="0" Grid.Column="1" Content="Render in UltraDMD" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,0,0"/>
+                    <CheckBox x:Name="renderFlexDMDBtn" Grid.Row="0" Grid.Column="0" Content="FlexDMD" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,0,0" Checked="OnFlexDMDSelected" Unchecked="OnFlexDMDUnselected"/>
+                    <CheckBox x:Name="renderUltraDMDBtn" Grid.Row="0" Grid.Column="1" Content="UltraDMD" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,0,0" Checked="OnUltraDMDSelected" Unchecked="OnUltraDMDUnselected"/>
                     <Button x:Name="stopScriptBtn" Grid.Row="0" Grid.Column="2" Margin="10,10,10,10" Width="150" Click="OnStopScript" HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Image Source="Resources/stop.png" Width="16" Height="24"/>
