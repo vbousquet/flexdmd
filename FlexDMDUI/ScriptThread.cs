@@ -15,9 +15,9 @@ namespace FlexDMDUI
         private int _running = 0;
         private readonly List<string> _runnables = new List<string>();
 
-        UInt32 SCRIPTTHREADID_CURRENT = 0xFFFFFFFD;
-        UInt32 SCRIPTTHREADID_BASE = 0xFFFFFFFE;
-        UInt32 SCRIPTTHREADID_ALL = 0xFFFFFFFF;
+        // UInt32 SCRIPTTHREADID_CURRENT = 0xFFFFFFFD;
+        uint SCRIPTTHREADID_BASE = 0xFFFFFFFE;
+        // UInt32 SCRIPTTHREADID_ALL = 0xFFFFFFFF;
 
         public ScriptThread(string name = "ScriptThread")
         {
