@@ -43,7 +43,7 @@ namespace FlexDMD.Scenes
             if (_scroll)
             {
                 // UltraDMD moves text by 1.2 pixel per frame (no delta time) and seems to render based on a frame rate at 60FPS.
-                var offset = -(Width - _text.Width) * 0.5f;
+                var offset = -(Width - _text.Width) / 2f;
                 ScrollX = offset + Width;
                 _tweener.Tween(this, new { ScrollX = offset - _text.Width }, (Width + _text.Width) / (60 * 1.2f), 0f);
             }
@@ -52,7 +52,7 @@ namespace FlexDMD.Scenes
         public override void Update(float delta)
         {
             base.Update(delta);
-            _text.SetPosition((Width - _text.Width) * 0.5f + ScrollX, (Height - _text.Height) * 0.5f);
+            _text.SetPosition((Width - _text.Width) / 2 + ScrollX, (Height - _text.Height) / 2);
         }
     }
 }

@@ -25,52 +25,80 @@ using System.Drawing.Imaging;
 
 namespace FlexDMD
 {
-    class Video : AnimatedActor
+    public class Video : AnimatedActor, IVideoActor
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
         private static int nOpenedVideos = 0;
         private readonly string _path;
-        private readonly int _stretchMode; // stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
         private int _videoWidth, _videoHeight;
         private IMFSourceReader _videoReader;
         private MediaFoundationReader _audioReader;
         private WaveOutEvent _audioDevice;
         private Bitmap _frame;
+		private bool _inStage = false;
+		private bool _visible = true;
+		private bool _opened = false;
 
-        // TODO initialize/dispose when entering/exiting rendering graph (MMF has a limited number of concurrently opened sources)
-
-        public Video(string path, bool loop = false, int stretchMode = 0)
+        public Video(string path, bool loop = false)
         {
             _path = path;
             _loop = loop;
-            _stretchMode = stretchMode;
         }
 		
-		public Video newInstance()
-		{
-			return new Video(_path, _loop, _stretchMode);
+		public Scaling Scaling {get; set; } = Scaling.Stretch;
+		
+		public Alignment Alignment {get; set; } = Alignment.Center;
+
+		public override bool InStage 
+		{ 
+			get => _inStage; 
+			set
+			{
+				_inStage = value;
+				UpdateOpenClose();
+			}
+		}
+		
+        public override bool Visible
+		{ 
+			get => _visible; 
+			set
+			{
+				_visible = value;
+				UpdateOpenClose();
+			}
 		}
 
-        public void Open()
-        {
-            _audioDevice = new WaveOutEvent();
-            Rewind();
-            nOpenedVideos++;
-            log.Info("Video opened: {0} ({1} videos concurrently opened)", _path, nOpenedVideos);
-        }
+		public override float PrefWidth { get => _videoWidth; }
+		
+		public override float PrefHeight { get => _videoHeight; }
 
-        public void Close()
-        {
-            if (_audioReader != null)
-            {
-                _audioReader.Dispose();
-                _audioReader = null;
-            }
-            if (_videoReader != null) ComClass.SafeRelease(ref _videoReader);
-            _audioDevice.Dispose();
-            _audioDevice = null;
-            nOpenedVideos--;
-        }
+        // open/close when entering/exiting rendering graph since MMF has a limited number of concurrently opened sources
+		private void UpdateOpenClose()
+		{
+			bool shouldBeOpened = _visible && _inStage;
+			if (shouldBeOpened && !_opened)
+			{
+				_opened = true;
+				_audioDevice = new WaveOutEvent();
+				Rewind();
+				nOpenedVideos++;
+				log.Info("Video opened: {0} ({1} videos concurrently opened)", _path, nOpenedVideos);
+			} 
+			else if (!shouldBeOpened && _opened)
+			{
+				_opened = false;
+				if (_audioReader != null)
+				{
+					_audioReader.Dispose();
+					_audioReader = null;
+				}
+				if (_videoReader != null) ComClass.SafeRelease(ref _videoReader);
+				_audioDevice.Dispose();
+				_audioDevice = null;
+				nOpenedVideos--;
+			}
+		}
 
         protected override void Rewind()
         {
@@ -201,7 +229,12 @@ namespace FlexDMD
 
         public override void Draw(Graphics graphics)
         {
-            if (Visible && _frame != null) graphics.DrawImage(_frame, X, Y, Width, Height);
+            if (Visible && _frame != null)
+			{
+				Layout.Scale(Scaling, PrefWidth, PrefHeight, Width, Height, out float w, out float h);
+                Layout.Align(Alignment, w, h, Width, Height, out float x, out float y);
+				graphics.DrawImage(_frame, (int)(X + x), (int)(Y + y), (int)w, (int)h);
+			}
         }
 
         public override string ToString()

@@ -101,6 +101,7 @@ namespace FlexDMD.Actors
                 }
             }
         }
+		
         public override void Draw(Graphics graphics)
         {
             if (Visible && Children.Count() > 0)

@@ -19,13 +19,28 @@ namespace FlexDMD
 {
     public class Actor
     {
-        public float X { get; set; } = 0f;
-        public float Y { get; set; } = 0f;
-        public float Width { get; set; } = 0f;
-        public float Height { get; set; } = 0f;
+        public string Name { get; set; } = "";
+        public float X { get; set; } = 0;
+        public float Y { get; set; } = 0;
+        public float Width { get; set; } = 0;
+        public float Height { get; set; } = 0;
         public Group Parent { get; set; } = null;
-        public bool Visible { get; set; } = true;
+        public virtual float PrefWidth { get; } = 0;
+        public virtual float PrefHeight { get; } = 0;
+        public virtual bool InStage { get; set; } = false;
+        public virtual bool Visible { get; set; } = true;
 		public object Info { get; set; } = null;
+
+		public void Remove()
+		{
+			if (Parent != null) Parent.RemoveActor(this);
+		}
+
+		public void Pack()
+		{
+			Width = PrefWidth;
+			Height = PrefHeight;
+		}
 
         public void SetBounds(float x, float y, float width, float height)
         {

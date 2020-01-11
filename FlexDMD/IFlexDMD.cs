@@ -12,7 +12,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -22,8 +21,258 @@ namespace FlexDMD
 
     #region Interfaces
 
+    [Guid("6F205A9B-B007-4DCD-A635-51B2C939A796"), ComVisible(true)]
+    public interface IActor
+    {
+        string Name { get; set; }
+        float X { get; set; }
+        float Y { get; set; }
+        float Width { get; set; }
+        float Height { get; set; }
+        bool Visible { get; set; }
+        void SetBounds(float x, float y, float width, float height);
+        void SetPosition(float x, float y);
+        void SetSize(float width, float height);
+		void Remove();
+    }
+
+    [Guid("1BF9F8AE-1BA0-4FA2-AD03-48E9FD0F4C92"), ComVisible(true)]
+    public interface IGroupActor
+    {
+        // Actor interface
+        string Name { get; set; }
+        float X { get; set; }
+        float Y { get; set; }
+        float Width { get; set; }
+        float Height { get; set; }
+        bool Visible { get; set; }
+        void SetBounds(float x, float y, float width, float height);
+        void SetPosition(float x, float y);
+        void SetSize(float width, float height);
+		void Remove();
+        // Group interface
+        [return: MarshalAs(UnmanagedType.Struct)] object Get(string name);
+        void RemoveAll();
+        void AddActor([MarshalAs(UnmanagedType.Struct)]Actor child);
+    }
+
+    [Guid("05E06A6B-94DB-4F7F-B7A8-F8E09716A041"), ComVisible(true)]
+    public interface IFrameActor
+    {
+        // Actor interface
+        string Name { get; set; }
+        float X { get; set; }
+        float Y { get; set; }
+        float Width { get; set; }
+        float Height { get; set; }
+        bool Visible { get; set; }
+        void SetBounds(float x, float y, float width, float height);
+        void SetPosition(float x, float y);
+        void SetSize(float width, float height);
+		void Remove();
+        // Frame interface
+        int Thickness { get; set; }
+    }
+
+    [Guid("42CAEB83-C045-443D-9528-4304E9F27A20"), ComVisible(true)]
+    public interface IImageActor
+    {
+        // Actor interface
+        string Name { get; set; }
+        float X { get; set; }
+        float Y { get; set; }
+        float Width { get; set; }
+        float Height { get; set; }
+        bool Visible { get; set; }
+        void SetBounds(float x, float y, float width, float height);
+        void SetPosition(float x, float y);
+        void SetSize(float width, float height);
+		void Remove();
+    }
+
+    [Guid("CF9AFD55-03A3-458D-8EAB-119C55090BAB"), ComVisible(true)]
+    public interface IVideoActor
+    {
+        // Actor interface
+        string Name { get; set; }
+        float X { get; set; }
+        float Y { get; set; }
+        float Width { get; set; }
+        float Height { get; set; }
+        bool Visible { get; set; }
+        void SetBounds(float x, float y, float width, float height);
+        void SetPosition(float x, float y);
+        void SetSize(float width, float height);
+		void Remove();
+    }
+
+    [Guid("A8AAD77F-4F01-433B-B653-B6F14234F4F2"), ComVisible(true)]
+    public interface ILabelActor
+    {
+        // Actor interface
+        string Name { get; set; }
+        float X { get; set; }
+        float Y { get; set; }
+        float Width { get; set; }
+        float Height { get; set; }
+        bool Visible { get; set; }
+        void SetBounds(float x, float y, float width, float height);
+        void SetPosition(float x, float y);
+        void SetSize(float width, float height);
+		void Remove();
+        // Label interface
+        Font Font { [return: MarshalAs(UnmanagedType.Struct)] get; [param: MarshalAs(UnmanagedType.Struct)] set; }
+        string Text { get; set; }
+    }
+
+    [Guid("77FB8996-E143-42A4-B695-14E0314D92FC"), ComVisible(true)]
+    public enum RenderMode
+    {
+        GRAY_2, GRAY_4, RGB
+    }
+
+    [Guid("F7E68187-251F-4DFB-AF79-F1D4D69EE188"), ComVisible(true)]
+    public interface IFlexDMD
+    {
+        #region Properties
+
+        /// <summary>
+        /// Define the game name which will be shared with the rendering backend to allow contextual skinning.
+        /// Note that changing the game name after Init result in a DMD reinitialization (with flickering).
+        /// </summary>
+        string GameName { get; set; }
+
+        /// <summary>
+        /// Defines or read the DMD width. Note that the width may only be changed on an unitiliazed DMD (i.e. before calling Init)
+        /// Note that changing the width after Init result in a DMD reinitialization (with flickering).
+        /// </summary>
+        ushort Width { get; set; }
+
+        /// <summary>
+        /// Defines or read the DMD height. Note that the height may only be changed on an unitiliazed DMD (i.e. before calling Init)
+        /// Note that changing the height after Init result in a DMD reinitialization (with flickering).
+        /// </summary>
+        ushort Height { get; set; }
+
+        /// <summary>
+        /// Defines the RGB color (only used for 2 & 4 bit planes render mode).
+        /// Note that changing the color after Init result in a DMD reinitialization (with flickering).
+        /// </summary>
+        Color Color { get; set; }
+
+        /// <summary>
+        /// The DMD is rendered with a 4 bit plane shade of gray. You can choose a 2 bit plane or a full RGB rendering here.
+        /// 0 is 2 bit planes
+        /// 1 is 4 bit planes, the default
+        /// 2 is full RGB
+        /// Note that changing the render mode after Init result in a DMD reinitialization (with flickering).
+        /// </summary>
+        RenderMode RenderMode { get; set; }
+
+        /// <summary>
+        /// Defines the project folder where assets are looked for.
+        /// </summary>
+        string ProjectFolder { get; set; }
+
+        /// <summary>
+        /// Defines the table file name (relative to the project folder, see ProjectFolder).
+		/// You need to define the table file, if you intend to use images stored inside the table file (for example 'VPX.image' with 'image' stored in the table file)
+        /// </summary>
+        string TableFile { get; set; }
+
+        /// <summary>
+        /// Returns the DMD content as an array of uint RGB pixels for rendering inside VPX's embedded DMD
+        /// </summary>
+        object DmdColoredPixels
+        {
+            [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
+            get;
+        }
+
+        /// <summary>
+        /// Returns the DMD content as an array of byte pixels (0 => black, 255 => full light) for rendering inside VPX's embedded DMD
+        /// </summary>
+        object DmdPixels
+        {
+            [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
+            get;
+        }
+
+        /// <summary>
+        /// Returns the main rendering surface. Note that you need to synchronize the modification using Lock/Unlock to avoid concurrent modification with the render thread.
+        /// </summary>
+        IGroupActor Stage { get; }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Init must be called before any other method.
+        /// </summary>
+        void Init();
+
+        /// <summary>
+        /// Uninit must be called ot close the DMD and correctly relase native resources.
+        /// </summary>
+        void Uninit();
+
+        /// <summary>
+		/// Lock the render thread to allow modifying the stage avoiding concurrent modifications.
+        /// </summary>
+        void LockRenderThread();
+
+        /// <summary>
+		/// Unlock the render thread to allow the render thread to render the stage after modifying it.
+        /// </summary>
+        void UnlockRenderThread();
+
+        /// <summary>
+        /// </summary>
+        IGroupActor NewGroup();
+
+        /// <summary>
+        /// </summary>
+        IFrameActor NewFrame();
+
+        /// <summary>
+        /// </summary>
+        ILabelActor NewLabel([param: MarshalAs(UnmanagedType.Struct)] Font font, string text);
+
+        /// <summary>
+        /// </summary>
+        IVideoActor NewVideo(string video);
+
+        /// <summary>
+        /// </summary>
+        IImageActor NewImage(string image);
+
+        /// <summary>
+        /// </summary>
+        [return: MarshalAs(UnmanagedType.Struct)] Font NewFont(string font, float brightness, float outline);
+        
+        /// <summary>
+        /// </summary>
+		IUltraDMD NewUltraDMD();
+
+        #endregion
+    }
+
+    [Guid("83fbf3e4-b4f4-415a-9a5b-7c2f635ff83b"), ComVisible(true), InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IDMDObjectEvents
+    {
+        #region Events
+
+        [DispId(1)]
+        void onDMDChanged();
+
+        #endregion
+    }
+
     /// <summary>
-    /// DMDOjbect represents the DMD display.  It consists of a set of predefined, but very flexible scenes.  Some of these scenes are
+    /// This interface is the original UltraDMD API implemented by FlexDMD to ease the transition.
+    /// 
+    /// DMDObject represents the DMD display.  It consists of a set of predefined, but very flexible scenes.  Some of these scenes are
     /// displayed immediately and replace whatever is currently displayed on the DMD.  Other scenes are placed into a queue, and displayed
     /// in the order in which they were queued.  This allows for more complex looking animations.
     /// 
@@ -34,107 +283,9 @@ namespace FlexDMD
     /// There is no direct access to the scene queue; but there is limited control through the ability to clear the queue, clear the
     /// currently rendering scene, or clear the currently rendering scene only if it matches a specific scene identifier.
     /// </summary>
-    [Guid("F7E68187-251F-4DFB-AF79-F1D4D69EE188"), ComVisible(true)]
-    /* [Guid("6de5b6e5-717b-48d3-a890-d1d2320ddc43"), ComVisible(true)] */
-    public interface IDMDObject
+    [Guid("F7E68187-251F-4DFB-AF79-F1D4D69EE188"), ComVisible(true), InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IUltraDMD
     {
-        #region Properties
-
-        /// <summary>
-        /// Define the game name which will be shared with the rendering backend to allow contextual skinning.
-        /// Note that changing the game name after Init result in a DMD reinitialization.
-        /// </summary>
-        string GameName { get; set; }
-
-        /// <summary>
-        /// Defines or read the DMD width. Note that the width may only be changed on an unitiliazed DMD (i.e. before calling Init)
-        /// Note that changing the width after Init result in a DMD reinitialization.
-        /// </summary>
-        ushort DmdWidth { get; set; }
-
-        /// <summary>
-        /// Defines or read the DMD height. Note that the height may only be changed on an unitiliazed DMD (i.e. before calling Init)
-        /// Note that changing the height after Init result in a DMD reinitialization.
-        /// </summary>
-        ushort DmdHeight { get; set; }
-
-        /// <summary>
-        /// The DMD is rendered with a 4 bit plane shade of gray. You can choose a 2 bit plane or a full RGB rendering here.
-        /// 0 is 2 bit planes
-        /// 1 is 4 bit planes, the default
-        /// 2 is full RGB
-        /// Note that changing the render mode after Init result in a DMD reinitialization.
-        /// </summary>
-        int RenderMode { get; set; }
-
-        /// <summary>
-        /// Defines the table file name (relative to the project folder, see SetProjectFolder).
-		/// You need to define the table file, if you intend to use images stored inside the table file (for example 'VPX.image.png' with image.png stored in the table file)
-        /// </summary>
-        string TableFile { get; set; }
-
-        /// <summary>
-        /// Defines the RGB color (only used for 2 & 4 bit planes render mode).
-        /// Note that changing the color after Init result in a DMD reinitialization.
-        /// </summary>
-        Color DmdColor { get; set; }
-
-        /// <summary>
-        /// Returns the DMD content as an array of uint RGB pixels
-        /// </summary>
-        object DmdColoredPixels
-        {
-            [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
-            get;
-        }
-
-        /// <summary>
-        /// Returns the DMD content as an array of byte pixels (0 => black, 255 => full light)
-        /// </summary>
-        object DmdPixels
-        {
-            [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
-            get;
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Defines the fonts used for the scoreboard scene.
-        /// </summary>
-        void SetScoreFonts(string textFont, string normalFont, string highlightFont, int selectedBrightness, int unselectedBrightness);
-
-        /// <summary>
-        /// Defines the fonts used for scenes with 2 lines of text.
-        /// </summary>
-        void SetTwoLineFonts(string topFont, string bottomFont);
-
-        /// <summary>
-        /// Defines the fonts used for scenes with a single line of text. This is a list of decreasing 
-        /// size fonts used to find a size that allows to fit the text in the DMD.
-        /// 
-        /// For example: SetSingleLineFonts Array(CStr("FlexDMD.Resources.font-12.fnt"), CStr("FlexDMD.Resources.font-7.fnt"), CStr("FlexDMD.Resources.font-5.fnt"))
-        /// </summary>
-        void SetSingleLineFonts([MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] object fonts);
-
-        /// <summary>
-        /// Display a scene composed of a background image and 2 lines of images. This scene corresponds 
-		/// to the simple DMD JPSalas include in some of his original tables (Miraculous, Serious Sam I 
-		/// & II, Pokemon,...). In these tables, VPX renders the DMD using either EMReel or Flasher objects 
-		/// on the cab apron or on the desktop background. This scene allows to add a DMD display to these 
-		/// tables very easily. Modified scripts for these tables are provided with the FlexDMD project.
-		///
-		/// If the scene, identified by its id, is already in the scene queue, it will be modified and not 
-		/// reseted to avoid restarting any ongoing animation (video background for example).
-        /// </summary>
-		void DisplayJPSScene(string id, string background, [MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] object top, [MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] object bottom, Int32 animateIn, Int32 pauseTime, Int32 animateOut);
-
-        #endregion
-
-        // Below this point, you will find the original UltraDMD API
-
         #region Methods
 
         /// <summary>
@@ -384,17 +535,6 @@ namespace FlexDMD
         /// <param name="pauseTime">Pause before out animation, roughly in milliseconds</param>
         /// <param name="animateOut">Any of the predefined animation types, will execute after the specified pause time</param>
         void ScrollingCredits(string background, string text, Int32 textBrightness, Int32 animateIn, Int32 pauseTime, Int32 animateOut);
-
-        #endregion
-    }
-
-    [Guid("83fbf3e4-b4f4-415a-9a5b-7c2f635ff83b"), ComVisible(true), InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IDMDObjectEvents
-    {
-        #region Events
-
-        [DispId(1)]
-        void onDMDChanged();
 
         #endregion
     }

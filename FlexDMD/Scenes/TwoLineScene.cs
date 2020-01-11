@@ -42,8 +42,8 @@ namespace FlexDMD.Scenes
         public override void Update(float delta)
         {
             base.Update(delta);
-            _topText.SetPosition((Width - _topText.Width) * 0.5f, 4);
-            _bottomText.SetPosition((Width - _bottomText.Width) * 0.5f, 15);
+            _topText.SetPosition((Width - _topText.Width) / 2, 4);
+            _bottomText.SetPosition((Width - _bottomText.Width) / 2, 15);
         }
 
         public override string ToString()

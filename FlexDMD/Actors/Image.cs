@@ -12,26 +12,34 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
-using NLog;
 using System.Drawing;
-using System.Drawing.Imaging;
 
 namespace FlexDMD
 {
-    public class Image : Actor
+    public class Image : Actor, IImageActor
     {
-        private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        public Bitmap _image = null;
+        public Bitmap Bitmap {get; set; } = null;
+		public Scaling Scaling {get; set; } = Scaling.Stretch;
+		public Alignment Alignment {get; set; } = Alignment.Center;
+
+		public override float PrefWidth { get => Bitmap.Width; }
+		
+		public override float PrefHeight { get => Bitmap.Height; }
 
         public Image(Bitmap image)
         {
-            _image = image;
+            Bitmap = image;
+			Pack();
         }
 
         public override void Draw(Graphics graphics)
         {
-            if (Visible && _image != null) graphics.DrawImage(_image, (int)X, (int)Y, (int)Width, (int)Height);
+            if (Visible && Bitmap != null) 
+			{
+				Layout.Scale(Scaling, PrefWidth, PrefHeight, Width, Height, out float w, out float h);
+                Layout.Align(Alignment, w, h, Width, Height, out float x, out float y);
+				graphics.DrawImage(Bitmap, (int)(X + x), (int)(Y + y), (int)w, (int)h);
+			}
         }
     }
 }

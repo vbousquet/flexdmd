@@ -55,14 +55,14 @@ namespace FlexDMD.Scenes
             var y = padY;
             for (int col = 0; col < 16; col++)
             {
-                _images[0, col].SetBounds(x, y, topW, topH);
+                // TODO _images[0, col].SetBounds(x, y, topW, topH);
                 x += topW;
             }
             x = 0.5f * topW;
             y = padY * 2 + topH;
             for (int col = 0; col < 20; col++)
             {
-                _images[1, col].SetBounds(x, y, botW, botH);
+                // TODO _images[1, col].SetBounds(x, y, botW, botH);
                 x += botW;
             }
         }

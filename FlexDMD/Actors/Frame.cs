@@ -3,7 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace FlexDMD
 {
-    public class Frame : Actor
+
+    // [Guid("3EF157CD-9A77-4B70-995F-1F3FAFCA4412"), ComVisible(true), ClassInterface(ClassInterfaceType.None)]
+    public class Frame : Actor, IFrameActor
     {
         private SolidBrush _brush = new SolidBrush(Color.White);
 

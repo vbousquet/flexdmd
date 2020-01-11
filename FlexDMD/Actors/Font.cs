@@ -22,7 +22,7 @@ using System.IO;
 
 namespace FlexDMD
 {
-    class Font
+    public class Font
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private Bitmap[] _textures;

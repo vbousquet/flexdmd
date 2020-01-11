@@ -30,13 +30,11 @@ namespace FlexDMD.Scenes
                 if (_background != null)
                 {
                     RemoveActor(_background);
-                    if (_active && _background is Video v) v.Close();
                 }
                 _background = value;
                 if (_background != null)
                 {
                     AddActorAt(_background, 0);
-                    if (_active && _background is Video v) v.Open();
                 }
             }
         }
@@ -45,18 +43,6 @@ namespace FlexDMD.Scenes
         {
             _background = background;
             if (_background != null) AddActor(_background);
-        }
-
-        public override void Begin()
-        {
-            base.Begin();
-            if (_background != null && _background is Video v) v.Open();
-        }
-
-        public override void End()
-        {
-            base.End();
-            if (_background != null && _background is Video v) v.Close();
         }
 
         public override void Update(float delta)

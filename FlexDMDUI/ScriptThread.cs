@@ -182,7 +182,6 @@ namespace FlexDMDUI
             scriptError.GetSourcePosition(out uint sourceContext, out uint lineNumber, out int characterPosition);
             scriptError.GetSourceLineText(out string sourceLine);
             var msg = string.Format("'{0}' at line {1}, character {2}:\n\n{3}", exceptionInfo.bstrDescription, lineNumber - 4, characterPosition, sourceLine);
-            Console.WriteLine(msg);
             System.Windows.Forms.MessageBox.Show(msg, exceptionInfo.bstrSource);
         }
 

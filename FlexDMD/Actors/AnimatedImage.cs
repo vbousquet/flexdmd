@@ -36,14 +36,6 @@ namespace FlexDMD
             _frameDuration = 1.0f / fps;
         }
 		
-		public AnimatedImage newInstance()
-		{
-			List<Bitmap> bmps = new List<Bitmap>();
-            foreach (Image img in _frames)
-                bmps.Add(img._image);
-			return new AnimatedImage(bmps, _fps, _loop);
-		}
-
         protected override void Rewind()
         {
             _frame = 0;

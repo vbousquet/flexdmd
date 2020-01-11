@@ -12,23 +12,35 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using NLog;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace FlexDMD
 {
-    class Label : Actor
+    // [Guid("BCAC5C64-9E46-431A-860C-DDBE38195965"), ComVisible(true), ClassInterface(ClassInterfaceType.None)]
+    public class Label : Actor, ILabelActor
     {
-        private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private Font _font;
         private string _text;
+        private float _textWidth, _textHeight;
+
+        public Label()
+        {
+        }
 
         public Label(Font font, string text)
         {
             _font = font;
             Text = text;
+            Pack();
         }
+
+        public Alignment Alignment { get; set; } = Alignment.Center;
+
+        public override float PrefWidth { get => _textWidth; }
+
+        public override float PrefHeight { get => _textHeight; }
 
         public string Text
         {
@@ -65,18 +77,22 @@ namespace FlexDMD
             }
         }
 
-        public void UpdateBounds()
+        private void UpdateBounds()
         {
             if (_text == null || _font == null) return;
             var size = _font.MeasureFont(_text);
-            Width = size.Width;
-            Height = size.Height;
+            _textWidth = size.Width;
+            _textHeight = size.Height;
         }
 
         public override void Draw(Graphics graphics)
         {
             base.Draw(graphics);
-            if (Visible) _font.DrawText(graphics, X, Y, _text);
+            if (Visible && _font != null && _text != null)
+            {
+                Layout.Align(Alignment, PrefWidth, PrefHeight, Width, Height, out float x, out float y);
+                _font.DrawText(graphics, (int)(X + x), (int)(Y + y), _text);
+            }
         }
     }
 }

@@ -92,7 +92,7 @@ namespace FlexDMD.Scenes
                     }
                 case AnimationType.ScrollOffLeft:
                     {
-                        X = 0f;
+                        X = 0;
                         _tweener.Tween(this, new { X = -Width }, scrollWLength);
                         return scrollWLength;
                     }
@@ -116,13 +116,13 @@ namespace FlexDMD.Scenes
                     }
                 case AnimationType.ScrollOffUp:
                     {
-                        Y = 0f;
+                        Y = 0;
                         _tweener.Tween(this, new { Y = -Height }, scrollHLength);
                         return scrollHLength;
                     }
                 case AnimationType.ScrollOffDown:
                     {
-                        Y = 0f;
+                        Y = 0;
                         _tweener.Tween(this, new { Y = Height }, scrollHLength);
                         return scrollHLength;
                     }

@@ -53,7 +53,7 @@ namespace FlexDMD.Scenes
                 _container.Width = Width;
                 foreach (Actor line in _container.Children)
                 {
-                    line.X = (Width - line.Width) * 0.5f;
+                    line.X = (Width - line.Width) / 2;
                 }
             }
             _tweener.Update(delta);

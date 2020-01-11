@@ -17,7 +17,7 @@ using System;
 
 namespace FlexDMD
 {
-    abstract class AnimatedActor : Actor
+    public abstract class AnimatedActor : Actor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         protected bool _loop = true;
@@ -29,6 +29,7 @@ namespace FlexDMD
         public override void Update(float delta)
         {
             base.Update(delta);
+			if (!Visible) return;
             _time += delta;
             while (!_endOfAnimation && _time >= _frameTime + _frameDuration)
             {

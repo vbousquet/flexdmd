@@ -105,8 +105,8 @@ namespace FlexDMD
             base.Update(delta);
             float yText = Height - TextFont.BitmapFont.BaseHeight - 1;
             // float yLine2 = 1 + HighlightFont.BitmapFont.BaseHeight + (Height - 2 - TextFont.BitmapFont.BaseHeight - 2 * HighlightFont.BitmapFont.BaseHeight) / 2;
-            float yLine2 = (Height - TextFont.BitmapFont.BaseHeight) / 2;
-            float dec = (HighlightFont.BitmapFont.BaseHeight - ScoreFont.BitmapFont.BaseHeight) / 2;
+            float yLine2 = (Height - TextFont.BitmapFont.BaseHeight) / 2f;
+            float dec = (HighlightFont.BitmapFont.BaseHeight - ScoreFont.BitmapFont.BaseHeight) / 2f;
             // float yLine2 = (1 + yText) * 0.5f;
             _scores[0].SetPosition(1, 1 + (_highlightedPlayer == 1 ? 0 : dec));
             _scores[1].SetPosition(Width - _scores[1].Width - 1, 1 + (_highlightedPlayer == 2 ? 0 : dec));

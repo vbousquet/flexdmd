@@ -19,16 +19,28 @@ using System.Runtime.InteropServices;
 
 namespace FlexDMD
 {
-    public class Group : Actor
+    // [Guid("55A9AB7A-DB5D-48E2-B419-80B25E23732D"), ComVisible(true), ClassInterface(ClassInterfaceType.None)]
+    public class Group : Actor, IGroupActor
     {
+		private bool _inStage = false;
         public List<Actor> Children { get; } = new List<Actor>();
+
+		public override bool InStage 
+		{ 
+			get => _inStage;
+			set
+			{
+				if (_inStage == value) return;
+				_inStage = value;
+				foreach (Actor child in Children)
+					child.InStage = value;
+			}
+		}
 
         public override void Update(float delta)
         {
             foreach (Actor child in Children)
-            {
                 child.Update(delta);
-            }
         }
 
         public override void Draw(Graphics graphics)
@@ -41,32 +53,56 @@ namespace FlexDMD
             }
         }
 
+        public object Get(string name)
+        {
+            if (Name.Equals(name)) return this;
+            foreach (Actor child in Children)
+            {
+                if (child is Group g)
+                {
+                    var found = g.Get(name);
+                    if (found != null) return found;
+                }
+                else if (child.Name.Equals(name))
+                {
+                    return child;
+                }
+            }
+            return null;
+        }
+
         public void AddActor(Actor child)
         {
-            if (child.Parent != null) child.Parent.RemoveActor(child);
+			child.Remove();
             child.Parent = this;
             Children.Add(child);
+            child.InStage = _inStage;
         }
 
         public void AddActorAt(Actor child, int index)
         {
-            if (child.Parent != null) child.Parent.RemoveActor(child);
+			child.Remove();
             child.Parent = this;
             Children.Insert(index, child);
+            child.InStage = _inStage;
         }
 
         public void RemoveActor(Actor child)
         {
             child.Parent = null;
             Children.Remove(child);
+            child.InStage = false;
         }
 
         public void RemoveAll()
         {
-            Children.ForEach(item => item.Parent = null);
+            Children.ForEach(item => 
+			{
+                item.Parent = null;
+				item.InStage = false;
+			});
             Children.Clear();
         }
-
     }
 }
 

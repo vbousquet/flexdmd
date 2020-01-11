@@ -3,6 +3,7 @@
         "KeyFile": "FlexDMD.snk"
     },
     "Advanced": {
+        "Internalize": true,
         "Log": false,
         "LogFile": "ilmerge.log"
     }
