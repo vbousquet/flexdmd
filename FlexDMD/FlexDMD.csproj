@@ -95,6 +95,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actors\Actions.cs" />
     <Compile Include="Actors\Actor.cs" />
     <Compile Include="Actors\AnimatedActor.cs" />
     <Compile Include="Actors\AnimatedImage.cs" />

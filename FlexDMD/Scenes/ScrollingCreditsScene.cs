@@ -12,8 +12,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
-using Glide;
 
 namespace FlexDMD.Scenes
 {
@@ -24,7 +22,7 @@ namespace FlexDMD.Scenes
 
         public ScrollingCreditsScene(Actor background, string[] text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {
-            // There is nothing obvious in UltraDMD that gives hint on the timing, so I choosed one...
+            // There is nothing obvious in UltraDMD that gives hint on the timing, so I choosed one.
             _length = 3f + text.Length * 0.4f;
             AddActor(_container);
             var y = 0f;
@@ -56,7 +54,6 @@ namespace FlexDMD.Scenes
                     line.X = (Width - line.Width) / 2;
                 }
             }
-            _tweener.Update(delta);
         }
     }
 }

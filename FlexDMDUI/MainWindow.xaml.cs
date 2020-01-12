@@ -22,12 +22,11 @@ namespace FlexDMDUI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// 
-    /// regasm from x64 framework will fail too, whereas regasm from x86 framework will succeeded.
-    /// VS2019 will only register under : HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}\InprocServer32
+    /// Note that regasm from x64 framework will fail whereas regasm from x86 framework will succeeded.
+    /// VS2019 will register under : HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}\InprocServer32
     /// </summary>
-    public partial class MainWindow : Window //, IActiveScriptSite
+    public partial class MainWindow : Window
     {
-        private const bool useLocalMachine = true;
         private const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
         private const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
         private string _installPath;
@@ -42,9 +41,13 @@ namespace FlexDMDUI
 Public Sub FlexDemo()
     Set black = DMD.NewImage(""Diablo.UltraDMD/black.jpg"")
     black.SetSize 128, 32
-    Set font = DMD.NewFont(""FlexDMD.Resources.f4by5.fnt"", 1.0, -1.0)
+    Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
     Set label = DMD.NewLabel(font, ""Test"")
+    Set lf = label.ActionFactory
+    Set seq = lf.Sequence().Add(lf.MoveTo(127 - label.Width,1,1)).Add(lf.Wait(1)).Add(lf.MoveTo(1,1,1))
+    Set move = lf.Repeat(seq, -1)
     label.SetPosition 1, 1
+    label.AddAction move
     DMD.LockRenderThread
     DMD.Stage.RemoveAll
     DMD.Stage.AddActor black
@@ -351,7 +354,7 @@ End If
             }
             catch (Win32Exception e)
             {
-                //Cancelled
+                // Cancelled by user
                 if (e.NativeErrorCode == 1223)
                     return null;
                 throw;

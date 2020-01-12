@@ -30,7 +30,7 @@ namespace FlexDMD
     public class FlexDMD : IFlexDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private readonly List<Action> _runnables = new List<Action>();
+        private readonly List<System.Action> _runnables = new List<System.Action>();
         private readonly AssetManager _assets = new AssetManager();
         private readonly Group _stage = new Group();
         private readonly int _frameRate = 60;
@@ -283,7 +283,7 @@ namespace FlexDMD
 			_renderMutex.ReleaseMutex();
 		}
 		
-		public void Post(Action runnable)
+		public void Post(System.Action runnable)
 		{
 			lock (_runnables)
             {

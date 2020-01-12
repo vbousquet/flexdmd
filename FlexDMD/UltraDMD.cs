@@ -274,7 +274,7 @@ namespace UltraDMD
                 {
                     if (scene is TwoLineScene s2) s2.SetText(toptext, bottomtext);
                     if (scene is SingleLineScene s1) s1.SetText(toptext);
-                    scene.SetPause(scene.Time + pauseTime / 1000f);
+                    scene.Pause = scene.Time + pauseTime / 1000f;
                 }
             });
         }

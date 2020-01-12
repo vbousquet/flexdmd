@@ -12,13 +12,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
+using Glide;
+using System.Collections.Generic;
 using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace FlexDMD
 {
     public class Actor
     {
+        private List<Action> _actions = new List<Action>();
+
         public string Name { get; set; } = "";
         public float X { get; set; } = 0;
         public float Y { get; set; } = 0;
@@ -29,18 +32,23 @@ namespace FlexDMD
         public virtual float PrefHeight { get; } = 0;
         public virtual bool InStage { get; set; } = false;
         public virtual bool Visible { get; set; } = true;
-		public object Info { get; set; } = null;
+        public IActionFactory ActionFactory { get; }
 
-		public void Remove()
-		{
-			if (Parent != null) Parent.RemoveActor(this);
-		}
+        public Actor()
+        {
+            ActionFactory = new ActionFactory(this);
+        }
 
-		public void Pack()
-		{
-			Width = PrefWidth;
-			Height = PrefHeight;
-		}
+        public void Remove()
+        {
+            if (Parent != null) Parent.RemoveActor(this);
+        }
+
+        public void Pack()
+        {
+            Width = PrefWidth;
+            Height = PrefHeight;
+        }
 
         public void SetBounds(float x, float y, float width, float height)
         {
@@ -62,8 +70,15 @@ namespace FlexDMD
             Height = height;
         }
 
+        public void AddAction(Action action)
+        {
+            _actions.Add(action);
+        }
+
         public virtual void Update(float secondsElapsed)
         {
+            for (int i = 0; i < _actions.Count; i++)
+                if (_actions[i].Update(secondsElapsed)) _actions.RemoveAt(i);
         }
 
         public virtual void Draw(Graphics graphics)

@@ -20,6 +20,45 @@ namespace FlexDMD
 {
 
     #region Interfaces
+    [Guid("3ABF2DA1-819B-462E-AC1C-6BF8BF625D36"), ComVisible(true)]
+    public enum Interpolation
+    {
+        Linear,
+        ElasticIn, ElasticOut, ElasticInOut,
+        QuadIn, QuadOut, QuadInOut,
+        CubeIn, CubeOut, CubeInOut,
+        QuartIn, QuartOut, QuartInOut,
+        QuintIn, QuintOut, QuintInOut,
+        SineIn, SineOut, SineInOut,
+        BounceIn, BounceOut, BounceInOut,
+        CircIn, CircOut, CircInOut,
+        ExpoIn, ExpoOut, ExpoInOut,
+        BackIn, BackOut, BackInOut
+    }
+
+    [Guid("DCA215A5-EF1B-4924-B5EA-BF108398A318"), ComVisible(true)]
+    public interface ICompositeAction
+    {
+        ICompositeAction Add([MarshalAs(UnmanagedType.Struct)]Action action);
+    }
+
+    [Guid("7A165BD9-9825-488D-B292-87CAAC46CB3C"), ComVisible(true)]
+    public interface ITweenAction
+    {
+        Interpolation Ease { get; set; }
+    }
+
+    [Guid("DE32F29E-F8C8-4E79-AEE1-4725A320B0B6"), ComVisible(true)]
+    public interface IActionFactory
+    {
+        [return: MarshalAs(UnmanagedType.Struct)] Action Wait(float secondsToWait);
+        ICompositeAction Parallel();
+        ICompositeAction Sequence();
+        [return: MarshalAs(UnmanagedType.Struct)] Action Repeat([MarshalAs(UnmanagedType.Struct)]Action action, int count);
+        [return: MarshalAs(UnmanagedType.Struct)] Action Show(bool visible);
+        ITweenAction MoveTo(float x, float y, float duration);
+    }
+
 
     [Guid("6F205A9B-B007-4DCD-A635-51B2C939A796"), ComVisible(true)]
     public interface IActor
@@ -33,7 +72,9 @@ namespace FlexDMD
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetSize(float width, float height);
-		void Remove();
+        void Remove();
+        IActionFactory ActionFactory { get; }
+        void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
     }
 
     [Guid("1BF9F8AE-1BA0-4FA2-AD03-48E9FD0F4C92"), ComVisible(true)]
@@ -49,7 +90,9 @@ namespace FlexDMD
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetSize(float width, float height);
-		void Remove();
+        void Remove();
+        IActionFactory ActionFactory { get; }
+        void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
         // Group interface
         [return: MarshalAs(UnmanagedType.Struct)] object Get(string name);
         void RemoveAll();
@@ -69,7 +112,9 @@ namespace FlexDMD
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetSize(float width, float height);
-		void Remove();
+        void Remove();
+        IActionFactory ActionFactory { get; }
+        void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
         // Frame interface
         int Thickness { get; set; }
     }
@@ -87,7 +132,9 @@ namespace FlexDMD
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetSize(float width, float height);
-		void Remove();
+        void Remove();
+        IActionFactory ActionFactory { get; }
+        void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
     }
 
     [Guid("CF9AFD55-03A3-458D-8EAB-119C55090BAB"), ComVisible(true)]
@@ -103,7 +150,9 @@ namespace FlexDMD
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetSize(float width, float height);
-		void Remove();
+        void Remove();
+        IActionFactory ActionFactory { get; }
+        void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
     }
 
     [Guid("A8AAD77F-4F01-433B-B653-B6F14234F4F2"), ComVisible(true)]
@@ -119,7 +168,9 @@ namespace FlexDMD
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetSize(float width, float height);
-		void Remove();
+        void Remove();
+        IActionFactory ActionFactory { get; }
+        void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
         // Label interface
         Font Font { [return: MarshalAs(UnmanagedType.Struct)] get; [param: MarshalAs(UnmanagedType.Struct)] set; }
         string Text { get; set; }
@@ -176,7 +227,7 @@ namespace FlexDMD
 
         /// <summary>
         /// Defines the table file name (relative to the project folder, see ProjectFolder).
-		/// You need to define the table file, if you intend to use images stored inside the table file (for example 'VPX.image' with 'image' stored in the table file)
+        /// You need to define the table file, if you intend to use images stored inside the table file (for example 'VPX.image' with 'image' stored in the table file)
         /// </summary>
         string TableFile { get; set; }
 
@@ -218,12 +269,12 @@ namespace FlexDMD
         void Uninit();
 
         /// <summary>
-		/// Lock the render thread to allow modifying the stage avoiding concurrent modifications.
+        /// Lock the render thread to allow modifying the stage avoiding concurrent modifications.
         /// </summary>
         void LockRenderThread();
 
         /// <summary>
-		/// Unlock the render thread to allow the render thread to render the stage after modifying it.
+        /// Unlock the render thread to allow the render thread to render the stage after modifying it.
         /// </summary>
         void UnlockRenderThread();
 
@@ -250,10 +301,10 @@ namespace FlexDMD
         /// <summary>
         /// </summary>
         [return: MarshalAs(UnmanagedType.Struct)] Font NewFont(string font, float brightness, float outline);
-        
+
         /// <summary>
         /// </summary>
-		IUltraDMD NewUltraDMD();
+        IUltraDMD NewUltraDMD();
 
         #endregion
     }

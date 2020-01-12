@@ -12,16 +12,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
-using Glide;
-using NLog;
-
 namespace FlexDMD.Scenes
 {
     class TwoLineScene : BackgroundScene
     {
-        private Label _topText;
-        private Label _bottomText;
+        private readonly Label _topText;
+        private readonly Label _bottomText;
 
         public TwoLineScene(Actor background, string topText, Font topFont, string bottomText, Font bottomFont, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
         {
@@ -37,8 +33,6 @@ namespace FlexDMD.Scenes
             _bottomText.Text = bottomText;
         }
 
-        private static readonly Logger log = LogManager.GetCurrentClassLogger();
-
         public override void Update(float delta)
         {
             base.Update(delta);
@@ -48,7 +42,7 @@ namespace FlexDMD.Scenes
 
         public override string ToString()
         {
-            return string.Format("TwoLineScene _id={0}, _background={1}, _animateIn={2}, _pauseS={3}, _animateOut={4}", _id, Background, _animateIn, _pauseS, _animateOut);
+            return string.Format("TwoLineScene _id={0}, _background={1}, _animateIn={2}, _pauseS={3}, _animateOut={4}", _id, Background, _animateIn, Pause, _animateOut);
         }
     }
 }

@@ -12,10 +12,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
 using Glide;
 using NLog;
-using System;
 using System.Drawing;
 
 namespace FlexDMD.Scenes
@@ -31,29 +29,22 @@ namespace FlexDMD.Scenes
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         protected readonly string _id;
         protected readonly Tweener _tweener = new Tweener();
-        protected float _pauseS;
         protected float _inAnimLength;
         protected float _outAnimLength;
         protected AnimationType _animateIn;
         protected AnimationType _animateOut;
-        private float _time;
-
         public bool _active = false;
 
         public string Id { get => _id; }
-        public float Time { get => _time; }
+        public float Time { get; private set; }
+        public float Pause { get; set; }
 
         public Scene(AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "")
         {
             _animateIn = animateIn;
             _animateOut = animateOut;
-            _pauseS = pauseS;
+            Pause = pauseS;
             _id = id;
-        }
-
-        public void SetPause(float pauseS)
-        {
-            _pauseS = pauseS;
         }
 
         public virtual void Begin()
@@ -181,15 +172,15 @@ namespace FlexDMD.Scenes
         public override void Update(float secondsElapsed)
         {
             base.Update(secondsElapsed);
-            _time += secondsElapsed;
-            if (_pauseS >= 0f && _outAnimLength < 0 && _time >= _inAnimLength + _pauseS)
+            Time += secondsElapsed;
+            if (Pause >= 0f && _outAnimLength < 0 && Time >= _inAnimLength + Pause)
                 _outAnimLength = StartAnimation(_animateOut);
             _tweener.Update(secondsElapsed);
         }
 
         public bool IsFinished()
         {
-            return _pauseS >= 0f && _outAnimLength >= 0 && _time >= _inAnimLength + _pauseS + _outAnimLength;
+            return Pause >= 0f && _outAnimLength >= 0 && Time >= _inAnimLength + Pause + _outAnimLength;
         }
     }
 }
