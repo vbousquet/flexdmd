@@ -125,6 +125,15 @@ namespace FlexDMD
                     _textures[i].Dispose();
                     _textures[i] = dst;
                 }
+                var charDictionary = new Dictionary<char, Character>();
+                foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
+                {
+                    var character = glyph.Value;
+                    // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
+                    character.XAdvance += 2; // Adjust to add a padding between characters to account for the outline
+                    charDictionary.Add(glyph.Key, character);
+                }
+                BitmapFont.Characters = charDictionary;
             }
 
             // Render modulated brightness font
@@ -166,30 +175,6 @@ namespace FlexDMD
                     }
                     _textures[i].UnlockBits(bmData);
                 }
-                var charDictionary = new Dictionary<char, Character>();
-                foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
-                {
-                    var character = glyph.Value;
-                    // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
-                    character.XAdvance -= 2; // Adjust to remove the outline padding
-                    charDictionary.Add(glyph.Key, character);
-                }
-                BitmapFont.Characters = charDictionary;
-            }
-
-            // Render base font
-            else
-            {
-                var charDictionary = new Dictionary<char, Character>();
-                // TODO remove this; tests shows that the font are correct if generated from AngelCode's BMFont. It's the manual drawn UltraDMD clone font which are wrong => correct these only
-                foreach (KeyValuePair<char, Character> glyph in BitmapFont.Characters)
-                {
-                    var character = glyph.Value;
-                    // character.Bounds = new Rectangle(character.Bounds.X - 1, character.Bounds.Y - 1, character.Bounds.Width + 2, character.Bounds.Height + 2);
-                    character.XAdvance -= 2; // Adjust to remove the outline padding
-                    charDictionary.Add(glyph.Key, character);
-                }
-                BitmapFont.Characters = charDictionary;
             }
         }
 

@@ -28,12 +28,13 @@
                                 <LineBreak/>
                                 <LineBreak/>
                                 <Run Text="FlexDMD is a tool that lets pinball table render and animate DMD display like on a real pinball. This application will "/>
+                                <Run Text=" "/>
                                 <Run Text="help"/>
+                                <Run Text=" "/>
                                 <Run Text=" you install it and design DMD scenes."/>
                                 <LineBreak/>
                                 <LineBreak/>
-                                <Run Text="To help you with the installation, t"/>
-                                <Run Text="hree tools are provided below;"/>
+                                <Run Text="To help you with the installation, three tools are provided below;"/>
                             </Paragraph>
                             <List MarkerOffset="5" StartIndex="1">
                                 <ListItem>

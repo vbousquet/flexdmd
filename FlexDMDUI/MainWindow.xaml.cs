@@ -102,7 +102,10 @@ Public Sub CompareUltraFlex()
     UDMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
 
     ' Scrolling text scene
-    UDMD.DisplayScene01 """", """", ""Scrolling Text"", 15, -1, 14, 5000, 14
+    UDMD.DisplayScene01 """", """", ""Scrolling Text"", 5, 15, 14, 5000, 14
+
+    ' Scrolling credits scene
+    UDMD.ScrollingCredits """", ""Scrolling|Credits||Multiple|lines|of text"", 15, 14, 5000, 14
 End Sub
 
 If FlexDMDMode And UltraDMDMode Then
@@ -265,9 +268,8 @@ End If
             _ultraScript.Post(@"
                 Dim DMD
                 Dim UDMD
-                Set DMD = CreateObject(""UltraDMD.DMDObject"")
-                Set UDMD = DMD
-                DMD.Init
+                Set UDMD = CreateObject(""UltraDMD.DMDObject"")
+                UDMD.Init
                 ");
         }
 
@@ -276,7 +278,7 @@ End If
             if (_ultraScript != null)
             {
                 _ultraScript.Interrupt();
-                _ultraScript.Post("If Not DMD is Nothing Then DMD.Uninit");
+                _ultraScript.Post("If Not UDMD is Nothing Then UDMD.Uninit");
                 _ultraScript.Close(true, true);
                 _ultraScript = null;
             }

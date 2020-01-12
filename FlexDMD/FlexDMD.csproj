@@ -137,6 +137,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenes\BackgroundScene.cs" />
     <Compile Include="Scenes\ScrollingCreditsScene.cs" />
+    <Compile Include="Scenes\Sequence.cs" />
     <Compile Include="Scenes\SingleLineScene.cs" />
     <Compile Include="Scenes\TwoLineScene.cs" />
     <Compile Include="UltraDMD.cs" />
@@ -147,29 +148,29 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="Resources\f12by24.png" />
-    <EmbeddedResource Include="Resources\f14by26.png" />
-    <EmbeddedResource Include="Resources\f4by5.png" />
-    <EmbeddedResource Include="Resources\f5by7.png" />
-    <EmbeddedResource Include="Resources\f6by12.png" />
-    <EmbeddedResource Include="Resources\f7by13.png" />
-    <EmbeddedResource Include="Resources\f7by5.png" />
-    <EmbeddedResource Include="Resources\font-12_0.png" />
-    <EmbeddedResource Include="Resources\font-5_0.png" />
-    <EmbeddedResource Include="Resources\font-7_0.png" />
+    <EmbeddedResource Include="Resources\bm_army-12.png" />
+    <EmbeddedResource Include="Resources\teeny_tiny_pixls-5.png" />
+    <EmbeddedResource Include="Resources\zx_spectrum-7.png" />
+    <EmbeddedResource Include="Resources\udmd-f12by24.png" />
+    <EmbeddedResource Include="Resources\udmd-f14by26.png" />
+    <EmbeddedResource Include="Resources\udmd-f4by5.png" />
+    <EmbeddedResource Include="Resources\udmd-f5by7.png" />
+    <EmbeddedResource Include="Resources\udmd-f6by12.png" />
+    <EmbeddedResource Include="Resources\udmd-f7by13.png" />
+    <EmbeddedResource Include="Resources\udmd-f7by5.png" />
     <None Include="FlexDMD.snk" />
     <None Include="ILMergeConfig.json" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="Resources\font-12.fnt" />
-    <EmbeddedResource Include="Resources\font-5.fnt" />
-    <EmbeddedResource Include="Resources\font-7.fnt" />
-    <EmbeddedResource Include="Resources\f12by24.fnt" />
-    <EmbeddedResource Include="Resources\f14by26.fnt" />
-    <EmbeddedResource Include="Resources\f4by5.fnt" />
-    <EmbeddedResource Include="Resources\f5by7.fnt" />
-    <EmbeddedResource Include="Resources\f6by12.fnt" />
-    <EmbeddedResource Include="Resources\f7by13.fnt" />
-    <EmbeddedResource Include="Resources\f7by5.fnt" />
+    <EmbeddedResource Include="Resources\udmd-f12by24.fnt" />
+    <EmbeddedResource Include="Resources\udmd-f14by26.fnt" />
+    <EmbeddedResource Include="Resources\udmd-f4by5.fnt" />
+    <EmbeddedResource Include="Resources\udmd-f5by7.fnt" />
+    <EmbeddedResource Include="Resources\udmd-f6by12.fnt" />
+    <EmbeddedResource Include="Resources\udmd-f7by13.fnt" />
+    <EmbeddedResource Include="Resources\udmd-f7by5.fnt" />
+    <EmbeddedResource Include="Resources\bm_army-12.fnt" />
+    <EmbeddedResource Include="Resources\teeny_tiny_pixls-5.fnt" />
+    <EmbeddedResource Include="Resources\zx_spectrum-7.fnt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

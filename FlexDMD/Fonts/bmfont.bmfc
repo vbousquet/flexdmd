@@ -3,7 +3,7 @@ fileVersion=1
 
 # font settings
 fontName=BM army
-fontFile=12px - bm_army/BMarmy.TTF
+fontFile=TTF Fonts/12px - bm_army/BMarmy.TTF
 charSet=0
 fontSize=-12
 aa=1

@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace UltraDMD
 {
@@ -45,18 +44,18 @@ namespace UltraDMD
         {
             _flexDMD = flexDMD;
             // UltraDMD uses f4by5 / f5by7 / f6by12
-            _scoreFontText = new FontDef("FlexDMD.Resources.f4by5.fnt", 0.66f);
-            _scoreFontNormal = new FontDef("FlexDMD.Resources.f5by7.fnt", 0.66f);
-            _scoreFontHighlight = new FontDef("FlexDMD.Resources.f6by12.fnt");
+            _scoreFontText = new FontDef("FlexDMD.Resources.udmd-f4by5.fnt", 0.66f);
+            _scoreFontNormal = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt", 0.66f);
+            _scoreFontHighlight = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt");
             // UltraDMD uses f14by26 or f12by24 or f7by13 to fit in
             _singleLineFont = new FontDef[] {
-                new FontDef("FlexDMD.Resources.f14by26.fnt"),
-                new FontDef("FlexDMD.Resources.f12by24.fnt"),
-                new FontDef("FlexDMD.Resources.f7by13.fnt")
+                new FontDef("FlexDMD.Resources.udmd-f14by26.fnt"),
+                new FontDef("FlexDMD.Resources.udmd-f12by24.fnt"),
+                new FontDef("FlexDMD.Resources.udmd-f7by13.fnt")
             };
             // UltraDMD uses f5by7 / f6by12 for top / bottom line
-            _twoLinesFontTop = new FontDef("FlexDMD.Resources.f5by7.fnt");
-            _twoLinesFontBottom = new FontDef("FlexDMD.Resources.f6by12.fnt");
+            _twoLinesFontTop = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt");
+            _twoLinesFontBottom = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt");
             // Core rendering tree
             _scoreBoard = new ScoreBoard(
                 _flexDMD.NewFont(_scoreFontNormal.Path, _scoreFontNormal.FillBrightness, _scoreFontNormal.OutlineBrightness),
@@ -167,7 +166,7 @@ namespace UltraDMD
 
         public void SetProjectFolder(string basePath) => _flexDMD.ProjectFolder = basePath;
 
-		// TODO stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
+		// TODO implement stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
         public void SetVideoStretchMode(int mode) => _stretchMode = mode;
 
         public int CreateAnimationFromImages(int fps, bool loop, string imagelist)
@@ -202,7 +201,7 @@ namespace UltraDMD
 
         public void DisplayVersionInfo()
         {
-            // No version info (this is an implementation choice to avoid delaying game startup and displaying again and again the same scene)
+            // No version info in FlexDMD (this is an implementation choice to avoid delaying game startup and displaying again and again the same scene)
             _scoreBoard.Visible = false;
         }
 
@@ -220,8 +219,6 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                //log.Info("DisplayScene00ExWithId sceneId='{0}', cancelPrevious='{1}', background={2}, toptext='{3}', topBrightness={4}, topOutlineBrightness={5}, bottomtext='{6}', bottomBrightness={7}, bottomOutlineBrightness={8}, animateIn={9}, pauseTime={10}, animateOut={11}",
-                //    sceneId, cancelPrevious, background, toptext, topBrightness, topOutlineBrightness, bottomtext, bottomBrightness, bottomOutlineBrightness, animateIn, pauseTime, animateOut);
                 _scoreBoard.Visible = false;
                 if (cancelPrevious && sceneId != null && sceneId.Length > 0)
                 {
@@ -259,7 +256,6 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                // log.Info("ModifyScene00 '{0}', '{1}', '{2}'", id, toptext, bottomtext);
                 var scene = _queue.GetActiveScene();
                 if (scene != null && id != null && id.Length > 0 && scene.Id == id)
                 {
@@ -273,7 +269,6 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                // log.Info("ModifyScene00Ex '{0}', '{1}', '{2}', {3}", id, toptext, bottomtext, pauseTime);
                 var scene = _queue.GetActiveScene();
                 if (scene != null && id != null && id.Length > 0 && scene.Id == id)
                 {
@@ -288,7 +283,6 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                // log.Info("DisplayScene01 '{0}', '{1}', '{2}', {3}, {4}, {5}, {6}, {7}", sceneId, background, text, textBrightness, textOutlineBrightness, animateIn, pauseTime, animateOut);
                 _scoreBoard.Visible = false;
                 var font = _flexDMD.NewFont(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f);
                 var scene = new SingleLineScene(ResolveImage(background, false), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
@@ -312,8 +306,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened (managed by scoreboard visibility in render loop)
-                // log.Info("Scoreboard for {0} players, {1} is playing", cPlayers, highlightedPlayer);
+                // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened (managed by scoreboard visibility)
                 _scoreBoard.Visible = true;
                 _scoreBoard.SetNPlayers(cPlayers);
                 _scoreBoard.SetHighlightedPlayer(highlightedPlayer);
@@ -323,10 +316,11 @@ namespace UltraDMD
             });
         }
 
-        // From KissDMDv2.vbs, an undocumented function as far as I know. I do not have a clue on the difference between this one and DisplayScoreboard beside the fonts.
+        // KissDMDv2.vbs use this undocumented function as far as I know. As far as I can tell, this will just change the font.
         // UltraDMD.DisplayScoreboard00 PlayersPlayingGame, 0, Score(1), Score(2), Score(3), Score(4), "credits " & Credits, ""
         public void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight)
         {
+            // TODO use an UltraDMD matching font
             DisplayScoreboard(cPlayers, highlightedPlayer, score1, score2, score3, score4, lowerLeft, lowerRight);
         }
 
@@ -340,14 +334,15 @@ namespace UltraDMD
             });
         }
 
+        // TODO I did not find an UltraDMD table using this, and I did not succeed in making it work in UltraDMD. So I'm just guessing it's behavior, font, etc.
         public void ScrollingCredits(string background, string text, int textBrightness, int animateIn, int pauseTime, int animateOut)
         {
             _flexDMD.Post(() =>
             {
                 // log.Info("ScrollingCredits '{0}', '{1}', {2}", background, text, textBrightness);
                 _scoreBoard.Visible = false;
-                string[] lines = text.Split(new Char[] { '\n', '|' });
-                var font12 = _flexDMD.NewFont("FlexDMD.Resources.font-12.fnt", textBrightness / 15f, -1);
+                string[] lines = text.Split(new char[] { '\n', '|' });
+                var font12 = _flexDMD.NewFont(_twoLinesFontBottom.Path, textBrightness / 15f, -1);
                 var scene = new ScrollingCreditsScene(ResolveImage(background, false), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
                 _queue.Enqueue(scene);
             });
