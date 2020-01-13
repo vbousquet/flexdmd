@@ -64,7 +64,7 @@ namespace FlexDMD
                 _pos = 0;
                 return true;
             }
-            if (_actions[_pos].Update(secondsElapsed))
+            while (_actions[_pos].Update(secondsElapsed))
             {
                 _pos++;
                 if (_pos >= _actions.Count)
