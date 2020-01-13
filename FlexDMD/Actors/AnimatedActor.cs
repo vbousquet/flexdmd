@@ -45,7 +45,7 @@ namespace FlexDMD
             if (_endOfAnimation && _loop)
             {
                 var length = _frameTime + _frameDuration;
-                _time = _time % length;
+                _time %= length;
                 _endOfAnimation = false;
                 Rewind();
             }

@@ -176,6 +176,24 @@ namespace FlexDMD
         }
     }
 
+    public class SeekAction : Action
+    {
+        public Video Target { get; }
+        public float Position { get; set; } = 0f;
+
+        public SeekAction(Video target, float position)
+        {
+            Target = target;
+            Position = position;
+        }
+
+        public override bool Update(float secondsElapsed)
+        {
+            Target.Seek(Position);
+            return true;
+        }
+    }
+
     public class WaitAction : Action
     {
         public float SecondsToWait { get; set; } = 0f;
@@ -354,6 +372,7 @@ namespace FlexDMD
         [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveFrom(IGroupActor parent) => new AddToAction(_target, parent, false);
         [return: MarshalAs(UnmanagedType.Struct)] public Action AddChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, true);
         [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, false);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action Seek(float pos) => new SeekAction((Video)_target, pos);
         public ITweenAction MoveTo(float x, float y, float duration) => new MoveToAction(_target, x, y, duration);
     }
 }

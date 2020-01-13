@@ -60,6 +60,7 @@ namespace FlexDMD
         [return: MarshalAs(UnmanagedType.Struct)] Action RemoveFrom(IGroupActor parent);
         [return: MarshalAs(UnmanagedType.Struct)] Action AddChild([MarshalAs(UnmanagedType.Struct)] Actor child);
         [return: MarshalAs(UnmanagedType.Struct)] Action RemoveChild([MarshalAs(UnmanagedType.Struct)] Actor child);
+        [return: MarshalAs(UnmanagedType.Struct)] Action Seek(float pos);
         ITweenAction MoveTo(float x, float y, float duration);
     }
 

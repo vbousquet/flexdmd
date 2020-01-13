@@ -48,7 +48,8 @@ Public Sub FlexDemo()
     scene1.AddActor label
 
     Set scene2 = DMD.NewGroup()
-    scene2.AddActor DMD.NewVideo(""Diablo.UltraDMD/act1.wmv"")
+    Set video = DMD.NewVideo(""Diablo.UltraDMD/act1.wmv"")
+    scene2.AddActor video
 
     Set sequence = DMD.NewGroup()
     sequence.SetSize 128, 32
@@ -57,6 +58,7 @@ Public Sub FlexDemo()
     list.Add af.AddChild(scene1)
     list.Add af.Wait(5)
     list.Add af.RemoveChild(scene1)
+    list.Add video.ActionFactory.Seek(0)
     list.Add af.AddChild(scene2)
     list.Add af.Wait(5)
     list.Add af.RemoveChild(scene2)

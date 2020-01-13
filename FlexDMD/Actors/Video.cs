@@ -14,6 +14,7 @@
    */
 using NAudio.CoreAudioApi.Interfaces;
 using NAudio.MediaFoundation;
+using NAudio.Utils;
 using NAudio.Wave;
 using NLog;
 using System;
@@ -28,7 +29,8 @@ namespace FlexDMD
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
         private static int nOpenedVideos = 0;
         private readonly string _path;
-        private int _videoWidth, _videoHeight;
+        private readonly int _videoWidth, _videoHeight;
+        private readonly float _length;
         private IMFSourceReader _videoReader;
         private MediaFoundationReader _audioReader;
         private WaveOutEvent _audioDevice;
@@ -36,6 +38,7 @@ namespace FlexDMD
         private bool _inStage = false;
         private bool _visible = true;
         private bool _opened = false;
+        private float _seek = -1f;
 
         public static readonly Guid MF_MT_FRAME_SIZE = new Guid(0x1652c33d, 0xd6b2, 0x4012, 0xb8, 0x34, 0x72, 0x03, 0x08, 0x49, 0xa3, 0x7d);
         public static readonly Guid MFVideoFormat_RGB24 = new Guid(20, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
@@ -62,9 +65,37 @@ namespace FlexDMD
             nativeType.GetUINT64(MF_MT_FRAME_SIZE, out long size);
             _videoWidth = (int)((size >> 32) & 0x7FFFFFFF);
             _videoHeight = (int)(size & 0x7FFFFFFF);
+            _length = GetLength(reader);
             Marshal.ReleaseComObject(nativeType);
             Marshal.ReleaseComObject(reader);
             Pack();
+        }
+
+        private float GetLength(IMFSourceReader reader)
+        {
+            var variantPtr = Marshal.AllocHGlobal(MarshalHelpers.SizeOf<PropVariant>());
+            try
+            {
+                // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd389281%28v=vs.85%29.aspx#getting_file_duration
+                int hResult = reader.GetPresentationAttribute(MediaFoundationInterop.MF_SOURCE_READER_MEDIASOURCE,
+                    MediaFoundationAttributes.MF_PD_DURATION, variantPtr);
+                if (hResult == MediaFoundationErrors.MF_E_ATTRIBUTENOTFOUND)
+                {
+                    // this doesn't support telling us its duration (might be streaming)
+                    return 0;
+                }
+                if (hResult != 0)
+                {
+                    Marshal.ThrowExceptionForHR(hResult);
+                }
+                var variant = MarshalHelpers.PtrToStructure<PropVariant>(variantPtr);
+                return ((long)variant.Value) / 10000000f;
+            }
+            finally
+            {
+                PropVariant.Clear(variantPtr);
+                Marshal.FreeHGlobal(variantPtr);
+            }
         }
 
         public Scaling Scaling { get; set; } = Scaling.Stretch;
@@ -105,7 +136,7 @@ namespace FlexDMD
                 _audioDevice = new WaveOutEvent();
                 Rewind();
                 nOpenedVideos++;
-                log.Info("Video opened: {0} {1}x{2} ({3} videos concurrently opened)", _path, _videoWidth, _videoHeight, nOpenedVideos);
+                log.Info("Video opened: {0} size={1}x{2} length={3}s ({4} videos concurrently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
             }
             else if (!shouldBeOpened && _opened)
             {
@@ -123,14 +154,16 @@ namespace FlexDMD
             }
         }
 
-        private void Seek(long nsPosition)
+        public void Seek(float position)
         {
-            var pv = PropVariant.FromLong(nsPosition);
-            var ptr = Marshal.AllocHGlobal(Marshal.SizeOf(pv));
-            Marshal.StructureToPtr(pv, ptr, false);
-            // should pass in a variant of type VT_I8 which is a long containing time in 100nanosecond units
-            _videoReader.SetCurrentPosition(Guid.Empty, ptr);
-            Marshal.FreeHGlobal(ptr);
+            _seek = position;
+            _time = position;
+            if (_audioReader != null) _audioReader.Seek((long)position, System.IO.SeekOrigin.Begin);
+            if (_videoReader != null)
+            {
+                ReadNextFrame();
+                _time = _frameTime;
+            }
         }
 
         protected override void Rewind()
@@ -138,7 +171,7 @@ namespace FlexDMD
             // log.Info("Initalizing video: {0}", _path);
             if (_videoReader != null)
             {
-                Seek(0L);
+                Seek(0);
             }
             else
             {
@@ -177,6 +210,16 @@ namespace FlexDMD
             if (_videoReader == null || _endOfAnimation) return;
             try
             {
+                if (_seek >= 0)
+                {
+                    var pv = PropVariant.FromLong((long)(_seek * 10000000L));
+                    var ptr = Marshal.AllocHGlobal(Marshal.SizeOf(pv));
+                    Marshal.StructureToPtr(pv, ptr, false);
+                    // should pass in a variant of type VT_I8 which is a long containing time in 100nanosecond units
+                    _videoReader.SetCurrentPosition(Guid.Empty, ptr);
+                    Marshal.FreeHGlobal(ptr);
+                    _seek = -1f;
+                }
                 _videoReader.ReadSample(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, out int streamIndex, out MF_SOURCE_READER_FLAG flags, out ulong timeStamp, out IMFSample sample);
                 if (flags == MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_ENDOFSTREAM)
                 {
