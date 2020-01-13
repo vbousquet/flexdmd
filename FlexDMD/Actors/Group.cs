@@ -39,6 +39,7 @@ namespace FlexDMD
 
         public override void Update(float delta)
         {
+            base.Update(delta);
             foreach (Actor child in Children)
                 child.Update(delta);
         }

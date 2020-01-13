@@ -39,6 +39,36 @@ namespace FlexDMDUI
 @"' Demo script
 
 Public Sub FlexDemo()
+    Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
+
+    Set scene1 = DMD.NewGroup()
+    scene1.AddActor DMD.NewImage(""Diablo.UltraDMD/black.jpg"")
+    Set label = DMD.NewLabel(font, ""Test"")
+    label.SetPosition 64 - label.Width / 2, 16 - label.Height / 2
+    scene1.AddActor label
+
+    Set scene2 = DMD.NewGroup()
+    scene2.AddActor DMD.NewVideo(""Diablo.UltraDMD/act1.wmv"")
+
+    Set sequence = DMD.NewGroup()
+    sequence.SetSize 128, 32
+    Set af = sequence.ActionFactory
+    Set list = af.Sequence()
+    list.Add af.AddChild(scene1)
+    list.Add af.Wait(5)
+    list.Add af.RemoveChild(scene1)
+    list.Add af.AddChild(scene2)
+    list.Add af.Wait(5)
+    list.Add af.RemoveChild(scene2)
+    sequence.AddAction af.Repeat(list, -1)
+
+    DMD.LockRenderThread
+    DMD.Stage.RemoveAll
+    DMD.Stage.AddActor sequence
+    DMD.UnlockRenderThread
+End Sub
+
+Public Sub FlexDemo2()
     Set black = DMD.NewImage(""Diablo.UltraDMD/black.jpg"")
     black.SetSize 128, 32
     Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)

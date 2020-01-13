@@ -46,13 +46,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MediaFoundation, Version=3.1.0.0, Culture=neutral, PublicKeyToken=36fa660e1d6ebf8d, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaFoundation.3.1.0\lib\MediaFoundation.dll</HintPath>
-    </Reference>
-    <Reference Include="MediaFoundation.Extension, Version=1.0.0.35224, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaFoundation.3.1.0\lib\MediaFoundation.Extension.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
     </Reference>

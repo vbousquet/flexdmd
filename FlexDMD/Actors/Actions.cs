@@ -136,6 +136,46 @@ namespace FlexDMD
         }
     }
 
+    public class AddToAction : Action
+    {
+        public Actor Target { get; }
+        public IGroupActor Parent { get; set; }
+        public bool Add { get; set; }
+
+        public AddToAction(Actor target, IGroupActor parent, bool add)
+        {
+            Target = target;
+            Parent = parent;
+            Add = add;
+        }
+
+        public override bool Update(float secondsElapsed)
+        {
+            if (Add) Parent.AddActor(Target); else Parent.RemoveActor(Target);
+            return true;
+        }
+    }
+
+    public class AddChildAction : Action
+    {
+        public Group Target { get; }
+        public Actor Child { get; set; }
+        public bool Add { get; set; }
+
+        public AddChildAction(Group target, Actor child, bool add)
+        {
+            Target = target;
+            Child = child;
+            Add = add;
+        }
+
+        public override bool Update(float secondsElapsed)
+        {
+            if (Add) Target.AddActor(Child); else Target.RemoveActor(Child);
+            return true;
+        }
+    }
+
     public class WaitAction : Action
     {
         public float SecondsToWait { get; set; } = 0f;
@@ -310,6 +350,10 @@ namespace FlexDMD
         public ICompositeAction Sequence() => new SequenceAction();
         [return: MarshalAs(UnmanagedType.Struct)] public Action Repeat([MarshalAs(UnmanagedType.Struct)] Action action, int count) => new RepeatAction(action, count);
         [return: MarshalAs(UnmanagedType.Struct)] public Action Show(bool visible) => new ShowAction(_target, visible);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action AddTo(IGroupActor parent) => new AddToAction(_target, parent, true);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveFrom(IGroupActor parent) => new AddToAction(_target, parent, false);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action AddChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, true);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, false);
         public ITweenAction MoveTo(float x, float y, float duration) => new MoveToAction(_target, x, y, duration);
     }
 }

@@ -12,7 +12,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using MediaFoundation;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -21,8 +20,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading;
-using MediaFoundation.Misc;
 using static FlexDMD.DMDDevice;
+using NAudio.MediaFoundation;
 
 namespace FlexDMD
 {
@@ -216,8 +215,7 @@ namespace FlexDMD
 
         public FlexDMD()
         {
-            HResult hr = MFExtern.MFStartup(0x10070, MFStartup.Lite);
-            if (MFError.Failed(hr)) log.Error("Failed to initialize Microsoft Media Foundation: {0}", hr);
+            MediaFoundationApi.Startup();
         }
 
         ~FlexDMD()
@@ -227,8 +225,7 @@ namespace FlexDMD
                 log.Error("Destructor called before Uninit");
                 Uninit();
             }
-            HResult hr = MFExtern.MFShutdown();
-            if (hr < 0) log.Error("Failed to dispose Microsoft Media Foundation: {0}", hr);
+            MediaFoundationApi.Shutdown();
         }
 
         public void Init()

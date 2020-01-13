@@ -56,6 +56,10 @@ namespace FlexDMD
         ICompositeAction Sequence();
         [return: MarshalAs(UnmanagedType.Struct)] Action Repeat([MarshalAs(UnmanagedType.Struct)]Action action, int count);
         [return: MarshalAs(UnmanagedType.Struct)] Action Show(bool visible);
+        [return: MarshalAs(UnmanagedType.Struct)] Action AddTo(IGroupActor parent);
+        [return: MarshalAs(UnmanagedType.Struct)] Action RemoveFrom(IGroupActor parent);
+        [return: MarshalAs(UnmanagedType.Struct)] Action AddChild([MarshalAs(UnmanagedType.Struct)] Actor child);
+        [return: MarshalAs(UnmanagedType.Struct)] Action RemoveChild([MarshalAs(UnmanagedType.Struct)] Actor child);
         ITweenAction MoveTo(float x, float y, float duration);
     }
 
@@ -97,6 +101,7 @@ namespace FlexDMD
         [return: MarshalAs(UnmanagedType.Struct)] object Get(string name);
         void RemoveAll();
         void AddActor([MarshalAs(UnmanagedType.Struct)]Actor child);
+        void RemoveActor([MarshalAs(UnmanagedType.Struct)]Actor child);
     }
 
     [Guid("05E06A6B-94DB-4F7F-B7A8-F8E09716A041"), ComVisible(true)]
@@ -153,6 +158,7 @@ namespace FlexDMD
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
+        // Video interface
     }
 
     [Guid("A8AAD77F-4F01-433B-B653-B6F14234F4F2"), ComVisible(true)]
