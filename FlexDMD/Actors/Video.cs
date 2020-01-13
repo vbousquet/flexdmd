@@ -12,16 +12,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
-using MediaFoundation;
-using MediaFoundation.Interop;
-using MediaFoundation.Misc;
-using MediaFoundation.ReadWrite;
+using NAudio.CoreAudioApi.Interfaces;
+using NAudio.MediaFoundation;
 using NAudio.Wave;
 using NLog;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace FlexDMD
 {
@@ -35,84 +33,117 @@ namespace FlexDMD
         private MediaFoundationReader _audioReader;
         private WaveOutEvent _audioDevice;
         private Bitmap _frame;
-		private bool _inStage = false;
-		private bool _visible = true;
-		private bool _opened = false;
+        private bool _inStage = false;
+        private bool _visible = true;
+        private bool _opened = false;
+
+        public static readonly Guid MF_MT_FRAME_SIZE = new Guid(0x1652c33d, 0xd6b2, 0x4012, 0xb8, 0x34, 0x72, 0x03, 0x08, 0x49, 0xa3, 0x7d);
+        public static readonly Guid MFVideoFormat_RGB24 = new Guid(20, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+
+        [ComImport, InterfaceType(ComInterfaceType.InterfaceIsIUnknown), Guid("7DC9D5F9-9ED9-44EC-9BBF-0600BB589FBB")]
+        public interface IMF2DBuffer
+        {
+            void Lock2D([Out] out IntPtr pbScanline0, out int plPitch);
+            void Unlock2D();
+            void GetScanline0AndPitch(out IntPtr pbScanline0, out int plPitch);
+            void IsContiguousFormat([MarshalAs(UnmanagedType.Bool)] out bool pfIsContiguous);
+            void GetContiguousLength(out int pcbLength);
+            void ContiguousCopyTo(IntPtr pbDestBuffer, [In] int cbDestBuffer);
+            void ContiguousCopyFrom([In] IntPtr pbSrcBuffer, [In] int cbSrcBuffer);
+        }
 
         public Video(string path, bool loop = false)
         {
             _path = path;
             _loop = loop;
+            // Get the frame size
+            MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out IMFSourceReader reader);
+            reader.GetNativeMediaType(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, out IMFMediaType nativeType);
+            nativeType.GetUINT64(MF_MT_FRAME_SIZE, out long size);
+            _videoWidth = (int)((size >> 32) & 0x7FFFFFFF);
+            _videoHeight = (int)(size & 0x7FFFFFFF);
+            Marshal.ReleaseComObject(nativeType);
+            Marshal.ReleaseComObject(reader);
+            Pack();
         }
-		
-		public Scaling Scaling {get; set; } = Scaling.Stretch;
-		
-		public Alignment Alignment {get; set; } = Alignment.Center;
 
-		public override bool InStage 
-		{ 
-			get => _inStage; 
-			set
-			{
-				_inStage = value;
-				UpdateOpenClose();
-			}
-		}
-		
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+
+        public Alignment Alignment { get; set; } = Alignment.Center;
+
+        public override bool InStage
+        {
+            get => _inStage;
+            set
+            {
+                _inStage = value;
+                UpdateOpenClose();
+            }
+        }
+
         public override bool Visible
-		{ 
-			get => _visible; 
-			set
-			{
-				_visible = value;
-				UpdateOpenClose();
-			}
-		}
+        {
+            get => _visible;
+            set
+            {
+                _visible = value;
+                UpdateOpenClose();
+            }
+        }
 
-		public override float PrefWidth { get => _videoWidth; }
-		
-		public override float PrefHeight { get => _videoHeight; }
+        public override float PrefWidth { get => _videoWidth; }
+
+        public override float PrefHeight { get => _videoHeight; }
 
         // open/close when entering/exiting rendering graph since MMF has a limited number of concurrently opened sources
-		private void UpdateOpenClose()
-		{
-			bool shouldBeOpened = _visible && _inStage;
-			if (shouldBeOpened && !_opened)
-			{
-				_opened = true;
-				_audioDevice = new WaveOutEvent();
-				Rewind();
-				nOpenedVideos++;
-				log.Info("Video opened: {0} ({1} videos concurrently opened)", _path, nOpenedVideos);
-			} 
-			else if (!shouldBeOpened && _opened)
-			{
-				_opened = false;
-				if (_audioReader != null)
-				{
-					_audioReader.Dispose();
-					_audioReader = null;
-				}
-				if (_videoReader != null) ComClass.SafeRelease(ref _videoReader);
-				_audioDevice.Dispose();
-				_audioDevice = null;
-				nOpenedVideos--;
-			}
-		}
+        private void UpdateOpenClose()
+        {
+            bool shouldBeOpened = _visible && _inStage;
+            if (shouldBeOpened && !_opened)
+            {
+                _opened = true;
+                _audioDevice = new WaveOutEvent();
+                Rewind();
+                nOpenedVideos++;
+                log.Info("Video opened: {0} {1}x{2} ({3} videos concurrently opened)", _path, _videoWidth, _videoHeight, nOpenedVideos);
+            }
+            else if (!shouldBeOpened && _opened)
+            {
+                _opened = false;
+                if (_audioReader != null)
+                {
+                    _audioReader.Dispose();
+                    _audioReader = null;
+                }
+                if (_videoReader != null) Marshal.ReleaseComObject(_videoReader);
+                _videoReader = null;
+                _audioDevice.Dispose();
+                _audioDevice = null;
+                nOpenedVideos--;
+            }
+        }
+
+        private void Seek(long nsPosition)
+        {
+            var pv = PropVariant.FromLong(nsPosition);
+            var ptr = Marshal.AllocHGlobal(Marshal.SizeOf(pv));
+            Marshal.StructureToPtr(pv, ptr, false);
+            // should pass in a variant of type VT_I8 which is a long containing time in 100nanosecond units
+            _videoReader.SetCurrentPosition(Guid.Empty, ptr);
+            Marshal.FreeHGlobal(ptr);
+        }
 
         protected override void Rewind()
         {
             // log.Info("Initalizing video: {0}", _path);
             if (_videoReader != null)
             {
-                // should pass in a variant of type VT_I8 which is a long containing time in 100nanosecond units
-                var pv = new PropVariant(0L);
-                _videoReader.SetCurrentPosition(Guid.Empty, pv);
+                Seek(0L);
             }
             else
             {
-                HResult hr = MFExtern.MFCreateSourceReaderFromURL(_path, null, out IMFSourceReader reader);
-                if (MFError.Succeeded(hr)) _videoReader = SetupVideoDecoder(reader);
+                MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out IMFSourceReader reader);
+                _videoReader = SetupVideoDecoder(reader);
                 if (_videoReader == null) log.Error("Failed to open video: {0}", _path);
             }
             if (_audioReader != null)
@@ -130,32 +161,13 @@ namespace FlexDMD
 
         private IMFSourceReader SetupVideoDecoder(IMFSourceReader reader)
         {
-            // Get the frame size
-            HResult hr = reader.GetNativeMediaType((int)MF_SOURCE_READER.FirstVideoStream, 0, out IMFMediaType nativeType);
-            if (MFError.Succeeded(hr))
-                hr = MFExtern.MFGetAttributeSize(nativeType, MFAttributesClsid.MF_MT_FRAME_SIZE, out _videoWidth, out _videoHeight);
-            ComClass.SafeRelease(ref nativeType);
-
-            // Setup decoder to RGB24
-            IMFMediaType outputType = null;
-            if (MFError.Succeeded(hr))
-                hr = MFExtern.MFCreateMediaType(out outputType);
-            if (MFError.Succeeded(hr))
-                hr = outputType.SetGUID(MFAttributesClsid.MF_MT_MAJOR_TYPE, MFMediaType.Video);
-            if (MFError.Succeeded(hr))
-                hr = outputType.SetGUID(MFAttributesClsid.MF_MT_SUBTYPE, MFMediaType.RGB24);
-            if (MFError.Succeeded(hr))
-                hr = reader.SetCurrentMediaType((int)MF_SOURCE_READER.FirstVideoStream, null, outputType);
-            if (MFError.Succeeded(hr))
-                hr = reader.SetStreamSelection((int)MF_SOURCE_READER.AllStreams, false);
-            if (MFError.Succeeded(hr))
-                hr = reader.SetStreamSelection((int)MF_SOURCE_READER.FirstVideoStream, true);
-            ComClass.SafeRelease(ref outputType);
-            if (MFError.Failed(hr))
-            {
-                log.Error("Failed to initialize video: {0}", _path);
-                ComClass.SafeRelease(ref reader);
-            }
+            IMFMediaType outputType = MediaFoundationApi.CreateMediaType();
+            outputType.SetGUID(MediaFoundationAttributes.MF_MT_MAJOR_TYPE, MediaTypes.MFMediaType_Video);
+            outputType.SetGUID(MediaFoundationAttributes.MF_MT_SUBTYPE, MFVideoFormat_RGB24);
+            reader.SetCurrentMediaType(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, IntPtr.Zero, outputType);
+            reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
+            reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
+            Marshal.ReleaseComObject(outputType);
             return reader;
         }
 
@@ -165,33 +177,27 @@ namespace FlexDMD
             if (_videoReader == null || _endOfAnimation) return;
             try
             {
-                HResult result = _videoReader.ReadSample((int)MF_SOURCE_READER.FirstVideoStream, 0, out int streamIndex, out MF_SOURCE_READER_FLAG flags, out long timeStamp, out IMFSample sample);
-                if (result < 0)
-                {
-                    log.Info("Failed to read sample from {0} {1}", _path, result);
-                    ComClass.SafeRelease(ref sample);
-                    return;
-                }
-                if (flags == MF_SOURCE_READER_FLAG.EndOfStream)
+                _videoReader.ReadSample(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, out int streamIndex, out MF_SOURCE_READER_FLAG flags, out ulong timeStamp, out IMFSample sample);
+                if (flags == MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_ENDOFSTREAM)
                 {
                     log.Info("End of stream");
                     _endOfAnimation = true;
                 }
-                if (flags == MF_SOURCE_READER_FLAG.NewStream)
+                if (flags == MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_NEWSTREAM)
                 {
                     log.Info("New stream");
                 }
-                if (flags == MF_SOURCE_READER_FLAG.NativeMediaTypeChanged)
+                if (flags == MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED)
                 {
                     log.Info("Native type changed");
                     // The format changed. Reconfigure the decoder.
                     _videoReader = SetupVideoDecoder(_videoReader);
                 }
-                if (flags == MF_SOURCE_READER_FLAG.CurrentMediaTypeChanged)
+                if (flags == MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED)
                 {
                     log.Info("Current type changed");
                 }
-                if (flags == MF_SOURCE_READER_FLAG.StreamTick)
+                if (flags == MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_STREAMTICK)
                 {
                     log.Info("Stream tick");
                 }
@@ -202,21 +208,14 @@ namespace FlexDMD
                     sample.GetSampleDuration(out long frameDuration);
                     sample.GetBufferByIndex(0, out IMFMediaBuffer buffer);
                     IMF2DBuffer frame = (IMF2DBuffer)buffer;
-                    result = frame.Lock2D(out IntPtr scanLine0, out int pitch);
-                    if (result >= 0)
-                    {
-                        // log.Info("Frame read, next frame at {0} + {1} = {2}", _frameTime, _frameDuration, _frameTime + _frameDuration);
-                        GraphicUtils.BGRtoRGB(scanLine0, pitch, _videoWidth, _videoHeight);
-                        _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format24bppRgb, scanLine0);
-                        frame.Unlock2D();
-                    }
-                    else
-                    {
-                        log.Error("Failed to read frame");
-                    }
+                    frame.Lock2D(out IntPtr scanLine0, out int pitch);
+                    // log.Info("Frame read, next frame at {0} + {1} = {2}", _frameTime, _frameDuration, _frameTime + _frameDuration);
+                    GraphicUtils.BGRtoRGB(scanLine0, pitch, _videoWidth, _videoHeight);
+                    _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format24bppRgb, scanLine0);
+                    frame.Unlock2D();
                     _frameTime = frameTime / 10000000.0f;
                     _frameDuration = frameDuration / 10000000.0f;
-                    ComClass.SafeRelease(ref sample);
+                    Marshal.ReleaseComObject(sample);
                 }
             }
             catch (Exception e)
@@ -230,11 +229,11 @@ namespace FlexDMD
         public override void Draw(Graphics graphics)
         {
             if (Visible && _frame != null)
-			{
-				Layout.Scale(Scaling, PrefWidth, PrefHeight, Width, Height, out float w, out float h);
+            {
+                Layout.Scale(Scaling, PrefWidth, PrefHeight, Width, Height, out float w, out float h);
                 Layout.Align(Alignment, w, h, Width, Height, out float x, out float y);
-				graphics.DrawImage(_frame, (int)(X + x), (int)(Y + y), (int)w, (int)h);
-			}
+                graphics.DrawImage(_frame, (int)(X + x), (int)(Y + y), (int)w, (int)h);
+            }
         }
 
         public override string ToString()
