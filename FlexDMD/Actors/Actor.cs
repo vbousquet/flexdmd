@@ -64,6 +64,46 @@ namespace FlexDMD
             Y = y;
         }
 
+        public void SetAlignedPosition(float x, float y, Alignment alignment)
+        {
+            switch (alignment)
+            {
+                case Alignment.BottomLeft:
+                case Alignment.Left:
+                case Alignment.TopLeft:
+                    X = x;
+                    break;
+                case Alignment.Bottom:
+                case Alignment.Center:
+                case Alignment.Top:
+                    X = x - Width * 0.5f;
+                    break;
+                case Alignment.BottomRight:
+                case Alignment.Right:
+                case Alignment.TopRight:
+                    X = x - Width;
+                    break;
+            }
+            switch (alignment)
+            {
+                case Alignment.BottomLeft:
+                case Alignment.Bottom:
+                case Alignment.BottomRight:
+                    Y = y;
+                    break;
+                case Alignment.Left:
+                case Alignment.Center:
+                case Alignment.Right:
+                    Y = y + Height * 0.5f;
+                    break;
+                case Alignment.TopLeft:
+                case Alignment.Top:
+                case Alignment.TopRight:
+                    Y = y + Height;
+                    break;
+            }
+        }
+
         public void SetSize(float width, float height)
         {
             Width = width;
@@ -73,6 +113,11 @@ namespace FlexDMD
         public void AddAction(Action action)
         {
             _actions.Add(action);
+        }
+
+        public void ClearActions()
+        {
+            _actions.Clear();
         }
 
         public virtual void Update(float secondsElapsed)

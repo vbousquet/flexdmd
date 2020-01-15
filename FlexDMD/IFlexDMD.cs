@@ -76,10 +76,12 @@ namespace FlexDMD
         bool Visible { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
+        void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
+        void ClearActions();
     }
 
     [Guid("1BF9F8AE-1BA0-4FA2-AD03-48E9FD0F4C92"), ComVisible(true)]
@@ -94,10 +96,13 @@ namespace FlexDMD
         bool Visible { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
+        void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
+        void ClearActions();
+
         // Group interface
         [return: MarshalAs(UnmanagedType.Struct)] object Get(string name);
         void RemoveAll();
@@ -117,10 +122,13 @@ namespace FlexDMD
         bool Visible { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
+        void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
+        void ClearActions();
+
         // Frame interface
         int Thickness { get; set; }
     }
@@ -137,10 +145,16 @@ namespace FlexDMD
         bool Visible { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
+        void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
+        void ClearActions();
+
+        // Image interface
+        Scaling Scaling { get; set; }
+        Alignment Alignment { get; set; }
     }
 
     [Guid("CF9AFD55-03A3-458D-8EAB-119C55090BAB"), ComVisible(true)]
@@ -155,11 +169,16 @@ namespace FlexDMD
         bool Visible { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
+        void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
+        void ClearActions();
+
         // Video interface
+        Scaling Scaling { get; set; }
+        Alignment Alignment { get; set; }
     }
 
     [Guid("A8AAD77F-4F01-433B-B653-B6F14234F4F2"), ComVisible(true)]
@@ -174,10 +193,13 @@ namespace FlexDMD
         bool Visible { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
+        void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
+        void ClearActions();
+
         // Label interface
         Font Font { [return: MarshalAs(UnmanagedType.Struct)] get; [param: MarshalAs(UnmanagedType.Struct)] set; }
         string Text { get; set; }
@@ -189,7 +211,7 @@ namespace FlexDMD
         GRAY_2, GRAY_4, RGB
     }
 
-    [Guid("F7E68187-251F-4DFB-AF79-F1D4D69EE188"), ComVisible(true)]
+    [Guid("B592E61D-9553-4D91-A0F5-FDF111E28F5E"), ComVisible(true)]
     public interface IFlexDMD
     {
         #region Properties
