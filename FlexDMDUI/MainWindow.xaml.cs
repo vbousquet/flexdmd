@@ -44,7 +44,7 @@ Public Sub FlexDemo()
     Set scene1 = DMD.NewGroup()
     scene1.AddActor DMD.NewImage(""Diablo.UltraDMD/black.jpg"")
     Set label = DMD.NewLabel(font, ""Test"")
-    label.SetPosition 64 - label.Width / 2, 16 - label.Height / 2
+    label.SetAlignedPosition 64, 16, 4
     scene1.AddActor label
 
     Set scene2 = DMD.NewGroup()

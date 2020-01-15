@@ -94,12 +94,12 @@ namespace FlexDMD
                 case Alignment.Left:
                 case Alignment.Center:
                 case Alignment.Right:
-                    Y = y + Height * 0.5f;
+                    Y = y - Height * 0.5f;
                     break;
                 case Alignment.TopLeft:
                 case Alignment.Top:
                 case Alignment.TopRight:
-                    Y = y + Height;
+                    Y = y - Height;
                     break;
             }
         }
