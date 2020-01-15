@@ -50,11 +50,11 @@ namespace FlexDMD
         public delegate void OnDMDChangedDelegate();
 
         public IGroupActor Stage { get => _stage; }
-        public IGroupActor NewGroup() => new Group();
-        public IFrameActor NewFrame() => new Frame();
-        public ILabelActor NewLabel(Font font, string text) => new Label(font, text);
-        public IVideoActor NewVideo(string video) => (IVideoActor)ResolveImage(video);
-        public IImageActor NewImage(string image) => (IImageActor)ResolveImage(image);
+        public IGroupActor NewGroup(string name) { var g = new Group(); g.Name = name; return g; }
+        public IFrameActor NewFrame(string name) { var g = new Frame(); g.Name = name; return g; }
+        public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text); g.Name = name; return g; }
+        public IVideoActor NewVideo(string name, string video) { var g = (IVideoActor)ResolveImage(video); g.Name = name; return g; }
+        public IImageActor NewImage(string name, string image) { var g = (IImageActor)ResolveImage(image); g.Name = name; return g; }
         public Font NewFont(string font, float brightness, float outline) => _assets.Load<Font>(new FontDef(font, brightness, outline)).Load();
 
         public IUltraDMD NewUltraDMD()
@@ -180,8 +180,8 @@ namespace FlexDMD
             get => _assets.BasePath;
             set
             {
-				log.Info("SetProjectFolder {0}", value);
-				_assets.BasePath = value;
+                log.Info("SetProjectFolder {0}", value);
+                _assets.BasePath = value;
             }
         }
 
@@ -234,26 +234,26 @@ namespace FlexDMD
             log.Info("Init {0}", _gameName);
             _running = true;
             _dmd = new DMDDevice();
-			_dmd.Open();
-			var options = new PMoptions
-			{
-				Red = _dmdColor.R,
-				Green = _dmdColor.G,
-				Blue = _dmdColor.B,
-				Perc66 = 66,
-				Perc33 = 33,
-				Perc0 = 0
-			};
-			options.Green0 = options.Perc0 * options.Green / 100;
-			options.Green33 = options.Perc33 * options.Green / 100;
-			options.Green66 = options.Perc66 * options.Green / 100;
-			options.Blue0 = options.Perc0 * options.Blue / 100;
-			options.Blue33 = options.Perc33 * options.Blue / 100;
-			options.Blue66 = options.Perc66 * options.Blue / 100;
-			options.Red0 = options.Perc0 * options.Red / 100;
-			options.Red33 = options.Perc33 * options.Red / 100;
-			options.Red66 = options.Perc66 * options.Red / 100;
-			_dmd.GameSettings(_gameName, 0, options);
+            _dmd.Open();
+            var options = new PMoptions
+            {
+                Red = _dmdColor.R,
+                Green = _dmdColor.G,
+                Blue = _dmdColor.B,
+                Perc66 = 66,
+                Perc33 = 33,
+                Perc0 = 0
+            };
+            options.Green0 = options.Perc0 * options.Green / 100;
+            options.Green33 = options.Perc33 * options.Green / 100;
+            options.Green66 = options.Perc66 * options.Green / 100;
+            options.Blue0 = options.Perc0 * options.Blue / 100;
+            options.Blue33 = options.Perc33 * options.Blue / 100;
+            options.Blue66 = options.Perc66 * options.Blue / 100;
+            options.Red0 = options.Perc0 * options.Red / 100;
+            options.Red33 = options.Perc33 * options.Red / 100;
+            options.Red66 = options.Perc66 * options.Red / 100;
+            _dmd.GameSettings(_gameName, 0, options);
             _processThread = new Thread(new ThreadStart(RenderLoop));
             _processThread.IsBackground = true;
             _processThread.Start();
@@ -270,23 +270,23 @@ namespace FlexDMD
             _dmd = null;
         }
 
-		public void LockRenderThread()
-		{
-			_renderMutex.WaitOne();
-		}
-		
-		public void UnlockRenderThread()
-		{
-			_renderMutex.ReleaseMutex();
-		}
-		
-		public void Post(System.Action runnable)
-		{
-			lock (_runnables)
+        public void LockRenderThread()
+        {
+            _renderMutex.WaitOne();
+        }
+
+        public void UnlockRenderThread()
+        {
+            _renderMutex.ReleaseMutex();
+        }
+
+        public void Post(System.Action runnable)
+        {
+            lock (_runnables)
             {
                 _runnables.Add(runnable);
             }
-		}
+        }
 
         /// Resolve image files.
         /// For file resolving rules (resources, VPX files, path search,...), see AssetManager.OpenStream.
@@ -338,7 +338,7 @@ namespace FlexDMD
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
             Graphics = Graphics.FromImage(_frame);
             _stage.SetSize(_width, _height);
-			_stage.InStage = true;
+            _stage.InStage = true;
             Stopwatch stopWatch = new Stopwatch();
             WindowHandle visualPinball = null;
             IntPtr _bpFrame = _renderMode != RenderMode.RGB ? _bpFrame = Marshal.AllocHGlobal(_width * _height) : IntPtr.Zero;
@@ -356,7 +356,7 @@ namespace FlexDMD
                     Uninit();
                     break;
                 }
-				_renderMutex.WaitOne();
+                _renderMutex.WaitOne();
                 lock (_runnables)
                 {
                     _runnables.ForEach(item => item());
@@ -364,7 +364,7 @@ namespace FlexDMD
                 }
                 _stage.Update((float)(elapsedMs / 1000.0));
                 _stage.Draw(Graphics);
-				_renderMutex.ReleaseMutex();
+                _renderMutex.ReleaseMutex();
                 Rectangle rect = new Rectangle(0, 0, _frame.Width, _frame.Height);
                 BitmapData data = _frame.LockBits(rect, ImageLockMode.ReadWrite, _frame.PixelFormat);
                 switch (_renderMode)
@@ -497,7 +497,7 @@ namespace FlexDMD
                 elapsedMs = stopWatch.Elapsed.TotalMilliseconds;
                 // log.Info("Elapsed: {0}ms", elapsedMs);
             }
-			_stage.InStage = false;
+            _stage.InStage = false;
             if (_bpFrame != IntPtr.Zero) Marshal.FreeHGlobal(_bpFrame);
             Graphics.Dispose();
             Graphics = null;

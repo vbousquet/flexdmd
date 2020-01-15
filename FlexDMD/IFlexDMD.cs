@@ -104,7 +104,11 @@ namespace FlexDMD
         void ClearActions();
 
         // Group interface
-        [return: MarshalAs(UnmanagedType.Struct)] object Get(string name);
+        IGroupActor GetGroup(string name);
+        IFrameActor GetFrame(string name);
+        ILabelActor GetLabel(string name);
+        IVideoActor GetVideo(string name);
+        IImageActor GetImage(string name);
         void RemoveAll();
         void AddActor([MarshalAs(UnmanagedType.Struct)]Actor child);
         void RemoveActor([MarshalAs(UnmanagedType.Struct)]Actor child);
@@ -309,23 +313,23 @@ namespace FlexDMD
 
         /// <summary>
         /// </summary>
-        IGroupActor NewGroup();
+        IGroupActor NewGroup(string name);
 
         /// <summary>
         /// </summary>
-        IFrameActor NewFrame();
+        IFrameActor NewFrame(string name);
 
         /// <summary>
         /// </summary>
-        ILabelActor NewLabel([param: MarshalAs(UnmanagedType.Struct)] Font font, string text);
+        ILabelActor NewLabel(string name, [param: MarshalAs(UnmanagedType.Struct)] Font font, string text);
 
         /// <summary>
         /// </summary>
-        IVideoActor NewVideo(string video);
+        IVideoActor NewVideo(string name, string video);
 
         /// <summary>
         /// </summary>
-        IImageActor NewImage(string image);
+        IImageActor NewImage(string name, string image);
 
         /// <summary>
         /// </summary>

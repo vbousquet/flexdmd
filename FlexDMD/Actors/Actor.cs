@@ -39,6 +39,11 @@ namespace FlexDMD
             ActionFactory = new ActionFactory(this);
         }
 
+        public Actor(string name) : this()
+        {
+            Name = name;
+        }
+
         public void Remove()
         {
             if (Parent != null) Parent.RemoveActor(this);

@@ -41,24 +41,22 @@ namespace FlexDMDUI
 Public Sub FlexDemo()
     Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
 
-    Set scene1 = DMD.NewGroup()
-    scene1.AddActor DMD.NewImage(""Diablo.UltraDMD/black.jpg"")
-    Set label = DMD.NewLabel(font, ""Test"")
-    label.SetAlignedPosition 64, 16, 4
-    scene1.AddActor label
+    Set scene1 = DMD.NewGroup(""Scene 1"")
+    scene1.AddActor DMD.NewImage(""Diablo"", ""Diablo.UltraDMD/black.jpg"")
+    scene1.AddActor DMD.NewLabel(""Label"", font, ""Test"")
+    scene1.GetLabel(""Label"").SetAlignedPosition 64, 16, 4
 
-    Set scene2 = DMD.NewGroup()
-    Set video = DMD.NewVideo(""Diablo.UltraDMD/act1.wmv"")
-    scene2.AddActor video
+    Set scene2 = DMD.NewGroup(""Scene 2"")
+    scene2.AddActor DMD.NewVideo(""Video"", ""Diablo.UltraDMD/act1.wmv"")
 
-    Set sequence = DMD.NewGroup()
+    Set sequence = DMD.NewGroup(""Sequence"")
     sequence.SetSize 128, 32
     Set af = sequence.ActionFactory
     Set list = af.Sequence()
     list.Add af.AddChild(scene1)
     list.Add af.Wait(5)
     list.Add af.RemoveChild(scene1)
-    list.Add video.ActionFactory.Seek(0)
+    list.Add scene2.GetVideo(""Video"").ActionFactory.Seek(0)
     list.Add af.AddChild(scene2)
     list.Add af.Wait(5)
     list.Add af.RemoveChild(scene2)
