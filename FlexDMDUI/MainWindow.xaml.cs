@@ -297,7 +297,7 @@ End If
 
         private void OnUltraDMDSelected(object sender, RoutedEventArgs args)
         {
-            _ultraScript = new ScriptThread("FlexDMD Script Thread");
+            _ultraScript = new ScriptThread("UltraDMD Script Thread");
             _ultraScript.Post(@"
                 Dim DMD
                 Dim UDMD

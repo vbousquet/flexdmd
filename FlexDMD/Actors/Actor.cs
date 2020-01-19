@@ -94,7 +94,7 @@ namespace FlexDMD
                 case Alignment.BottomLeft:
                 case Alignment.Bottom:
                 case Alignment.BottomRight:
-                    Y = y;
+                    Y = y - Height;
                     break;
                 case Alignment.Left:
                 case Alignment.Center:
@@ -104,7 +104,7 @@ namespace FlexDMD
                 case Alignment.TopLeft:
                 case Alignment.Top:
                 case Alignment.TopRight:
-                    Y = y - Height;
+                    Y = y;
                     break;
             }
         }

@@ -103,17 +103,24 @@ namespace FlexDMD
         public override void Update(float delta)
         {
             base.Update(delta);
+            SetBounds(0, 0, Parent.Width, Parent.Height);
             float yText = Height - TextFont.BitmapFont.BaseHeight - 1;
             // float yLine2 = 1 + HighlightFont.BitmapFont.BaseHeight + (Height - 2 - TextFont.BitmapFont.BaseHeight - 2 * HighlightFont.BitmapFont.BaseHeight) / 2;
             float yLine2 = (Height - TextFont.BitmapFont.BaseHeight) / 2f;
             float dec = (HighlightFont.BitmapFont.BaseHeight - ScoreFont.BitmapFont.BaseHeight) / 2f;
             // float yLine2 = (1 + yText) * 0.5f;
-            _scores[0].SetPosition(1, 1 + (_highlightedPlayer == 1 ? 0 : dec));
-            _scores[1].SetPosition(Width - _scores[1].Width - 1, 1 + (_highlightedPlayer == 2 ? 0 : dec));
-            _scores[2].SetPosition(1, yLine2 + (_highlightedPlayer == 3 ? 0 : dec));
-            _scores[3].SetPosition(Width - _scores[3].Width - 1, yLine2 + (_highlightedPlayer == 4 ? 0 : dec));
-            _lowerLeft.SetPosition(1, yText);
-            _lowerRight.SetPosition(Width - _lowerRight.Width - 1, yText);
+            _scores[0].Pack();
+            _scores[1].Pack();
+            _scores[2].Pack();
+            _scores[3].Pack();
+            _lowerLeft.Pack();
+            _lowerRight.Pack();
+            _scores[0].SetAlignedPosition(1, 1 + (_highlightedPlayer == 1 ? 0 : dec), Alignment.TopLeft);
+            _scores[1].SetAlignedPosition(Width - 1, 1 + (_highlightedPlayer == 2 ? 0 : dec), Alignment.TopRight);
+            _scores[2].SetAlignedPosition(1, yLine2 + (_highlightedPlayer == 3 ? 0 : dec), Alignment.TopLeft);
+            _scores[3].SetAlignedPosition(Width - 1, yLine2 + (_highlightedPlayer == 4 ? 0 : dec), Alignment.TopRight);
+            _lowerLeft.SetAlignedPosition(1, yText, Alignment.TopLeft);
+            _lowerRight.SetAlignedPosition(Width - 1, yText, Alignment.TopRight);
         }
 
         public override void Draw(Graphics graphics)
