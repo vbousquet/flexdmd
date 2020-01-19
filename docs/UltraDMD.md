@@ -17,6 +17,7 @@ As an example, here is the modification for the [great Diablo III table](https:/
 Sub DMD_Init
     'Set UltraDMD = CreateObject("UltraDMD.DMDObject")
 
+    Dim FlexDMD
     Set FlexDMD = CreateObject("FlexDMD.FlexObject")
     If FlexDMD is Nothing Then
         MsgBox "No UltraDMD found.  This table will NOT run without it."
