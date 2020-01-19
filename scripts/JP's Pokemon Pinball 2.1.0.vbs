@@ -1510,33 +1510,34 @@ Dim dqbFlush(64)
 Dim dqSound(64)
 
 Dim FlexDMD
-Dim FlexDMDBack
-Dim FlexDMDTop(16)
-Dim FlexDMDBot(20)
+Dim DMDScene
 
 Sub DMD_Init() 'default/startup values
-	FlexDMDBack = "VPX.bkempty"
-    For i = 0 to 15
-        FlexDMDTop(i) = CStr("VPX.dempty&dmd=2")
-    Next
-    For i = 0 to 19
-        FlexDMDBot(i) = CStr("VPX.dempty&dmd=2")
-    Next
-	Set FlexDMD = CreateObject("FlexDMD.DMDObject")
+	Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
 	If Not FlexDMD is Nothing Then
 		FlexDMD.TableFile = Table1.Filename & ".vpx"
 		FlexDMD.RenderMode = 2
-		FlexDMD.DmdWidth = 128
-		FlexDMD.DmdHeight = 36
+		FlexDMD.Width = 128
+		FlexDMD.Height = 36
 		FlexDMD.GameName = cGameName
 		FlexDMD.Init
-		FlexDMD.DisplayJPSScene "jps", FlexDMDBack, FlexDMDTop, FlexDMDBot, 14, -1, 14
-		For i = 0 to UBound(Digits)
+		Set DMDScene = FlexDMD.NewGroup("Scene")
+		DMDScene.AddActor FlexDMD.NewImage("Back", "VPX.bkempty")
+		DMDScene.GetImage("Back").SetSize FlexDMD.Width, FlexDMD.Height
+		DigitsBack(0).Visible = False
+		For i = 0 to 35
+			DMDScene.AddActor FlexDMD.NewImage("Dig" & i, "VPX.dempty&dmd=2")
 			Digits(i).Visible = False
 		Next
-		For i = 0 to UBound(DigitsBack)
-			DigitsBack(i).Visible = False
+		For i = 0 to 19 ' Bottom
+			DMDScene.GetImage("Dig" & i).SetBounds 4 + i * 6, 3 + 16 + 2, 8, 8
 		Next
+		For i = 20 to 35 ' Top
+			DMDScene.GetImage("Dig" & i).SetBounds (i - 20) * 8, 3, 8, 16
+		Next
+		FlexDMD.LockRenderThread
+		FlexDMD.Stage.AddActor DMDScene
+		FlexDMD.UnlockRenderThread
 	End If
 
     Dim i, j
@@ -1801,6 +1802,7 @@ End Function
 Sub DMDUpdate(id)
     Dim digit, value
 
+	If Not FlexDMD is Nothing Then FlexDMD.LockRenderThread
     Select Case id
         Case 0 'top text line
             For digit = 20 to 35
@@ -1813,20 +1815,16 @@ Sub DMDUpdate(id)
         Case 2 ' back image - back animations
             If dLine(2) = "" OR dLine(2) = " " Then dLine(2) = "bkempty"
             DigitsBack(0).ImageA = dLine(2)
-			FlexDMDBack = "VPX." & dLine(2) & "&dmd=2"
+			If Not FlexDMD is Nothing Then DMDScene.GetImage("Back").Bitmap = FlexDMD.NewImage("", "VPX." & dLine(2) & "&dmd=2").Bitmap
     End Select
-	If Not FlexDMD is Nothing Then FlexDMD.DisplayJPSScene "jps", FlexDMDBack, FlexDMDTop, FlexDMDBot, 14, -1, 14
+	If Not FlexDMD is Nothing Then FlexDMD.UnlockRenderThread
 End Sub
 
 Sub DMDDisplayChar(achar, adigit)
     If achar = "" Then achar = " "
     achar = ASC(achar)
     Digits(adigit).ImageA = Chars(achar)
-	If adigit < 20 Then
-		FlexDMDBot(adigit) = CStr("VPX." & Chars(achar) & "&dmd=2")
-	Else
-		FlexDMDTop(adigit - 20) = CStr("VPX." & Chars(achar) & "&dmd=2")
-	End If
+	If Not FlexDMD is Nothing Then DMDScene.GetImage("Dig" & adigit).Bitmap = FlexDMD.NewImage("", "VPX." & Chars(achar) & "&dmd=2").Bitmap
 End Sub
 
 '****************************

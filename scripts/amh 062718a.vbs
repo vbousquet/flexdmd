@@ -450,16 +450,14 @@ Const UltraDMD_Animation_None = 14
 Sub LoadUltraDMD
 	On Error Resume Next
     'Set UltraDMD = CreateObject("UltraDMD.DMDObject")
-    Set UltraDMD = CreateObject("FlexDMD.DMDObject")
-	If Not UltraDMD is Nothing Then
-		UltraDMD.Init
-	End If
-    If UltraDMD is Nothing Then
+	Dim FlexDMD
+    Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
+    If FlexDMD is Nothing Then
 		MsgBox "No UltraDMD found.  This table MAY run without it (but why would you want to??)."
-		Set UltraDMD = Nothing
         Exit Sub
     End If
-    UltraDMD.Init
+    FlexDMD.Init
+	Set UltraDMD = FlexDMD.NewUltraDMD()
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."
         Exit Sub

@@ -80,9 +80,11 @@ Const UltraDMD_Animation_None = 14
 
 Sub LoadUltraDMD
     'Set UltraDMD = CreateObject("UltraDMD.DMDObject")
-    Set UltraDMD = CreateObject("FlexDMD.DMDObject")
-    UltraDMD.GameName = cGameName
-    UltraDMD.Init
+	Dim FlexDMD
+    Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
+    FlexDMD.GameName = cGameName
+    FlexDMD.Init
+	Set UltraDMD = FlexDMD.NewUltraDMD()
 
     Dim fso
     Set fso = CreateObject("Scripting.FileSystemObject")
@@ -554,7 +556,7 @@ End Sub
 Sub table1_unPaused
 End Sub
 
-Sub Table1_Exit():
+Sub Table1_Exit()
 	Savehs
 	Controller.Stop
 	If Not UltraDMD is Nothing Then

@@ -159,6 +159,7 @@ namespace FlexDMD
         // Image interface
         Scaling Scaling { get; set; }
         Alignment Alignment { get; set; }
+        Bitmap Bitmap { get; set; }
     }
 
     [Guid("CF9AFD55-03A3-458D-8EAB-119C55090BAB"), ComVisible(true)]

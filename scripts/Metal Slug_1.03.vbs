@@ -672,12 +672,15 @@ Sub table1_unPaused
 End Sub
 
 Sub Table1_Exit():
+' Thalamus : Exit in a clean and proper way
 	savehs
+	Controller.Pause = False
 	Controller.Stop
 	If Not UltraDMD is Nothing Then
 		If UltraDMD.IsRendering Then
 			UltraDMD.CancelRendering
 		End If
+		UltraDMD.Uninit
 		UltraDMD = NULL
 	End If
 End Sub
@@ -2121,15 +2124,17 @@ End Sub
 
 Sub DMD_Init
     'Set UltraDMD = CreateObject("UltraDMD.DMDObject")
-    Set UltraDMD = CreateObject("FlexDMD.DMDObject")
-    If UltraDMD is Nothing Then
+	Dim FlexDMD
+    Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
+    If FlexDMD is Nothing Then
         MsgBox "No UltraDMD found.  This table will NOT run without it."
         Exit Sub
     End If
-
-    UltraDMD.GameName = cGameName
-	UltraDMD.RenderMode = 2
-    UltraDMD.Init
+    FlexDMD.GameName = cGameName
+	FlexDMD.RenderMode = 2
+    FlexDMD.Init
+	Set UltraDMD = FlexDMD.NewUltraDMD()
+	
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."
         Exit Sub
@@ -7525,12 +7530,4 @@ Sub OnBallBallCollision(ball1, ball2, velocity)
 End Sub
 
 
-' Thalamus : Exit in a clean and proper way
-Sub Table1_exit()
-  Controller.Pause = False
-  Controller.Stop
-    If UltraDMD is Nothing Then
-		UltraDMD.Uninit
-    End If
-End Sub
 

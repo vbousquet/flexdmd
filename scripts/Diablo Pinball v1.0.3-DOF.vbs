@@ -1942,6 +1942,7 @@ End Sub
 '***********************************************************************************
 
 Dim UltraDMD
+Dim FlexDMD
 
 ' DMD using UltraDMD calls
 
@@ -2039,17 +2040,17 @@ Malthael = Array("mal-0.jpg", "mal-10.jpg", "mal-20.jpg", "mal-30.jpg", "mal-40.
 Sub FlexDMDTimer_Timer
 	Dim DMDp
 	If UseDMD Then
-		DMDp = UltraDMD.DmdPixels
+		DMDp = FlexDMD.DmdPixels
 		If Not IsEmpty(DMDp) Then
-			DMDWidth = UltraDMD.DmdWidth
-			DMDHeight = UltraDMD.DmdHeight
+			DMDWidth = FlexDMD.Width
+			DMDHeight = FlexDMD.Height
 			DMDPixels = DMDp
 		End If
 	ElseIf UseColoredDMD Then
-		DMDp = UltraDMD.DmdColoredPixels
+		DMDp = FlexDMD.DmdColoredPixels
 		If Not IsEmpty(DMDp) Then
-			DMDWidth = UltraDMD.DmdWidth
-			DMDHeight = UltraDMD.DmdHeight
+			DMDWidth = FlexDMD.Width
+			DMDHeight = FlexDMD.Height
 			DMDColoredPixels = DMDp
 		End If
 	End If
@@ -2058,16 +2059,17 @@ End Sub
 
 Sub DMD_Init
 	UseColoredDMD = true
-    Set UltraDMD = CreateObject("FlexDMD.DMDObject")
     'Set UltraDMD = CreateObject("UltraDMD.DMDObject")
-    If UltraDMD is Nothing Then
+    Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
+    If FlexDMD is Nothing Then
         MsgBox "No UltraDMD found.  This table will NOT run without it."
         Exit Sub
     End If
 
-    UltraDMD.GameName = cGameName
-	UltraDMD.RenderMode = 2
-    UltraDMD.Init
+    FlexDMD.GameName = cGameName
+	FlexDMD.RenderMode = 2
+    FlexDMD.Init
+	Set UltraDMD = FlexDMD.NewUltraDMD()
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."
         Exit Sub
