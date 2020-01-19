@@ -44,18 +44,18 @@ namespace FlexDMD
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate void GameSettingsDelegate(string gameName, ulong hardwareGeneration, IntPtr options);
 
-        IntPtr _dllhandle = IntPtr.Zero;
-        OpenCloseDelegate _open = null;
-        OpenCloseDelegate _close = null;
-        RenderDelegate _renderRgb24 = null;
-        RenderDelegate _renderGray4 = null;
-        RenderDelegate _renderGray2 = null;
-        GameSettingsDelegate _gameSettings = null;
+        private IntPtr _dllhandle = IntPtr.Zero;
+        private readonly OpenCloseDelegate _open = null;
+        private readonly OpenCloseDelegate _close = null;
+        private readonly RenderDelegate _renderRgb24 = null;
+        private readonly RenderDelegate _renderGray4 = null;
+        private readonly RenderDelegate _renderGray2 = null;
+        private readonly GameSettingsDelegate _gameSettings = null;
 
         public DMDDevice()
         {
             string libraryName = "dmddevice.dll";
-            if (System.Environment.Is64BitProcess) libraryName = "dmddevice64.dll";
+            if (Environment.Is64BitProcess) libraryName = "dmddevice64.dll";
             var fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), libraryName);
             _dllhandle = NativeLibrary.LoadLibrary(fullPath);
             if (_dllhandle != IntPtr.Zero)
@@ -104,17 +104,17 @@ namespace FlexDMD
 
         public void RenderRgb24(ushort width, ushort height, IntPtr currbuffer)
         {
-            if (_renderRgb24 != null) _renderRgb24(width, height, currbuffer);
+            _renderRgb24?.Invoke(width, height, currbuffer);
         }
 
         public void RenderGray4(ushort width, ushort height, IntPtr currbuffer)
         {
-            if (_renderGray4 != null) _renderGray4(width, height, currbuffer);
+            _renderGray4?.Invoke(width, height, currbuffer);
         }
 
         public void RenderGray2(ushort width, ushort height, IntPtr currbuffer)
         {
-            if (_renderGray2 != null) _renderGray2(width, height, currbuffer);
+            _renderGray2?.Invoke(width, height, currbuffer);
         }
 
         public void GameSettings(string gameName, ulong hardwareGeneration, PMoptions options)
