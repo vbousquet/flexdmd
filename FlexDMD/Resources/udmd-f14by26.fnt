@@ -14,7 +14,7 @@ char id=40   x=128    y=0    width=16     height=28     xoffset=-1    yoffset=-1
 char id=41   x=144    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=15     page=0  chnl=15 // )
 char id=42   x=160    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=15     page=0  chnl=15 // *
 char id=43   x=176    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=15     page=0  chnl=15 // +
-char id=44   x=192    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=15     page=0  chnl=15 // ,
+char id=44   x=192    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // ,
 char id=45   x=208    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=15     page=0  chnl=15 // -
 char id=46   x=224    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=15     page=0  chnl=15 // .
 char id=47   x=240    y=0    width=16     height=28     xoffset=-1    yoffset=-1     xadvance=15     page=0  chnl=15 // /
