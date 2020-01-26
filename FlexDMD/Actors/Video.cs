@@ -136,7 +136,7 @@ namespace FlexDMD
                 _audioDevice = new WaveOutEvent();
                 Rewind();
                 nOpenedVideos++;
-                log.Info("Video opened: {0} size={1}x{2} length={3}s ({4} videos concurrently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
+                log.Info("Video opened: {0} size={1}x{2} length={3}s ({4} videos are currently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
             }
             else if (!shouldBeOpened && _opened)
             {
@@ -151,6 +151,7 @@ namespace FlexDMD
                 _audioDevice.Dispose();
                 _audioDevice = null;
                 nOpenedVideos--;
+                log.Info("Video closed: {0} size={1}x{2} length={3}s ({4} remaining videos are currently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
             }
         }
 
