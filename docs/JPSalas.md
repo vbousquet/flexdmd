@@ -1,8 +1,14 @@
-To add FlexDMD to a recent (late 2019, beginning of 2020) JPSalas table, follow these 3 simple steps ;
+
+# Adding a DMD to latest tables from JPSalas
+
+Lately (end of 2019, beginning of 2020), JPSalas has moved avay from UltraDMD, releasing its table without an external display. To add support for an external DMD, you can easily add FlexDMD to these tables following the 3 simple steps below.
+
+Prebuilt scripts including these changes are also available in the `script` directory.
+
 
 1. Replace DMD_Init method's beginning with the following
-=========================================================
 
+```vbscript
 Dim FlexDMD
 Dim DMDScene
 
@@ -33,13 +39,15 @@ Sub DMD_Init() 'default/startup values
 		FlexDMD.Stage.AddActor DMDScene
 		FlexDMD.UnlockRenderThread
 	End If
+	...
+```
 
-2. Replace the end of DMDUpdate and DMDDisplayChar with the following
-=====================================================================
+2. Replace DMDUpdate and DMDDisplayChar with the following
 
+```vbscript
 Sub DMDUpdate(id)
     Dim digit, value
-	If Not FlexDMD is Nothing Then FlexDMD.LockRenderThread
+    If Not FlexDMD is Nothing Then FlexDMD.LockRenderThread
     Select Case id
         Case 0 'top text line
             For digit = 20 to 35
@@ -52,23 +60,25 @@ Sub DMDUpdate(id)
         Case 2 ' back image - back animations
             If dLine(2) = "" OR dLine(2) = " " Then dLine(2) = "bkempty"
             DigitsBack(0).ImageA = dLine(2)
-			If Not FlexDMD is Nothing Then DMDScene.GetImage("Back").Bitmap = FlexDMD.NewImage("", "VPX." & dLine(2) & "&dmd=2").Bitmap
+            If Not FlexDMD is Nothing Then DMDScene.GetImage("Back").Bitmap = FlexDMD.NewImage("", "VPX." & dLine(2) & "&dmd=2").Bitmap
     End Select
-	If Not FlexDMD is Nothing Then FlexDMD.UnlockRenderThread
+    If Not FlexDMD is Nothing Then FlexDMD.UnlockRenderThread
 End Sub
 
 Sub DMDDisplayChar(achar, adigit)
     If achar = "" Then achar = " "
     achar = ASC(achar)
     Digits(adigit).ImageA = Chars(achar)
-	If Not FlexDMD is Nothing Then DMDScene.GetImage("Dig" & adigit).Bitmap = FlexDMD.NewImage("", "VPX." & Chars(achar) & "&dmd=2").Bitmap
+    If Not FlexDMD is Nothing Then DMDScene.GetImage("Dig" & adigit).Bitmap = FlexDMD.NewImage("", "VPX." & Chars(achar) & "&dmd=2").Bitmap
 End Sub
+```
 
 3. In Table1_Exit add the FlexDMD uninit line
-=============================================
 
+```vbscript
 Sub Table1_Exit
     Savehs
-	If Not FlexDMD is Nothing Then FlexDMD.Uninit
+    If Not FlexDMD is Nothing Then FlexDMD.Uninit
     If B2SOn = true Then Controller.Stop
 End Sub
+```

@@ -1,6 +1,8 @@
 # UltraDMD
 
-FlexDMD was created since UltraDMD was not updated any more. Therefore, it is designed to easily replace UltraDMD on existing tables.
+FlexDMD was created since UltraDMD has a few bugs and it was not updated any more. Therefore, it is designed to easily replace UltraDMD on existing tables.
+
+Note that the script folder of this repository contains scripts which includes the changes below for a few popular tables.
 
 ## Converting a table from UltraDMD to FlexDMD
 

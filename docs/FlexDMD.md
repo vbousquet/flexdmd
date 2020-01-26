@@ -6,4 +6,5 @@ Welcome to the documentation of FlexDMD !
 Sections:
 * [Installation](./Installation.md)
 * [Embedding the DMD inside VPX](./VPXDMD.md)
-* [FlexDMD & UltraDMD](./UltraDMD.md)
+* [Adding a DMD to latest tables from JPSalas](./JPSalas.md)
+* [Porting an UltraDMD to FlexDMD](./UltraDMD.md)
