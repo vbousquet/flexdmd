@@ -27,6 +27,7 @@ namespace FlexDMD
         private Bitmap _image = null;
         private float[] _frameDelays;
         private const int PropertyTagFrameDelay = 0x5100;
+        private float _length;
 
         public GIFImage(Bitmap image)
         {
@@ -39,13 +40,24 @@ namespace FlexDMD
                 _image = null;
                 return;
             }
+            _length = 0f;
             for (int i = 0; i < _frameDelays.Length; i++)
             {
                 _frameDelays[i] = BitConverter.ToInt32(item.Value, i * 4) / 100.0f;
-                // log.Info("Frame length: {0}, {1}", path, _frameDelays[i]);
+                _length += _frameDelays[i];
             }
+            // log.Info("GIF length: {0}", _length);
             Rewind();
+            Pack();
         }
+
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+
+        public Alignment Alignment { get; set; } = Alignment.Center;
+
+        public override float PrefWidth { get => _image.Width; }
+
+        public override float PrefHeight { get => _image.Height; }
 
         protected override void Rewind()
         {
@@ -77,7 +89,12 @@ namespace FlexDMD
 
         public override void Draw(Graphics graphics)
         {
-            if (Visible && _image != null) graphics.DrawImage(_image, X, Y, _image.Width, _image.Height);
+            if (Visible && _image != null)
+            {
+                Layout.Scale(Scaling, PrefWidth, PrefHeight, Width, Height, out float w, out float h);
+                Layout.Align(Alignment, w, h, Width, Height, out float x, out float y);
+                graphics.DrawImage(_image, (int)(X + x), (int)(Y + y), (int)w, (int)h);
+            }
         }
     }
 }
