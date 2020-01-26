@@ -28,7 +28,9 @@ namespace FlexDMD.Scenes
             var y = 0f;
             foreach (string line in text)
             {
-                var label = new Label(font, line);
+                var txt = line.Trim();
+                if (txt.Length == 0) txt = " ";
+                var label = new Label(font, txt);
                 label.Y = y;
                 y += label.Height;
                 _container.AddActor(label);

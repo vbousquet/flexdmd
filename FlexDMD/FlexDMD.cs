@@ -31,12 +31,12 @@ namespace FlexDMD
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly List<System.Action> _runnables = new List<System.Action>();
         private readonly AssetManager _assets = new AssetManager();
-        private readonly Group _stage = new Group();
+        private readonly Group _stage = new Group() { Name = "Stage" };
         private readonly int _frameRate = 60;
+        private readonly Mutex _renderMutex = new Mutex();
         private DMDDevice _dmd = null;
-        private Mutex _renderMutex = new Mutex();
         private Thread _processThread = null;
-        private bool _running = false;
+        private bool _visible = false;
         private ushort _width = 128;
         private ushort _height = 32;
         private string _gameName = "";
@@ -50,43 +50,77 @@ namespace FlexDMD
         public delegate void OnDMDChangedDelegate();
 
         public IGroupActor Stage { get => _stage; }
-        public IGroupActor NewGroup(string name) { var g = new Group(); g.Name = name; return g; }
-        public IFrameActor NewFrame(string name) { var g = new Frame(); g.Name = name; return g; }
-        public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text); g.Name = name; return g; }
+        public IGroupActor NewGroup(string name) { var g = new Group() { Name = name }; return g; }
+        public IFrameActor NewFrame(string name) { var g = new Frame() { Name = name }; return g; }
+        public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
         public IVideoActor NewVideo(string name, string video) { var g = (IVideoActor)ResolveImage(video); g.Name = name; return g; }
         public IImageActor NewImage(string name, string image) { var g = (IImageActor)ResolveImage(image); g.Name = name; return g; }
         public Font NewFont(string font, float brightness, float outline) => _assets.Load<Font>(new FontDef(font, brightness, outline)).Load();
-
-        public IUltraDMD NewUltraDMD()
-        {
-            if (_processThread == null)
-            {
-                log.Error("UltraDMD object may only be created after FlexDMD initialization. Call Init First.");
-                return null;
-            }
-            return new UltraDMD.UltraDMD(this);
-        }
+        public IUltraDMD NewUltraDMD() => new UltraDMD.UltraDMD(this);
 
         public Graphics Graphics { get; private set; } = null;
+
+        public bool Show
+        {
+            get => _visible;
+            set
+            {
+                if (_visible == value) return;
+                _visible = value;
+                if (_visible)
+                {
+                    log.Info("Show DMD for game '{0}'", _gameName);
+                    _dmd = new DMDDevice();
+                    _dmd.Open();
+                    var options = new PMoptions
+                    {
+                        Red = _dmdColor.R,
+                        Green = _dmdColor.G,
+                        Blue = _dmdColor.B,
+                        Perc66 = 66,
+                        Perc33 = 33,
+                        Perc0 = 0
+                    };
+                    options.Green0 = options.Perc0 * options.Green / 100;
+                    options.Green33 = options.Perc33 * options.Green / 100;
+                    options.Green66 = options.Perc66 * options.Green / 100;
+                    options.Blue0 = options.Perc0 * options.Blue / 100;
+                    options.Blue33 = options.Perc33 * options.Blue / 100;
+                    options.Blue66 = options.Perc66 * options.Blue / 100;
+                    options.Red0 = options.Perc0 * options.Red / 100;
+                    options.Red33 = options.Perc33 * options.Red / 100;
+                    options.Red66 = options.Perc66 * options.Red / 100;
+                    _dmd.GameSettings(_gameName, 0, options);
+                    _processThread = new Thread(new ThreadStart(RenderLoop)) { IsBackground = true };
+                    _processThread.Start();
+                }
+                else
+                {
+                    log.Info("Hide DMD");
+                    _processThread?.Join();
+                    _dmd.Close();
+                    _dmd.Dispose();
+                    _dmd = null;
+                }
+            }
+        }
 
         public string GameName
         {
             get => _gameName;
             set
             {
+                if (value == null)
+                {
+                    GameName = "";
+                    return;
+                }
                 if (_gameName == value) return;
-                if (_processThread != null)
-                {
-                    log.Warn("Game name after initialization. Reinitialization performed.");
-                    Uninit();
-                    _gameName = value;
-                    Init();
-                }
-                else
-                {
-                    log.Info("Game name set to {0}", value);
-                    _gameName = value;
-                }
+                bool wasVisible = Show;
+                Show = false;
+                log.Info("Game name set to {0}", value);
+                _gameName = value;
+                Show = wasVisible;
             }
         }
 
@@ -95,19 +129,12 @@ namespace FlexDMD
             get => _width;
             set
             {
+                if (_width < 1) return;
                 if (_width == value) return;
-                if (_processThread != null)
-                {
-                    log.Warn("Width changed after initialization. Reinitialization performed.");
-                    Uninit();
-                    _width = value;
-                    Init();
-                }
-                else
-                {
-                    log.Info("DMD width set to {0}", value);
-                    _width = value;
-                }
+                bool wasVisible = Show;
+                Show = false;
+                _width = value;
+                Show = wasVisible;
             }
         }
 
@@ -116,19 +143,12 @@ namespace FlexDMD
             get => _height;
             set
             {
+                if (_height < 1) return;
                 if (_height == value) return;
-                if (_processThread != null)
-                {
-                    log.Warn("Height changed after initialization. Reinitialization performed.");
-                    Uninit();
-                    _height = value;
-                    Init();
-                }
-                else
-                {
-                    log.Info("DMD height set to {0}", value);
-                    _height = value;
-                }
+                bool wasVisible = Show;
+                Show = false;
+                _height = value;
+                Show = wasVisible;
             }
         }
 
@@ -138,18 +158,10 @@ namespace FlexDMD
             set
             {
                 if (_dmdColor == value) return;
-                if (_processThread != null)
-                {
-                    log.Warn("Color changed after initialization. Reinitialization performed.");
-                    Uninit();
-                    _dmdColor = value;
-                    Init();
-                }
-                else
-                {
-                    log.Info("Color set to {0}", value);
-                    _dmdColor = value;
-                }
+                bool wasVisible = Show;
+                Show = false;
+                _dmdColor = value;
+                Show = wasVisible;
             }
         }
 
@@ -158,20 +170,12 @@ namespace FlexDMD
             get => _renderMode;
             set
             {
-                RenderMode mode = value;
-                if (_renderMode == mode) return;
-                if (_processThread != null)
-                {
-                    log.Warn("Render mode changed after initialization. Reinitialization performed.");
-                    Uninit();
-                    _renderMode = mode;
-                    Init();
-                }
-                else
-                {
-                    log.Info("Render mode set to {0}", value);
-                    _renderMode = mode;
-                }
+                if (_renderMode == value) return;
+                bool wasVisible = Show;
+                Show = false;
+                log.Info("Render mode set to {0}", value);
+                _renderMode = value;
+                Show = wasVisible;
             }
         }
 
@@ -220,54 +224,12 @@ namespace FlexDMD
 
         ~FlexDMD()
         {
-            if (_running)
+            if (_visible)
             {
                 log.Error("Destructor called before Uninit");
-                Uninit();
+                Show = false;
             }
             MediaFoundationApi.Shutdown();
-        }
-
-        public void Init()
-        {
-            if (_running) return;
-            log.Info("Init {0}", _gameName);
-            _running = true;
-            _dmd = new DMDDevice();
-            _dmd.Open();
-            var options = new PMoptions
-            {
-                Red = _dmdColor.R,
-                Green = _dmdColor.G,
-                Blue = _dmdColor.B,
-                Perc66 = 66,
-                Perc33 = 33,
-                Perc0 = 0
-            };
-            options.Green0 = options.Perc0 * options.Green / 100;
-            options.Green33 = options.Perc33 * options.Green / 100;
-            options.Green66 = options.Perc66 * options.Green / 100;
-            options.Blue0 = options.Perc0 * options.Blue / 100;
-            options.Blue33 = options.Perc33 * options.Blue / 100;
-            options.Blue66 = options.Perc66 * options.Blue / 100;
-            options.Red0 = options.Perc0 * options.Red / 100;
-            options.Red33 = options.Perc33 * options.Red / 100;
-            options.Red66 = options.Perc66 * options.Red / 100;
-            _dmd.GameSettings(_gameName, 0, options);
-            _processThread = new Thread(new ThreadStart(RenderLoop));
-            _processThread.IsBackground = true;
-            _processThread.Start();
-        }
-
-        public void Uninit()
-        {
-            if (!_running) return;
-            log.Info("Uninit");
-            _running = false;
-            _processThread?.Join();
-            _dmd.Close();
-            _dmd.Dispose();
-            _dmd = null;
         }
 
         public void LockRenderThread()
@@ -335,6 +297,7 @@ namespace FlexDMD
 
         public void RenderLoop()
         {
+            log.Info("RenderThread start");
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
             Graphics = Graphics.FromImage(_frame);
             _stage.SetSize(_width, _height);
@@ -343,7 +306,7 @@ namespace FlexDMD
             WindowHandle visualPinball = null;
             IntPtr _bpFrame = _renderMode != RenderMode.RGB ? _bpFrame = Marshal.AllocHGlobal(_width * _height) : IntPtr.Zero;
             double elapsedMs = 0.0;
-            while (_running)
+            while (Show)
             {
                 stopWatch.Restart();
                 if (visualPinball == null)
@@ -353,7 +316,7 @@ namespace FlexDMD
                 else if (!visualPinball.IsWindow())
                 {
                     log.Info("Closing FlexDMD since Visual Pinball Player window was closed");
-                    Uninit();
+                    Show = false;
                     break;
                 }
                 _renderMutex.WaitOne();
@@ -505,6 +468,7 @@ namespace FlexDMD
             _frame.Dispose();
             _frame = null;
             _processThread = null;
+            log.Info("RenderThread end");
         }
     }
 }

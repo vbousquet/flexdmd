@@ -37,8 +37,8 @@ Sub LoadUltraDMD
     ' Set UltraDMD = CreateObject("UltraDMD.DMDObject")
 	Dim FlexDMD
     Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
-    FlexDMD.Init
 	Set UltraDMD = FlexDMD.NewUltraDMD()
+    UltraDMD.Init
 
     Dim fso, curDir
     Set fso = CreateObject("Scripting.FileSystemObject")

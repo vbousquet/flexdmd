@@ -39,6 +39,9 @@ namespace FlexDMDUI
 @"' Demo script
 
 Public Sub FlexDemo()
+    DMD.GameName = NULL
+    DMD.GameName = ""ft""
+
     Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
 
     Set scene1 = DMD.NewGroup(""Scene 1"")
@@ -279,8 +282,8 @@ End If
                 Dim DMD
                 Dim UDMD
                 Set DMD = CreateObject(""FlexDMD.FlexDMD"")
-                DMD.Init
                 Set UDMD = DMD.NewUltraDMD()
+                DMD.Show = True
                 ");
         }
 
@@ -289,7 +292,12 @@ End If
             if (_flexScript != null)
             {
                 _flexScript.Interrupt();
-                _flexScript.Post("If Not DMD is Nothing Then DMD.Uninit");
+                _flexScript.Post(@"
+                    If Not DMD is Nothing Then
+                        DMD.Show = False
+                        DMD = NULL
+                    End If
+                    ");
                 _flexScript.Close(true, true);
                 _flexScript = null;
             }
@@ -311,7 +319,12 @@ End If
             if (_ultraScript != null)
             {
                 _ultraScript.Interrupt();
-                _ultraScript.Post("If Not UDMD is Nothing Then UDMD.Uninit");
+                _ultraScript.Post(@"
+                    If Not UDMD is Nothing Then
+                        UDMD.Uninit
+                        UDMD = NULL
+                    End If
+                    ");
                 _ultraScript.Close(true, true);
                 _ultraScript = null;
             }

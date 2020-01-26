@@ -34,8 +34,8 @@ Const UltraDMD_VideoMode_Bottom = 3
 Sub LoadUltraDMD
 	Dim FlexDMD
     Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
-    FlexDMD.Init
 	Set UltraDMD = FlexDMD.NewUltraDMD()
+    UltraDMD.Init
 
 	Dim fso
     Set fso = CreateObject("Scripting.FileSystemObject")

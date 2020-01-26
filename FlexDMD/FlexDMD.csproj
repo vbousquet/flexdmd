@@ -141,6 +141,23 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Resources\dmds\black.png" />
+    <EmbeddedResource Include="Resources\dmds\bally.gif" />
+    <EmbeddedResource Include="Resources\dmds\bally.png" />
+    <EmbeddedResource Include="Resources\dmds\bsmt2000.gif" />
+    <EmbeddedResource Include="Resources\dmds\dataeast-1.gif" />
+    <EmbeddedResource Include="Resources\dmds\dataeast-2.gif" />
+    <EmbeddedResource Include="Resources\dmds\dcs - 1.png" />
+    <EmbeddedResource Include="Resources\dmds\dcs - 2.png" />
+    <EmbeddedResource Include="Resources\dmds\drink%27n drive.png" />
+    <EmbeddedResource Include="Resources\dmds\gottlieb.png" />
+    <EmbeddedResource Include="Resources\dmds\insertcoin.gif" />
+    <EmbeddedResource Include="Resources\dmds\premier.gif" />
+    <EmbeddedResource Include="Resources\dmds\premier.png" />
+    <EmbeddedResource Include="Resources\dmds\sega.gif" />
+    <EmbeddedResource Include="Resources\dmds\stern.gif" />
+    <EmbeddedResource Include="Resources\dmds\williams.gif" />
+    <EmbeddedResource Include="Resources\dmds\williams.png" />
     <EmbeddedResource Include="Resources\bm_army-12.png" />
     <EmbeddedResource Include="Resources\teeny_tiny_pixls-5.png" />
     <EmbeddedResource Include="Resources\zx_spectrum-7.png" />

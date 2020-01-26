@@ -98,8 +98,8 @@ namespace UltraDMD
             return useFrame ? new Frame() : new Actor();
         }
 
-        public void Init() => _flexDMD.Init();
-        public void Uninit() => _flexDMD.Uninit();
+        public void Init() => _flexDMD.Show = true;
+        public void Uninit() => _flexDMD.Show = false;
 
         public int GetMajorVersion()
         {
@@ -128,9 +128,9 @@ namespace UltraDMD
             bool wasVisible = _visible;
             _visible = bVisible;
             if (!wasVisible && _visible)
-                _flexDMD.Init();
+                _flexDMD.Show = true;
             else if (wasVisible && !_visible)
-                _flexDMD.Uninit();
+                _flexDMD.Show = false;
             return wasVisible;
         }
 
@@ -166,7 +166,7 @@ namespace UltraDMD
 
         public void SetProjectFolder(string basePath) => _flexDMD.ProjectFolder = basePath;
 
-		// TODO implement stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
+        // TODO implement stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
         public void SetVideoStretchMode(int mode) => _stretchMode = mode;
 
         public int CreateAnimationFromImages(int fps, bool loop, string imagelist)
@@ -342,7 +342,7 @@ namespace UltraDMD
                 // log.Info("ScrollingCredits '{0}', '{1}', {2}", background, text, textBrightness);
                 _scoreBoard.Visible = false;
                 string[] lines = text.Split(new char[] { '\n', '|' });
-                var font12 = _flexDMD.NewFont(_twoLinesFontBottom.Path, textBrightness / 15f, -1);
+                var font12 = _flexDMD.NewFont(_scoreFontText.Path, textBrightness / 15f, -1);
                 var scene = new ScrollingCreditsScene(ResolveImage(background, false), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
                 _queue.Enqueue(scene);
             });

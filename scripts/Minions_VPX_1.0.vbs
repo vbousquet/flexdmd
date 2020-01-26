@@ -83,8 +83,8 @@ Sub LoadUltraDMD
 	Dim FlexDMD
     Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
     FlexDMD.GameName = cGameName
-    FlexDMD.Init
 	Set UltraDMD = FlexDMD.NewUltraDMD()
+    UltraDMD.Init
 
     Dim fso
     Set fso = CreateObject("Scripting.FileSystemObject")

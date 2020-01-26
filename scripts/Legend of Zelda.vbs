@@ -3709,8 +3709,8 @@ Sub DMDUltra_Init
         Exit Sub
     End If
     FlexDMD.GameName = cGameName
-    FlexDMD.Init
 	Set UltraDMD = FlexDMD.NewUltraDMD()
+    UltraDMD.Init
 
     If Not UltraDMD.GetMajorVersion = 1 Then
         MsgBox "Incompatible Version of UltraDMD found."

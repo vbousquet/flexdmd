@@ -222,6 +222,11 @@ namespace FlexDMD
         #region Properties
 
         /// <summary>
+        /// You need to turn the DMD to visible to see it, and you need to hide it in order to stop the daemon rendering thread.
+        /// </summary>
+        bool Show { get; set; }
+
+        /// <summary>
         /// Define the game name which will be shared with the rendering backend to allow contextual skinning.
         /// Note that changing the game name after Init result in a DMD reinitialization (with flickering).
         /// </summary>
@@ -268,20 +273,12 @@ namespace FlexDMD
         /// <summary>
         /// Returns the DMD content as an array of uint RGB pixels for rendering inside VPX's embedded DMD
         /// </summary>
-        object DmdColoredPixels
-        {
-            [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
-            get;
-        }
+        object DmdColoredPixels { [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] get; }
 
         /// <summary>
         /// Returns the DMD content as an array of byte pixels (0 => black, 255 => full light) for rendering inside VPX's embedded DMD
         /// </summary>
-        object DmdPixels
-        {
-            [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)]
-            get;
-        }
+        object DmdPixels { [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] get; }
 
         /// <summary>
         /// Returns the main rendering surface. Note that you need to synchronize the modification using Lock/Unlock to avoid concurrent modification with the render thread.
@@ -291,16 +288,6 @@ namespace FlexDMD
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Init must be called before any other method.
-        /// </summary>
-        void Init();
-
-        /// <summary>
-        /// Uninit must be called ot close the DMD and correctly relase native resources.
-        /// </summary>
-        void Uninit();
 
         /// <summary>
         /// Lock the render thread to allow modifying the stage avoiding concurrent modifications.
