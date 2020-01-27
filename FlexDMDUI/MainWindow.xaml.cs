@@ -209,12 +209,12 @@ End If
             if (File.Exists(Path.Combine(_installPath, @"dmddevice.dll")))
             {
                 dmdDeviceInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
-                dmdDeviceInstallLabel.Content = "dmddevice.dll was found alongside flexdmd.dll.";
+                dmdDeviceInstallLabel.Content = "DmdDevice.dll was found alongside FlexDMD.dll.";
             }
             else
             {
                 dmdDeviceInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
-                dmdDeviceInstallLabel.Content = "dmddevice.dll was not found alongside flexdmd.dll. No rendering will happen.";
+                dmdDeviceInstallLabel.Content = "DmdDevice.dll was not found alongside FlexDMD.dll. No rendering will happen.";
             }
             var flexDMDinstall = GetComponentLocation(flexDMDclsid);
             var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
@@ -230,7 +230,7 @@ End If
                 flexDMDInstallLabel.Content = "FlexDMD is not registered and may not be used on your system.";
                 registerFlexDMDBtn.Content = "Register";
             }
-            if (ultraDMDinstall != null && ultraDMDinstall.EndsWith("/FlexDMD.dll"))
+            if (ultraDMDinstall != null && ultraDMDinstall.EndsWith("/FlexUDMD.dll"))
             {
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexDMD is registered to be used instead of UltraDMD.";
@@ -256,7 +256,7 @@ End If
                         Registry.GetValue(@"HKEY_CLASSES_ROOT\CLSID\" + clsid + @"\InprocServer32", "CodeBase", null) ??
                         Registry.GetValue(@"HKEY_CLASSES_ROOT\Wow6432Node\CLSID\" + clsid + @"\LocalServer32", null, null) ??
                         Registry.GetValue(@"HKEY_CLASSES_ROOT\CLSID\" + clsid + @"\LocalServer32", null, null);
-            if (path != null) return new Uri(path.ToString()).AbsolutePath;
+            if (path != null) return new Uri(path.ToString()).LocalPath;
             return null;
         }
 
