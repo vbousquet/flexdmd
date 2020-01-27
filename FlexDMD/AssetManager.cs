@@ -62,9 +62,12 @@ namespace FlexDMD
                 for (int x = 0; x < dst.Width; x++)
                 {
                     var pixel = src.GetPixel(x, y);
-                    var alpha = (int)(4 * ((0.21 * pixel.R + 0.72 * pixel.G + 0.07 * pixel.B) * pixel.A) / 255);
-                    if (alpha > 255) alpha = 255;
-                    dst.SetPixel(x, y, Color.FromArgb(alpha, pixel));
+                    // var alpha = (int)(4 * ((0.21 * pixel.R + 0.72 * pixel.G + 0.07 * pixel.B) * pixel.A) / 255);
+                    // if (alpha > 255) alpha = 255;
+                    if (pixel.R < 64 && pixel.G < 64 && pixel.B < 64)
+                        dst.SetPixel(x, y, Color.FromArgb(0, pixel));
+                    else
+                        dst.SetPixel(x, y, pixel);
                 }
             }
             return dst;
