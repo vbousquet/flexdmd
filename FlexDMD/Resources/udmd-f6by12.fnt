@@ -14,9 +14,9 @@ char id=40   x=64    y=0    width=8     height=14     xoffset=-1    yoffset=-1  
 char id=41   x=72    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // )
 char id=42   x=80    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // *
 char id=43   x=88    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // +
-char id=44   x=96    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=3     page=0  chnl=15 // ,
+char id=44   x=96    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=4     page=0  chnl=15 // ,
 char id=45   x=104    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // -
-char id=46   x=112    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // .
+char id=46   x=112    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=4     page=0  chnl=15 // .
 char id=47   x=120    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // /
 char id=48   x=128    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // 0
 char id=49   x=136    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // 1
@@ -28,8 +28,8 @@ char id=54   x=176    y=0    width=8     height=14     xoffset=-1    yoffset=-1 
 char id=55   x=184    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // 7
 char id=56   x=192    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // 8
 char id=57   x=200    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // 9
-char id=58   x=208    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // :
-char id=59   x=216    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // ;
+char id=58   x=208    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=4     page=0  chnl=15 // :
+char id=59   x=216    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=4     page=0  chnl=15 // ;
 char id=60   x=224    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // <
 char id=61   x=232    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // =
 char id=62   x=240    y=0    width=8     height=14     xoffset=-1    yoffset=-1     xadvance=7     page=0  chnl=15 // >
