@@ -12,7 +12,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -37,6 +36,7 @@ namespace FlexDMD
     public class DotFilter : IBitmapFilter
     {
         public int _dotSize = 2;
+        public int _offset = 0;
 
         public Bitmap Filter(Bitmap src)
         {
@@ -45,7 +45,26 @@ namespace FlexDMD
             {
                 for (int x = 0; x < dst.Width; x++)
                 {
-                    dst.SetPixel(x, y, src.GetPixel(x * _dotSize + (_dotSize - 1), y * _dotSize + (_dotSize - 1)));
+                    dst.SetPixel(x, y, src.GetPixel(x * _dotSize + (_dotSize - 1) - _offset, y * _dotSize + (_dotSize - 1)));
+                }
+            }
+            return dst;
+        }
+    }
+
+    public class AdditiveFilter : IBitmapFilter
+    {
+        public Bitmap Filter(Bitmap src)
+        {
+            var dst = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
+            for (int y = 0; y < dst.Height; y++)
+            {
+                for (int x = 0; x < dst.Width; x++)
+                {
+                    var pixel = src.GetPixel(x, y);
+                    var alpha = (int)(4 * ((0.21 * pixel.R + 0.72 * pixel.G + 0.07 * pixel.B) * pixel.A) / 255);
+                    if (alpha > 255) alpha = 255;
+                    dst.SetPixel(x, y, Color.FromArgb(alpha, pixel));
                 }
             }
             return dst;
@@ -247,6 +266,7 @@ namespace FlexDMD
         /// </summary>
         public Stream OpenStream(string path, string siblingPath = null)
         {
+            if (path.Contains("&")) path = path.Split('&')[0];
             if (siblingPath != null)
             {
                 if (siblingPath.StartsWith("FlexDMD.Resources."))
@@ -254,7 +274,7 @@ namespace FlexDMD
                 else if (siblingPath.StartsWith("VPX."))
                     path = "VPX." + path;
                 else
-                    path = System.IO.Path.Combine(siblingPath, "..", path);
+                    path = Path.Combine(siblingPath, "..", path);
             }
             if (path.StartsWith("FlexDMD.Resources."))
             {
@@ -262,9 +282,9 @@ namespace FlexDMD
             }
             else if (path.StartsWith("VPX."))
             {
-                if (_vpxFile == null && TableFile != null && File.Exists(System.IO.Path.Combine(BasePath, TableFile)))
+                if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
                 {
-                    _vpxFile = new VPXFile(System.IO.Path.Combine(BasePath, TableFile));
+                    _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
                 }
                 if (_vpxFile != null)
                 {
@@ -274,13 +294,14 @@ namespace FlexDMD
             }
             else
             {
-                var fullPath = System.IO.Path.Combine(BasePath, path);
+                var fullPath = Path.Combine(BasePath, path);
                 return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
             }
         }
 
         public bool FileExists(string path, string siblingPath = null)
         {
+            if (path.Contains("&")) path = path.Split('&')[0];
             if (siblingPath != null)
             {
                 if (siblingPath.StartsWith("FlexDMD.Resources."))
@@ -288,7 +309,7 @@ namespace FlexDMD
                 else if (siblingPath.StartsWith("VPX."))
                     path = "VPX." + path;
                 else
-                    path = System.IO.Path.Combine(siblingPath, "..", path);
+                    path = Path.Combine(siblingPath, "..", path);
             }
             if (path.StartsWith("FlexDMD.Resources."))
             {
@@ -308,13 +329,14 @@ namespace FlexDMD
             }
             else
             {
-                var fullPath = System.IO.Path.Combine(BasePath, path);
+                var fullPath = Path.Combine(BasePath, path);
                 return File.Exists(fullPath);
             }
         }
 
         public FileType GetFileType(string path, string siblingPath = null)
         {
+            if (path.Contains("&")) path = path.Split('&')[0];
             if (siblingPath != null)
             {
                 if (siblingPath.StartsWith("FlexDMD.Resources."))
@@ -322,7 +344,7 @@ namespace FlexDMD
                 else if (siblingPath.StartsWith("VPX."))
                     path = "VPX." + path;
                 else
-                    path = System.IO.Path.Combine(siblingPath, "..", path);
+                    path = Path.Combine(siblingPath, "..", path);
             }
             if (path.StartsWith("FlexDMD.Resources."))
             {
@@ -343,7 +365,7 @@ namespace FlexDMD
             }
             else
             {
-                var fullPath = System.IO.Path.Combine(BasePath, path);
+                var fullPath = Path.Combine(BasePath, path);
                 return GetTypeFromExt(fullPath);
             }
         }
@@ -358,10 +380,22 @@ namespace FlexDMD
             var filters = new List<object>();
             foreach (string definition in path.Split('&'))
             {
-                if (definition.StartsWith("dmd=") && Int32.TryParse(definition.Substring(4), out int dotSize))
+                if (definition.StartsWith("dmd=") && int.TryParse(definition.Substring(4), out int dotSize))
                 {
                     var filter = new DotFilter();
                     filter._dotSize = dotSize;
+                    filters.Add(filter);
+                }
+                else if (definition.StartsWith("dmd2=") && int.TryParse(definition.Substring(4), out int dotSize2))
+                {
+                    var filter = new DotFilter();
+                    filter._dotSize = dotSize2;
+                    filter._offset = 1;
+                    filters.Add(filter);
+                }
+                else if (definition.StartsWith("add"))
+                {
+                    var filter = new AdditiveFilter();
                     filters.Add(filter);
                 }
                 else if (definition.StartsWith("sub="))
