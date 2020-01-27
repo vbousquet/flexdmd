@@ -13,59 +13,100 @@
    limitations under the License.
    */
 using FlexDMD.Scenes;
-using NLog;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 namespace FlexDMD.Actors
 {
     class Sequence : Group
     {
-		private Scene _activeScene = null;
-		
-		public bool Loop { get; set; } = false;
+        private Scene _activeScene = null;
+        private bool _finished = true;
+        private readonly List<Scene> _scenes = new List<Scene>();
+
+        public bool Loop { get; set; } = false;
+        public Scene ActiveScene
+        {
+            get => (_activeScene != null && _activeScene.Parent == this) ? _activeScene : null;
+            private set { _activeScene = (value != null && value.Parent == this) ? value : null; }
+        }
 
         public void Enqueue(Scene scene)
         {
-			if (_activeScene != null) 
-			{
-				scene.Visible = false;
-			}
-			else
-			{
-				_activeScene = scene;
-			}
-			AddActor(scene);
+            _scenes.Add(scene);
+            _finished = false;
         }
-		
-		public bool IsFinished()
-		{
-			return _activeScene == null;
-		}
+
+        public void RemoveAllScenes()
+        {
+            ActiveScene?.Remove();
+            _scenes.Clear();
+            _finished = true;
+        }
+
+        public void RemoveScene(string name)
+        {
+            var scene = _scenes.First(s => s.Name.Equals(name));
+            if (scene != null)
+            {
+                if (scene.Parent == this)
+                {
+                    NextScene();
+                    if (scene.Parent == this)
+                    {
+                        RemoveAllScenes();
+                        return;
+                    }
+                }
+                _scenes.Remove(scene);
+            }
+        }
+
+        public bool IsFinished()
+        {
+            return _finished;
+        }
+
+        private void NextScene()
+        {
+            if (ActiveScene != null)
+            {
+                var pos = _scenes.IndexOf(ActiveScene) + 1;
+                ActiveScene.Remove();
+                if (pos >= _scenes.Count() && Loop) pos = 0;
+                if (pos < _scenes.Count())
+                {
+                    AddActor(_scenes[pos]);
+                    ActiveScene = _scenes[pos];
+                }
+                else
+                {
+                    _finished = true;
+                }
+            }
+        }
 
         public override void Update(float delta)
         {
-			base.Update(delta);
-			if (_activeScene == null)
-			{
-				if (Children.Count() > 0)
-				{
-					_activeScene = (Scene) Children[0];
-					_activeScene.Visible = true;
-				}
-			}
-			else if (_activeScene.IsFinished())
-			{
-				_activeScene.Visible = false;
-				var pos = Children.IndexOf(_activeScene) + 1;
-				if (pos >= Children.Count() && Loop) pos = 0;
-				if (pos < Children.Count())
-				{
-					_activeScene = (Scene) Children[pos];
-					_activeScene.Visible = true;
-				}
-			}
+            base.Update(delta);
+            if (ActiveScene == null)
+            {
+                if (_scenes.Count() > 0)
+                {
+                    AddActor(_scenes[0]);
+                    ActiveScene = _scenes[0];
+                    ActiveScene.Update(delta);
+                }
+                else
+                {
+                    _finished = true;
+                }
+            }
+            else if (ActiveScene.IsFinished())
+            {
+                NextScene();
+                ActiveScene?.Update(delta);
+            }
         }
     }
 }

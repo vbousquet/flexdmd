@@ -117,7 +117,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Scenes\JPSScene.cs" />
-    <Compile Include="Scenes\SceneQueue.cs" />
     <Compile Include="Scenes\AnimationType.cs" />
     <Compile Include="Scenes\Scene.cs" />
     <Compile Include="Actors\Video.cs" />

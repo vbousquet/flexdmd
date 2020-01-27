@@ -133,23 +133,25 @@ namespace FlexDMD
             if (shouldBeOpened && !_opened)
             {
                 _opened = true;
+                _audioReader = new MediaFoundationReader(_path);
                 _audioDevice = new WaveOutEvent();
-                Rewind();
+                _audioDevice.Init(_audioReader);
+                _audioDevice.Play();
+                MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out _videoReader);
+                SetupVideoDecoder(_videoReader);
+                ReadNextFrame();
                 nOpenedVideos++;
                 log.Info("Video opened: {0} size={1}x{2} length={3}s ({4} videos are currently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
             }
             else if (!shouldBeOpened && _opened)
             {
                 _opened = false;
-                if (_audioReader != null)
-                {
-                    _audioReader.Dispose();
-                    _audioReader = null;
-                }
+                _audioReader?.Dispose();
+                _audioReader = null;
+                _audioDevice?.Dispose();
+                _audioDevice = null;
                 if (_videoReader != null) Marshal.ReleaseComObject(_videoReader);
                 _videoReader = null;
-                _audioDevice.Dispose();
-                _audioDevice = null;
                 nOpenedVideos--;
                 log.Info("Video closed: {0} size={1}x{2} length={3}s ({4} remaining videos are currently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
             }
@@ -159,7 +161,10 @@ namespace FlexDMD
         {
             _seek = position;
             _time = position;
-            if (_audioReader != null) _audioReader.Seek((long)position, System.IO.SeekOrigin.Begin);
+            if (_audioReader != null)
+            {
+                _audioReader.CurrentTime = TimeSpan.FromSeconds(position);
+            }
             if (_videoReader != null)
             {
                 ReadNextFrame();
@@ -169,31 +174,10 @@ namespace FlexDMD
 
         protected override void Rewind()
         {
-            // log.Info("Initalizing video: {0}", _path);
-            if (_videoReader != null)
-            {
-                Seek(0);
-            }
-            else
-            {
-                MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out IMFSourceReader reader);
-                _videoReader = SetupVideoDecoder(reader);
-                if (_videoReader == null) log.Error("Failed to open video: {0}", _path);
-            }
-            if (_audioReader != null)
-            {
-                _audioReader.Seek(0, System.IO.SeekOrigin.Begin);
-            }
-            else
-            {
-                _audioReader = new MediaFoundationReader(_path);
-                _audioDevice.Init(_audioReader);
-                _audioDevice.Play();
-            }
-            ReadNextFrame();
+            Seek(0f);
         }
 
-        private IMFSourceReader SetupVideoDecoder(IMFSourceReader reader)
+        private void SetupVideoDecoder(IMFSourceReader reader)
         {
             IMFMediaType outputType = MediaFoundationApi.CreateMediaType();
             outputType.SetGUID(MediaFoundationAttributes.MF_MT_MAJOR_TYPE, MediaTypes.MFMediaType_Video);
@@ -202,12 +186,10 @@ namespace FlexDMD
             reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
             reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
             Marshal.ReleaseComObject(outputType);
-            return reader;
         }
 
         protected override void ReadNextFrame()
         {
-            if (_videoReader == null) Rewind();
             if (_videoReader == null || _endOfAnimation) return;
             try
             {
@@ -235,7 +217,7 @@ namespace FlexDMD
                 {
                     log.Info("Native type changed");
                     // The format changed. Reconfigure the decoder.
-                    _videoReader = SetupVideoDecoder(_videoReader);
+                    SetupVideoDecoder(_videoReader);
                 }
                 if (flags == MF_SOURCE_READER_FLAG.MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED)
                 {

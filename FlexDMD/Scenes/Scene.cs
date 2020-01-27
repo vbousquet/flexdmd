@@ -27,15 +27,15 @@ namespace FlexDMD.Scenes
     abstract class Scene : Group
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        protected readonly string _id;
         protected readonly Tweener _tweener = new Tweener();
         protected float _inAnimLength;
         protected float _outAnimLength;
         protected AnimationType _animateIn;
         protected AnimationType _animateOut;
-        public bool _active = false;
+        private bool _inStage = false;
+        private bool _visible = true;
+        private bool _active = false;
 
-        public string Id { get => _id; }
         public float Time { get; private set; }
         public float Pause { get; set; }
 
@@ -44,15 +44,54 @@ namespace FlexDMD.Scenes
             _animateIn = animateIn;
             _animateOut = animateOut;
             Pause = pauseS;
-            _id = id;
+            Name = id;
         }
 
-        public virtual void Begin()
+        public override bool InStage
         {
-            _active = true;
-            SetSize(Parent.Width, Parent.Height);
-            _inAnimLength = StartAnimation(_animateIn);
-            _outAnimLength = -1;
+            get => _inStage;
+            set
+            {
+                if (_inStage == value) return;
+                _inStage = value;
+                foreach (Actor child in Children)
+                    child.InStage = value;
+                UpdateState();
+            }
+        }
+
+        public override bool Visible
+        {
+            get => _visible;
+            set
+            {
+                _visible = value;
+                UpdateState();
+            }
+        }
+
+        private void UpdateState()
+        {
+            bool shouldBeActive = _visible && _inStage;
+            if (shouldBeActive && !_active)
+            {
+                // log.Info("Begining scene");
+                _active = true;
+                SetSize(Parent.Width, Parent.Height);
+                _inAnimLength = StartAnimation(_animateIn);
+                _outAnimLength = -1;
+                Begin();
+            }
+            else if (!shouldBeActive && _active)
+            {
+                // log.Info("Ending scene");
+                _active = false;
+                _tweener.Cancel();
+            }
+        }
+
+        protected virtual void Begin()
+        {
         }
 
         private float StartAnimation(AnimationType animation)
@@ -158,15 +197,9 @@ namespace FlexDMD.Scenes
                 case AnimationType.None:
                     return 0f;
                 default:
-                    log.Error("Unsupported animation in scene '{0}': {1}", _id, animation);
+                    log.Error("Unsupported animation in scene '{0}': {1}", Name, animation);
                     return 0f;
             }
-        }
-
-        public virtual void End()
-        {
-            _active = false;
-            _tweener.Cancel();
         }
 
         public override void Update(float secondsElapsed)

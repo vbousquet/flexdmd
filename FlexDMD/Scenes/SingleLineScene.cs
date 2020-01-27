@@ -35,7 +35,7 @@ namespace FlexDMD.Scenes
             _text.Text = text;
         }
 
-        public override void Begin()
+        protected override void Begin()
         {
             base.Begin();
             if (_scroll)

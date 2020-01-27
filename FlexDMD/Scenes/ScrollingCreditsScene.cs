@@ -38,7 +38,7 @@ namespace FlexDMD.Scenes
             _container.Height = y;
         }
 
-        public override void Begin()
+        protected override void Begin()
         {
             base.Begin();
             _container.Y = Height;

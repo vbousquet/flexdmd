@@ -28,6 +28,7 @@ namespace FlexDMD
         public float Width { get; set; } = 0;
         public float Height { get; set; } = 0;
         public Group Parent { get; set; } = null;
+        public bool FillParent { get; set; } = false;
         public virtual float PrefWidth { get; } = 0;
         public virtual float PrefHeight { get; } = 0;
         public virtual bool InStage { get; set; } = false;
@@ -127,6 +128,7 @@ namespace FlexDMD
 
         public virtual void Update(float secondsElapsed)
         {
+            if (FillParent && Parent != null) SetSize(Parent.Width, Parent.Height);
             for (int i = 0; i < _actions.Count; i++)
                 if (_actions[i].Update(secondsElapsed)) _actions.RemoveAt(i);
         }

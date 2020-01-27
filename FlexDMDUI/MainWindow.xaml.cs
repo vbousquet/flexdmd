@@ -21,9 +21,6 @@ namespace FlexDMDUI
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
-    /// 
-    /// Note that regasm from x64 framework will fail whereas regasm from x86 framework will succeeded.
-    /// VS2019 will register under : HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}\InprocServer32
     /// </summary>
     public partial class MainWindow : Window
     {

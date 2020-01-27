@@ -30,7 +30,7 @@ namespace UltraDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly FlexDMD.FlexDMD _flexDMD;
-        private readonly SceneQueue _queue = new SceneQueue();
+        private readonly Sequence _queue = new Sequence();
         private readonly Dictionary<int, object> _preloads = new Dictionary<int, object>();
         private ScoreBoard _scoreBoard;
         private FontDef _scoreFontText, _scoreFontNormal, _scoreFontHighlight;
@@ -43,6 +43,7 @@ namespace UltraDMD
         public UltraDMD(FlexDMD.FlexDMD flexDMD)
         {
             _flexDMD = flexDMD;
+            _queue.FillParent = true;
             // UltraDMD uses f4by5 / f5by7 / f6by12
             _scoreFontText = new FontDef("FlexDMD.Resources.udmd-f4by5.fnt", 0.66f);
             _scoreFontNormal = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt", 0.66f);
@@ -142,17 +143,17 @@ namespace UltraDMD
 
         public bool IsRendering()
         {
-            return _queue.IsRendering();
+            return !_queue.IsFinished();
         }
 
         public void CancelRendering()
         {
-            _flexDMD.Post(() => _queue.CancelRendering());
+            _flexDMD.Post(() => _queue.RemoveAllScenes());
         }
 
         public void CancelRenderingWithId(string sceneId)
         {
-            _flexDMD.Post(() => _queue.CancelRendering(sceneId));
+            _flexDMD.Post(() => _queue.RemoveScene(sceneId));
         }
 
         public void Clear()
@@ -222,8 +223,8 @@ namespace UltraDMD
                 _scoreBoard.Visible = false;
                 if (cancelPrevious && sceneId != null && sceneId.Length > 0)
                 {
-                    var s = _queue.GetActiveScene();
-                    if (s.Id == sceneId) _queue.CancelRendering(sceneId);
+                    var s = _queue.ActiveScene;
+                    if (s != null && s.Name == sceneId) _queue.RemoveScene(sceneId);
                 }
                 if (toptext != null && toptext.Length > 0 && bottomtext != null && bottomtext.Length > 0)
                 {
@@ -256,8 +257,8 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                var scene = _queue.GetActiveScene();
-                if (scene != null && id != null && id.Length > 0 && scene.Id == id)
+                var scene = _queue.ActiveScene;
+                if (scene != null && id != null && id.Length > 0 && scene.Name == id)
                 {
                     if (scene is TwoLineScene s2) s2.SetText(toptext, bottomtext);
                     if (scene is SingleLineScene s1) s1.SetText(toptext);
@@ -269,8 +270,8 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                var scene = _queue.GetActiveScene();
-                if (scene != null && id != null && id.Length > 0 && scene.Id == id)
+                var scene = _queue.ActiveScene;
+                if (scene != null && id != null && id.Length > 0 && scene.Name == id)
                 {
                     if (scene is TwoLineScene s2) s2.SetText(toptext, bottomtext);
                     if (scene is SingleLineScene s1) s1.SetText(toptext);

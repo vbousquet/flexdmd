@@ -42,7 +42,7 @@ namespace FlexDMD.Scenes
 
         public override string ToString()
         {
-            return string.Format("TwoLineScene _id={0}, _background={1}, _animateIn={2}, _pauseS={3}, _animateOut={4}", _id, Background, _animateIn, Pause, _animateOut);
+            return string.Format("TwoLineScene Name={0}, _background={1}, _animateIn={2}, _pauseS={3}, _animateOut={4}", Name, Background, _animateIn, Pause, _animateOut);
         }
     }
 }
