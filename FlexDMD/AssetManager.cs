@@ -349,6 +349,7 @@ namespace FlexDMD
             }
             else if (path.StartsWith("VPX."))
             {
+                // TODO do not keept the file open (this blocks editing)
                 if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
                 {
                     _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));

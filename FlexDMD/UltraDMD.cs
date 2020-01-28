@@ -408,7 +408,7 @@ namespace UltraDMD
             });
         }
 
-        // TODO I did not find an UltraDMD table using this, and I did not succeed in making it work in UltraDMD. So I'm just guessing it's behavior, font, etc.
+        // I did not find an UltraDMD table using this, and I did not succeed in making it work in UltraDMD. So I'm just guessing it's behavior, font, etc.
         public void ScrollingCredits(string background, string text, int textBrightness, int animateIn, int pauseTime, int animateOut)
         {
             _flexDMD.Post(() =>
