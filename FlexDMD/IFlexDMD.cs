@@ -135,6 +135,9 @@ namespace FlexDMD
 
         // Frame interface
         int Thickness { get; set; }
+        Color BorderColor { get; set; }
+        bool Fill { get; set; }
+        Color FillColor { get; set; }
     }
 
     [Guid("42CAEB83-C045-443D-9528-4304E9F27A20"), ComVisible(true)]
@@ -222,7 +225,12 @@ namespace FlexDMD
         #region Properties
 
         /// <summary>
-        /// You need to turn the DMD to visible to see it, and you need to hide it in order to stop the daemon rendering thread.
+        /// You need to set to true to start the rendering daemon thread, and to false to stop it.
+        /// </summary>
+        bool Run { get; set; }
+
+        /// <summary>
+        /// By default, FlexDMD outputs through DmdDevice in order to render to a virtual or real DMD. You may set this to false if you don't want this output, for example, when you want to render only using Visual Pinball embedded DMD.
         /// </summary>
         bool Show { get; set; }
 
@@ -270,6 +278,11 @@ namespace FlexDMD
         /// </summary>
         string TableFile { get; set; }
 
+        /// <summary>
+        /// If sets to True, the DMD is cleared before rendering for each frame. Default is false.
+        /// </summary>
+		bool Clear { get; set; }
+		
         /// <summary>
         /// Returns the DMD content as an array of uint RGB pixels for rendering inside VPX's embedded DMD
         /// </summary>

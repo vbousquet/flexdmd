@@ -58,7 +58,7 @@ namespace FlexDMD
         public Video(string path, bool loop = false)
         {
             _path = path;
-            _loop = loop;
+            Loop = loop;
             // Get the frame size
             MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out IMFSourceReader reader);
             reader.GetNativeMediaType(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, out IMFMediaType nativeType);

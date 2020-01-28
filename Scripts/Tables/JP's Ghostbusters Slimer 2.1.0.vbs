@@ -316,7 +316,7 @@ End Sub
 
 Sub table1_Exit
     Savehs
-	If Not FlexDMD is Nothing Then FlexDMD.Show = False
+	If Not FlexDMD is Nothing Then FlexDMD.Run = False
 End Sub
 
 '********************
@@ -1793,7 +1793,7 @@ Sub DMD_Init() 'default/startup values
 		FlexDMD.Width = 128
 		FlexDMD.Height = 36
 		FlexDMD.GameName = cGameName
-		FlexDMD.Show = True
+		FlexDMD.Run = True
 		Set DMDScene = FlexDMD.NewGroup("Scene")
 		For i = 40 to 42
 			DMDScene.AddActor FlexDMD.NewImage("Dig" & i, "VPX.dempty&dmd=2")

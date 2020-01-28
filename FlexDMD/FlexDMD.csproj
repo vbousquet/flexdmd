@@ -90,7 +90,6 @@
     <Compile Include="Actors\Actions.cs" />
     <Compile Include="Actors\Actor.cs" />
     <Compile Include="Actors\AnimatedActor.cs" />
-    <Compile Include="Actors\AnimatedImage.cs" />
     <Compile Include="Actors\FadeOverlay.cs" />
     <Compile Include="Actors\Font.cs" />
     <Compile Include="Actors\Frame.cs" />
@@ -98,6 +97,7 @@
     <Compile Include="Actors\Group.cs" />
     <Compile Include="Actors\GIFImage.cs" />
     <Compile Include="Actors\Image.cs" />
+    <Compile Include="Actors\ImageSequence.cs" />
     <Compile Include="Actors\Label.cs" />
     <Compile Include="Actors\Layout.cs" />
     <Compile Include="Actors\ScoreBoard.cs" />

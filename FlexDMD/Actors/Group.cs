@@ -15,6 +15,7 @@
 using NLog;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace FlexDMD
 {
@@ -23,6 +24,7 @@ namespace FlexDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private bool _inStage = false;
+		
         public List<Actor> Children { get; } = new List<Actor>();
 
         public override bool InStage
@@ -36,6 +38,8 @@ namespace FlexDMD
                     child.InStage = value;
             }
         }
+
+        public bool Clip { get; set; } = false;
 
         public Actor Get(string name)
         {
@@ -107,7 +111,17 @@ namespace FlexDMD
             if (Visible)
             {
                 graphics.TranslateTransform(X, Y);
-                foreach (Actor child in Children) child.Draw(graphics);
+				if (Clip)
+				{
+					var clipRegion = new RectangleF(0, 0, Width, Height);
+					graphics.SetClip(clipRegion, CombineMode.Replace);
+					foreach (Actor child in Children) child.Draw(graphics);
+					graphics.ResetClip();
+				}
+				else
+				{
+					foreach (Actor child in Children) child.Draw(graphics);
+				}
                 graphics.TranslateTransform(-X, -Y);
             }
         }

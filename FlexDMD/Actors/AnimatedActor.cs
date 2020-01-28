@@ -20,11 +20,12 @@ namespace FlexDMD
     public abstract class AnimatedActor : Actor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        protected bool _loop = false;
         protected bool _endOfAnimation;
         protected float _frameTime;
         protected float _frameDuration;
         protected float _time;
+
+        public bool Loop { get; set; } = false;
 
         public override void Update(float delta)
         {
@@ -42,7 +43,7 @@ namespace FlexDMD
                     _endOfAnimation = true;
                 }
             }
-            if (_endOfAnimation && _loop)
+            if (_endOfAnimation && Loop)
             {
                 var length = _frameTime + _frameDuration;
                 _time %= length;

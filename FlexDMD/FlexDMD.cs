@@ -36,7 +36,8 @@ namespace FlexDMD
         private readonly Mutex _renderMutex = new Mutex();
         private DMDDevice _dmd = null;
         private Thread _processThread = null;
-        private bool _visible = false;
+        private bool _run = false;
+        private bool _show = true;
         private ushort _width = 128;
         private ushort _height = 32;
         private string _gameName = "";
@@ -60,49 +61,77 @@ namespace FlexDMD
 
         public Graphics Graphics { get; private set; } = null;
 
-        public bool Show
+        public bool Run
         {
-            get => _visible;
+            get => _run;
             set
             {
-                if (_visible == value) return;
-                _visible = value;
-                if (_visible)
+                if (_run == value) return;
+                _run = value;
+                if (_run)
                 {
-                    log.Info("Show DMD for game '{0}'", _gameName);
-                    _dmd = new DMDDevice();
-                    _dmd.Open();
-                    var options = new PMoptions
-                    {
-                        Red = _dmdColor.R,
-                        Green = _dmdColor.G,
-                        Blue = _dmdColor.B,
-                        Perc66 = 66,
-                        Perc33 = 33,
-                        Perc0 = 0
-                    };
-                    options.Green0 = options.Perc0 * options.Green / 100;
-                    options.Green33 = options.Perc33 * options.Green / 100;
-                    options.Green66 = options.Perc66 * options.Green / 100;
-                    options.Blue0 = options.Perc0 * options.Blue / 100;
-                    options.Blue33 = options.Perc33 * options.Blue / 100;
-                    options.Blue66 = options.Perc66 * options.Blue / 100;
-                    options.Red0 = options.Perc0 * options.Red / 100;
-                    options.Red33 = options.Perc33 * options.Red / 100;
-                    options.Red66 = options.Perc66 * options.Red / 100;
-                    _dmd.GameSettings(_gameName, 0, options);
+                    ShowDMD(_show);
+                    log.Info("Starting render thread for game '{0}'", _gameName);
                     _processThread = new Thread(new ThreadStart(RenderLoop)) { IsBackground = true };
                     _processThread.Start();
                 }
                 else
                 {
-                    log.Info("Hide DMD");
+                    log.Info("Stopping render thread");
                     _processThread?.Join();
-                    _dmd.Close();
-                    _dmd.Dispose();
-                    _dmd = null;
+                    _processThread = null;
+                    ShowDMD(false);
                 }
             }
+        }
+
+        public bool Show
+        {
+            get => _show;
+            set
+            {
+                if (_show == value) return;
+                _show = value;
+                ShowDMD(_show);
+            }
+        }
+
+        private void ShowDMD(bool show)
+        {
+            LockRenderThread();
+            if (show && _dmd == null)
+            {
+                log.Info("Show DMD");
+                _dmd = new DMDDevice();
+                _dmd.Open();
+                var options = new PMoptions
+                {
+                    Red = _dmdColor.R,
+                    Green = _dmdColor.G,
+                    Blue = _dmdColor.B,
+                    Perc66 = 66,
+                    Perc33 = 33,
+                    Perc0 = 0
+                };
+                options.Green0 = options.Perc0 * options.Green / 100;
+                options.Green33 = options.Perc33 * options.Green / 100;
+                options.Green66 = options.Perc66 * options.Green / 100;
+                options.Blue0 = options.Perc0 * options.Blue / 100;
+                options.Blue33 = options.Perc33 * options.Blue / 100;
+                options.Blue66 = options.Perc66 * options.Blue / 100;
+                options.Red0 = options.Perc0 * options.Red / 100;
+                options.Red33 = options.Perc33 * options.Red / 100;
+                options.Red66 = options.Perc66 * options.Red / 100;
+                _dmd.GameSettings(_gameName, 0, options);
+            }
+            else if (!show && _dmd != null)
+            {
+                log.Info("Hide DMD");
+                _dmd.Close();
+                _dmd.Dispose();
+                _dmd = null;
+            }
+            UnlockRenderThread();
         }
 
         public string GameName
@@ -199,6 +228,8 @@ namespace FlexDMD
             }
         }
 
+        public bool Clear { get; set; } = false;
+
         public object DmdColoredPixels
         {
             get
@@ -224,7 +255,7 @@ namespace FlexDMD
 
         ~FlexDMD()
         {
-            if (_visible)
+            if (_run)
             {
                 log.Error("Destructor called before Uninit");
                 Show = false;
@@ -283,8 +314,8 @@ namespace FlexDMD
                 }
                 else if (filename.Contains(","))
                 {
-                    var def = new AnimatedImageDef(filename, 25, true);
-                    // TODO return _assets.Load<AnimatedImage>(def).Load().newInstance();
+                    var def = new ImageSequenceDef(filename, 25, true);
+                    return _assets.Load<ImageSequence>(def).Load();
                 }
             }
             catch (Exception e)
@@ -306,7 +337,7 @@ namespace FlexDMD
             WindowHandle visualPinball = null;
             IntPtr _bpFrame = _renderMode != RenderMode.RGB ? _bpFrame = Marshal.AllocHGlobal(_width * _height) : IntPtr.Zero;
             double elapsedMs = 0.0;
-            while (Show)
+            while (Run)
             {
                 stopWatch.Restart();
                 if (visualPinball == null)
@@ -316,11 +347,11 @@ namespace FlexDMD
                 else if (!visualPinball.IsWindow())
                 {
                     log.Info("Closing FlexDMD since Visual Pinball Player window was closed");
-                    Show = false;
+                    Run = false;
                     break;
                 }
                 _renderMutex.WaitOne();
-                Graphics.Clear(Color.Black);
+                if (Clear) Graphics.Clear(Color.Black);
                 lock (_runnables)
                 {
                     _runnables.ForEach(item => item());
@@ -360,7 +391,7 @@ namespace FlexDMD
                         }
                         try
                         {
-                            _dmd.RenderGray2(_width, _height, _bpFrame);
+                            _dmd?.RenderGray2(_width, _height, _bpFrame);
                         }
                         catch (Exception) { }
                         break;
@@ -392,7 +423,7 @@ namespace FlexDMD
                         }
                         try
                         {
-                            _dmd.RenderGray4(_width, _height, _bpFrame);
+                            _dmd?.RenderGray4(_width, _height, _bpFrame);
                         }
                         catch (Exception) { }
                         break;
@@ -424,7 +455,7 @@ namespace FlexDMD
                         }
                         try
                         {
-                            _dmd.RenderRgb24(_width, _height, data.Scan0);
+                            _dmd?.RenderRgb24(_width, _height, data.Scan0);
                         }
                         catch (Exception) { }
                         break;

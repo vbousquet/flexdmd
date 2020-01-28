@@ -73,14 +73,43 @@ namespace FlexDMD
             return dst;
         }
     }
+	
+	public class VideoDef
+	{
+		public string VideoFilename { get; set; } = "";
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+        public Alignment Alignment { get; set; } = Alignment.Center;
+		public bool Loop { get; set; } = false;
 
-    public class AnimatedImageDef
+        public override bool Equals(object obj)
+        {
+            return obj is VideoDef def &&
+                   VideoFilename == def.VideoFilename &&
+                   Scaling == def.Scaling &&
+                   Alignment == def.Alignment &&
+                   Loop == def.Loop;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 96768724;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(VideoFilename);
+            hashCode = hashCode * -1521134295 + Scaling.GetHashCode();
+            hashCode = hashCode * -1521134295 + Alignment.GetHashCode();
+            hashCode = hashCode * -1521134295 + Loop.GetHashCode();
+            return hashCode;
+        }
+    }
+
+    public class ImageSequenceDef
     {
         public List<string> _images;
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+        public Alignment Alignment { get; set; } = Alignment.Center;
         public int Fps { get; set; } = 25;
         public bool Loop { get; set; } = true;
 
-        public AnimatedImageDef(string images, int fps, bool loop)
+        public ImageSequenceDef(string images, int fps, bool loop)
         {
             _images = new List<string>();
             foreach (string image in images.Split(','))
@@ -91,7 +120,7 @@ namespace FlexDMD
 
         public override bool Equals(object obj)
         {
-            return obj is AnimatedImageDef def &&
+            return obj is ImageSequenceDef def &&
                    EqualityComparer<List<string>>.Default.Equals(_images, def._images) &&
                    Fps == def.Fps &&
                    Loop == def.Loop;
@@ -196,16 +225,16 @@ namespace FlexDMD
                     _value = (T)Convert.ChangeType(font, typeof(T));
                     _loaded = true;
                 }
-                else if (typeof(T) == typeof(AnimatedImage) && _id.GetType() == typeof(AnimatedImageDef))
+                else if (typeof(T) == typeof(ImageSequence) && _id.GetType() == typeof(ImageSequenceDef))
                 {
-                    AnimatedImageDef def = (AnimatedImageDef)_id;
+                    ImageSequenceDef def = (ImageSequenceDef)_id;
                     List<Bitmap> images = new List<Bitmap>();
                     foreach (string filename in def._images)
                     {
                         var bmp = _assets.Load<Bitmap>(filename).Load();
                         images.Add(bmp);
                     }
-                    AnimatedImage actor = new AnimatedImage(images, def.Fps, def.Loop);
+                    ImageSequence actor = new ImageSequence(images, def.Fps, def.Loop);
                     _value = (T)Convert.ChangeType(actor, typeof(T));
                     _loaded = true;
                 }
@@ -373,6 +402,24 @@ namespace FlexDMD
             }
         }
 
+        private FileType GetTypeFromExt(string file)
+        {
+            string extension = Path.GetExtension(file).ToLowerInvariant();
+            if (extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".bmp"))
+            {
+                return FileType.Image;
+            }
+            else if (extension.Equals(".gif"))
+            {
+                return FileType.Gif;
+            }
+            else if (extension.Equals(".wmv") || extension.Equals(".avi") || extension.Equals(".mp4"))
+            {
+                return FileType.Video;
+            }
+            return FileType.Unknow;
+        }
+
         private string GetVPXId(string path)
         {
             return path.Split('&')[0].Substring(4);
@@ -407,24 +454,6 @@ namespace FlexDMD
                 }
             }
             return filters;
-        }
-
-        private FileType GetTypeFromExt(string file)
-        {
-            string extension = Path.GetExtension(file).ToLowerInvariant();
-            if (extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".bmp"))
-            {
-                return FileType.Image;
-            }
-            else if (extension.Equals(".gif"))
-            {
-                return FileType.Gif;
-            }
-            else if (extension.Equals(".wmv") || extension.Equals(".avi") || extension.Equals(".mp4"))
-            {
-                return FileType.Video;
-            }
-            return FileType.Unknow;
         }
 
         public Asset<T> Load<T>(object id)

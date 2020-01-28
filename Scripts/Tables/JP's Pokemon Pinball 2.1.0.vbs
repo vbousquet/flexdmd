@@ -254,7 +254,7 @@ Sub table1_unPaused
 End Sub
 
 Sub table1_Exit
-	If Not FlexDMD is Nothing Then FlexDMD.Show = False
+	If Not FlexDMD is Nothing Then FlexDMD.Run = False
     Savehs
 End Sub
 
@@ -1520,7 +1520,7 @@ Sub DMD_Init() 'default/startup values
 		FlexDMD.Width = 128
 		FlexDMD.Height = 36
 		FlexDMD.GameName = cGameName
-		FlexDMD.Show = True
+		FlexDMD.Run = True
 		Set DMDScene = FlexDMD.NewGroup("Scene")
 		DMDScene.AddActor FlexDMD.NewImage("Back", "VPX.bkempty")
 		DMDScene.GetImage("Back").SetSize FlexDMD.Width, FlexDMD.Height

@@ -9,7 +9,7 @@ namespace FlexDMDTest
             var dmd = new FlexDMD.FlexDMD();
             // dmd.DmdWidth = 512;
             // dmd.DmdHeight = 128;
-            dmd.Show = true;
+            dmd.Run = true;
             var udmd = dmd.NewUltraDMD();
             // udmd.DisplayScene00("Diablo.UltraDMD/act1.wmv", " ", 15, "FREE PLAY", 15, 14, 5000, 14);
             // dmd.DisplayScene00("Diablo.UltraDMD/act2.wmv", "SCENE", 0, "2", 0, 0, 1000, 0);
@@ -24,7 +24,7 @@ namespace FlexDMDTest
             // dmd.ScrollingCredits("Diablo.UltraDMD/black.jpg", "Line 1|Line 2|Line 3|Line 4|Line 5|Line 6", 15, 0, 5000, 0);
             // dmd.DisplayScene00("Diablo.UltraDMD/black.jpg", "SCENE", 15, "", 15, 6, 2000, 8);
             System.Threading.Thread.Sleep(5000);
-            dmd.Show = false;
+            dmd.Run = false;
         }
     }
 

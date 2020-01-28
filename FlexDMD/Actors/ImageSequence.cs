@@ -18,18 +18,18 @@ using System.Drawing;
 
 namespace FlexDMD
 {
-    class AnimatedImage : AnimatedActor
+    class ImageSequence : AnimatedActor
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
         private readonly int _fps;
         private int _frame;
         private List<Image> _frames = new List<Image>();
 
-        public AnimatedImage(List<Bitmap> images, int fps = 25, bool loop = true)
+        public ImageSequence(List<Bitmap> images, int fps = 25, bool loop = true)
         {
             log.Info("Initalizing image list: {0}", images);
             _fps = fps;
-            _loop = loop;
+            Loop = loop;
             foreach (Bitmap bmp in images)
                 _frames.Add(new Image(bmp));
             _frame = 0;

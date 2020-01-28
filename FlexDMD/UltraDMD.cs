@@ -75,15 +75,24 @@ namespace UltraDMD
                 if (Int32.TryParse(filename, out int preloadId) && _preloads.ContainsKey(preloadId))
                 {
                     var preload = _preloads[preloadId];
-                    if (preload is Video v)
+                    // TODO implement
+                    if (preload is VideoDef vp)
                     {
-                        // TODO implement (store preload info, and adapt asset manager, no newinstance logic which is flawed)
-                        // return v.newInstance();
+                        var actor = _flexDMD.ResolveImage(vp.VideoFilename);
+                        if (actor != null && actor is Video v)
+                        {
+                            v.Loop = vp.Loop;
+                            return v;
+                        }
                     }
-                    else if (preload is AnimatedImage ai)
+                    else if (preload is ImageSequenceDef ai)
                     {
-                        // TODO implement
-                        // return ai.newInstance();
+                        /* var actor = _flexDMD.ResolveImage(vp._videoFilename);
+						if (actor != null && actor is Video v)
+						{
+							v.Loop = vp._loop;
+							return v;
+						} */
                     }
                 }
                 else
@@ -99,8 +108,8 @@ namespace UltraDMD
             return useFrame ? new Frame() : new Actor();
         }
 
-        public void Init() => _flexDMD.Show = true;
-        public void Uninit() => _flexDMD.Show = false;
+        public void Init() => _flexDMD.Run = true;
+        public void Uninit() => _flexDMD.Run = false;
 
         public int GetMajorVersion()
         {
@@ -128,10 +137,7 @@ namespace UltraDMD
             log.Info("SetVisibleVirtualDMD({0})", bVisible);
             bool wasVisible = _visible;
             _visible = bVisible;
-            if (!wasVisible && _visible)
-                _flexDMD.Show = true;
-            else if (wasVisible && !_visible)
-                _flexDMD.Show = false;
+            _flexDMD.Show = bVisible;
             return wasVisible;
         }
 
@@ -173,18 +179,17 @@ namespace UltraDMD
         public int CreateAnimationFromImages(int fps, bool loop, string imagelist)
         {
             var id = _nextId;
+            _preloads[id] = new ImageSequenceDef(imagelist, fps, loop);
             _nextId++;
-            // TODO var def = new AnimatedImageDef(imagelist, fps, loop);
-            // _preloads[id] = _assets.Load<AnimatedImage>(def).Load();
             return id;
         }
 
         public int RegisterVideo(int videoStretchMode, bool loop, string videoFilename)
         {
             var id = _nextId;
+            // TODO implement stretch mode
+            _preloads[id] = new VideoDef { Loop = loop, VideoFilename = videoFilename };
             _nextId++;
-            // TODO var video = new Video(System.IO.Path.Combine(_assets.BasePath, videoFilename), loop, videoStretchMode);
-            // _preloads[id] = video;
             return id;
         }
 
@@ -307,7 +312,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened (managed by scoreboard visibility)
+                // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened (managed by scoreboard visibility instead of direct rendering to allow animated scoreboard)
                 _scoreBoard.Visible = true;
                 _scoreBoard.SetNPlayers(cPlayers);
                 _scoreBoard.SetHighlightedPlayer(highlightedPlayer);
@@ -331,7 +336,7 @@ namespace UltraDMD
             {
                 log.Error("DisplayText [untested] '{0}', {1}, {2}", text, textBrightness, textOutlineBrightness);
                 _scoreBoard.Visible = false;
-                GetFittedLabel(text, textBrightness / 15f, textOutlineBrightness / 15).Draw(_flexDMD.Graphics);
+                GetFittedLabel(text, textBrightness / 15f, textOutlineBrightness / 15f).Draw(_flexDMD.Graphics);
             });
         }
 
@@ -340,7 +345,6 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                // log.Info("ScrollingCredits '{0}', '{1}', {2}", background, text, textBrightness);
                 _scoreBoard.Visible = false;
                 string[] lines = text.Split(new char[] { '\n', '|' });
                 var font12 = _flexDMD.NewFont(_scoreFontText.Path, textBrightness / 15f, -1);
