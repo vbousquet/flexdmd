@@ -1680,7 +1680,7 @@ Sub DMD_Init() 'default/startup values
 		FlexDMD.Width = 128
 		FlexDMD.Height = 36
 		FlexDMD.GameName = cGameName
-		FlexDMD.Init
+		FlexDMD.Run = True
 		Set DMDScene = FlexDMD.NewGroup("Scene")
 		DMDScene.AddActor FlexDMD.NewImage("Back", "VPX.bkempty")
 		DMDScene.GetImage("Back").SetSize FlexDMD.Width, FlexDMD.Height
