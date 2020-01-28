@@ -78,7 +78,7 @@ End Sub
 ```vbscript
 Sub Table1_Exit
     Savehs
-    If Not FlexDMD is Nothing Then FlexDMD.Uninit
+    If Not FlexDMD is Nothing Then FlexDMD.Run = False
     If B2SOn = true Then Controller.Stop
 End Sub
 ```
