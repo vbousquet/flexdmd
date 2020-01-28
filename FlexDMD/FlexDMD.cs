@@ -350,8 +350,8 @@ namespace FlexDMD
                     Run = false;
                     break;
                 }
-                _renderMutex.WaitOne();
                 if (Clear) Graphics.Clear(Color.Black);
+                _renderMutex.WaitOne();
                 lock (_runnables)
                 {
                     _runnables.ForEach(item => item());

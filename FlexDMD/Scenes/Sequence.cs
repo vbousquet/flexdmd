@@ -20,92 +20,51 @@ namespace FlexDMD.Actors
 {
     class Sequence : Group
     {
-        private Scene _activeScene = null;
-        private bool _finished = true;
-        private readonly List<Scene> _scenes = new List<Scene>();
+        private readonly List<Scene> _pendingScenes = new List<Scene>();
 
-        public bool Loop { get; set; } = false;
-        public Scene ActiveScene
-        {
-            get => (_activeScene != null && _activeScene.Parent == this) ? _activeScene : null;
-            private set { _activeScene = (value != null && value.Parent == this) ? value : null; }
-        }
+        public Scene ActiveScene { get; private set; } = null;
 
         public void Enqueue(Scene scene)
         {
-            _scenes.Add(scene);
-            _finished = false;
+            _pendingScenes.Add(scene);
         }
 
         public void RemoveAllScenes()
         {
             ActiveScene?.Remove();
-            _scenes.Clear();
-            _finished = true;
+            ActiveScene = null;
+            _pendingScenes.Clear();
         }
 
         public void RemoveScene(string name)
         {
-            var scene = _scenes.First(s => s.Name.Equals(name));
-            if (scene != null)
+            if (ActiveScene.Name.Equals(Name))
             {
-                if (scene.Parent == this)
-                {
-                    NextScene();
-                    if (scene.Parent == this)
-                    {
-                        RemoveAllScenes();
-                        return;
-                    }
-                }
-                _scenes.Remove(scene);
+                ActiveScene.Remove();
+                ActiveScene = null;
             }
+            _pendingScenes.RemoveAll(s => s.Name.Equals(name));
         }
 
         public bool IsFinished()
         {
-            return _finished;
-        }
-
-        private void NextScene()
-        {
-            if (ActiveScene != null)
-            {
-                var pos = _scenes.IndexOf(ActiveScene) + 1;
-                ActiveScene.Remove();
-                if (pos >= _scenes.Count() && Loop) pos = 0;
-                if (pos < _scenes.Count())
-                {
-                    AddActor(_scenes[pos]);
-                    ActiveScene = _scenes[pos];
-                }
-                else
-                {
-                    _finished = true;
-                }
-            }
+            return ActiveScene == null && _pendingScenes.Count == 0;
         }
 
         public override void Update(float delta)
         {
             base.Update(delta);
-            if (ActiveScene == null)
+            if (ActiveScene != null && ActiveScene.IsFinished())
             {
-                if (_scenes.Count() > 0)
-                {
-                    AddActor(_scenes[0]);
-                    ActiveScene = _scenes[0];
-                    ActiveScene.Update(delta);
-                }
-                else
-                {
-                    _finished = true;
-                }
+                ActiveScene.Remove();
+                ActiveScene = null;
             }
-            else if (ActiveScene.IsFinished())
+            if (ActiveScene == null && _pendingScenes.Count() > 0)
             {
-                NextScene();
-                ActiveScene?.Update(delta);
+                ActiveScene = _pendingScenes[0];
+                _pendingScenes.RemoveAt(0);
+                AddActor(ActiveScene);
+                ActiveScene.Update(0);
             }
         }
     }

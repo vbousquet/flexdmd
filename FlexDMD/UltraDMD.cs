@@ -32,10 +32,13 @@ namespace UltraDMD
         private readonly FlexDMD.FlexDMD _flexDMD;
         private readonly Sequence _queue = new Sequence();
         private readonly Dictionary<int, object> _preloads = new Dictionary<int, object>();
-        private ScoreBoard _scoreBoard;
-        private FontDef _scoreFontText, _scoreFontNormal, _scoreFontHighlight;
-        private FontDef _twoLinesFontTop, _twoLinesFontBottom;
-        private FontDef[] _singleLineFont;
+        private readonly ScoreBoard _scoreBoard;
+        private readonly FontDef _scoreFontText;
+        private readonly FontDef _scoreFontNormal;
+        private readonly FontDef _scoreFontHighlight;
+        private readonly FontDef _twoLinesFontTop;
+        private readonly FontDef _twoLinesFontBottom;
+        private readonly FontDef[] _singleLineFont;
         private bool _visible = true;
         private int _stretchMode = 0;
         private int _nextId = 1;
@@ -62,8 +65,8 @@ namespace UltraDMD
                 _flexDMD.NewFont(_scoreFontNormal.Path, _scoreFontNormal.FillBrightness, _scoreFontNormal.OutlineBrightness),
                 _flexDMD.NewFont(_scoreFontHighlight.Path, _scoreFontHighlight.FillBrightness, _scoreFontHighlight.OutlineBrightness),
                 _flexDMD.NewFont(_scoreFontText.Path, _scoreFontText.FillBrightness, _scoreFontText.OutlineBrightness)
-                );
-            _scoreBoard.Visible = false;
+                )
+            { Visible = false };
             _flexDMD.Stage.AddActor(_scoreBoard);
             _flexDMD.Stage.AddActor(_queue);
         }
@@ -72,21 +75,23 @@ namespace UltraDMD
         {
             try
             {
-                if (Int32.TryParse(filename, out int preloadId) && _preloads.ContainsKey(preloadId))
+                if (int.TryParse(filename, out int preloadId) && _preloads.ContainsKey(preloadId))
                 {
                     var preload = _preloads[preloadId];
-                    // TODO implement
                     if (preload is VideoDef vp)
                     {
                         var actor = _flexDMD.ResolveImage(vp.VideoFilename);
                         if (actor != null && actor is Video v)
                         {
                             v.Loop = vp.Loop;
+                            v.Scaling = vp.Scaling;
+                            v.Alignment = vp.Alignment;
                             return v;
                         }
                     }
                     else if (preload is ImageSequenceDef ai)
                     {
+                        // TODO implement
                         /* var actor = _flexDMD.ResolveImage(vp._videoFilename);
 						if (actor != null && actor is Video v)
 						{
@@ -98,7 +103,32 @@ namespace UltraDMD
                 else
                 {
                     var actor = _flexDMD.ResolveImage(filename);
-                    if (actor != null) return actor;
+                    if (actor != null)
+                    {
+                        if (actor is Video v)
+                        {
+                            switch (_stretchMode)
+                            {
+                                case 0:
+                                    v.Scaling = Scaling.Stretch;
+                                    v.Alignment = Alignment.Center;
+                                    break;
+                                case 1:
+                                    v.Scaling = Scaling.FillX;
+                                    v.Alignment = Alignment.Top;
+                                    break;
+                                case 2:
+                                    v.Scaling = Scaling.FillX;
+                                    v.Alignment = Alignment.Center;
+                                    break;
+                                case 3:
+                                    v.Scaling = Scaling.FillX;
+                                    v.Alignment = Alignment.Bottom;
+                                    break;
+                            }
+                        }
+                        return actor;
+                    }
                 }
             }
             catch (Exception e)
@@ -149,7 +179,11 @@ namespace UltraDMD
 
         public bool IsRendering()
         {
-            return !_queue.IsFinished();
+            _flexDMD.LockRenderThread();
+            var finished = _queue.IsFinished();
+            _flexDMD.UnlockRenderThread();
+            return !finished;
+            // return !_queue.IsFinished();
         }
 
         public void CancelRendering()
@@ -168,12 +202,13 @@ namespace UltraDMD
             {
                 _flexDMD.Graphics.Clear(Color.Black);
                 _scoreBoard.Visible = false;
+                if (_queue.IsFinished()) _queue.Visible = false;
             });
         }
 
         public void SetProjectFolder(string basePath) => _flexDMD.ProjectFolder = basePath;
 
-        // TODO implement stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
+        // Stretch: 0, crop to top: 1, crop to center: 2, crop to bottom: 3
         public void SetVideoStretchMode(int mode) => _stretchMode = mode;
 
         public int CreateAnimationFromImages(int fps, bool loop, string imagelist)
@@ -187,8 +222,27 @@ namespace UltraDMD
         public int RegisterVideo(int videoStretchMode, bool loop, string videoFilename)
         {
             var id = _nextId;
-            // TODO implement stretch mode
-            _preloads[id] = new VideoDef { Loop = loop, VideoFilename = videoFilename };
+            var v = new VideoDef { Loop = loop, VideoFilename = videoFilename };
+            switch (videoStretchMode)
+            {
+                case 0:
+                    v.Scaling = Scaling.Stretch;
+                    v.Alignment = Alignment.Center;
+                    break;
+                case 1:
+                    v.Scaling = Scaling.FillX;
+                    v.Alignment = Alignment.Top;
+                    break;
+                case 2:
+                    v.Scaling = Scaling.FillX;
+                    v.Alignment = Alignment.Center;
+                    break;
+                case 3:
+                    v.Scaling = Scaling.FillX;
+                    v.Alignment = Alignment.Bottom;
+                    break;
+            }
+            _preloads[id] = v;
             _nextId++;
             return id;
         }
@@ -208,7 +262,11 @@ namespace UltraDMD
         public void DisplayVersionInfo()
         {
             // No version info in FlexDMD (this is an implementation choice to avoid delaying game startup and displaying again and again the same scene)
-            _scoreBoard.Visible = false;
+            _flexDMD.Post(() =>
+            {
+                _scoreBoard.Visible = false;
+                _queue.Visible = false;
+            });
         }
 
         public void DisplayScene00(string background, string toptext, int topBrightness, string bottomtext, int bottomBrightness, int animateIn, int pauseTime, int animateOut)
@@ -225,12 +283,13 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                _scoreBoard.Visible = false;
                 if (cancelPrevious && sceneId != null && sceneId.Length > 0)
                 {
                     var s = _queue.ActiveScene;
                     if (s != null && s.Name == sceneId) _queue.RemoveScene(sceneId);
                 }
+                _scoreBoard.Visible = false;
+                _queue.Visible = true;
                 if (toptext != null && toptext.Length > 0 && bottomtext != null && bottomtext.Length > 0)
                 {
                     var fontTop = _flexDMD.NewFont(_twoLinesFontTop.Path, topBrightness / 15f, topOutlineBrightness / 15f);
@@ -289,9 +348,10 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                _scoreBoard.Visible = false;
                 var font = _flexDMD.NewFont(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f);
                 var scene = new SingleLineScene(ResolveImage(background, false), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
+                _scoreBoard.Visible = false;
+                _queue.Visible = true;
                 _queue.Enqueue(scene);
             });
         }
@@ -313,12 +373,16 @@ namespace UltraDMD
             _flexDMD.Post(() =>
             {
                 // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened (managed by scoreboard visibility instead of direct rendering to allow animated scoreboard)
-                _scoreBoard.Visible = true;
                 _scoreBoard.SetNPlayers(cPlayers);
                 _scoreBoard.SetHighlightedPlayer(highlightedPlayer);
                 _scoreBoard.SetScore(score1, score2, score3, score4);
                 _scoreBoard._lowerLeft.Text = lowerLeft;
                 _scoreBoard._lowerRight.Text = lowerRight;
+                if (_queue.IsFinished())
+                {
+                    _queue.Visible = false;
+                    _scoreBoard.Visible = true;
+                }
             });
         }
 
@@ -336,7 +400,11 @@ namespace UltraDMD
             {
                 log.Error("DisplayText [untested] '{0}', {1}, {2}", text, textBrightness, textOutlineBrightness);
                 _scoreBoard.Visible = false;
-                GetFittedLabel(text, textBrightness / 15f, textOutlineBrightness / 15f).Draw(_flexDMD.Graphics);
+                if (_queue.IsFinished())
+                {
+                    _queue.Visible = false;
+                    GetFittedLabel(text, textBrightness / 15f, textOutlineBrightness / 15f).Draw(_flexDMD.Graphics);
+                }
             });
         }
 
@@ -349,6 +417,7 @@ namespace UltraDMD
                 string[] lines = text.Split(new char[] { '\n', '|' });
                 var font12 = _flexDMD.NewFont(_scoreFontText.Path, textBrightness / 15f, -1);
                 var scene = new ScrollingCreditsScene(ResolveImage(background, false), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
+                _queue.Visible = true;
                 _queue.Enqueue(scene);
             });
         }

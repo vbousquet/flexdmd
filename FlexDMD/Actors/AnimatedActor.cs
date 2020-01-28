@@ -25,7 +25,7 @@ namespace FlexDMD
         protected float _frameDuration;
         protected float _time;
 
-        public bool Loop { get; set; } = false;
+        public bool Loop { get; set; } = true;
 
         public override void Update(float delta)
         {
