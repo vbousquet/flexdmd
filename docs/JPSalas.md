@@ -3,7 +3,7 @@
 
 Lately (end of 2019, beginning of 2020), JPSalas has moved avay from UltraDMD, releasing its table without an external display. To add support for an external DMD, you can easily add FlexDMD to these tables following the 3 simple steps below.
 
-Prebuilt scripts including these changes are also available in the `script` directory.
+Prebuilt scripts including these changes are also available in the `Scripts` directory of this repository.
 
 
 1. Replace DMD_Init method's beginning with the following
@@ -20,7 +20,7 @@ Sub DMD_Init() 'default/startup values
 		FlexDMD.Width = 128
 		FlexDMD.Height = 36
 		FlexDMD.GameName = cGameName
-		FlexDMD.Init
+		FlexDMD.Run = True
 		Set DMDScene = FlexDMD.NewGroup("Scene")
 		DMDScene.AddActor FlexDMD.NewImage("Back", "VPX.bkempty")
 		DMDScene.GetImage("Back").SetSize FlexDMD.Width, FlexDMD.Height
