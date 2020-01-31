@@ -68,54 +68,13 @@ Public Sub FlexDemo()
     DMD.UnlockRenderThread
 End Sub
 
-Public Sub FlexDemo2()
-    Set black = DMD.NewImage(""Diablo.UltraDMD/black.jpg"")
-    black.SetSize 128, 32
-    Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
-    Set label = DMD.NewLabel(font, ""Test"")
-    Set lf = label.ActionFactory
-    Set seq = lf.Sequence().Add(lf.MoveTo(127 - label.Width,1,1)).Add(lf.Wait(1)).Add(lf.MoveTo(1,1,1))
-    Set move = lf.Repeat(seq, -1)
-    label.SetPosition 1, 1
-    label.AddAction move
-    DMD.LockRenderThread
-    DMD.Stage.RemoveAll
-    DMD.Stage.AddActor black
-    DMD.Stage.AddActor label
-    DMD.UnlockRenderThread
-End Sub
-
-Public Sub OldDemo()
-    DMD.SetProjectFolder(""D:\Games\Visual Pinball\Tables"")
-
-    DMD.DmdHeight = 36
-    DMD.RenderMode = 2
-    DMD.TableFile = ""Miraculous.vpx""
-    'DMD.SetTwoLineFonts ""FlexDMD.Resources.font-12.fnt"", ""FlexDMD.Resources.font-7.fnt""
-    'DMD.SetSingleLineFonts Array(CStr(""FlexDMD.Resources.font-12.fnt""), CStr(""FlexDMD.Resources.font-7.fnt""), CStr(""FlexDMD.Resources.font-5.fnt""))
-    
-    Dim topLine(16)
-    Dim botLine(20)
-    For i = 0 to 15
-        topLine(i) = CStr(""VPX.d0&dmd=2"")
-    Next
-    For i = 0 to 19
-        botLine(i) = CStr(""VPX.d1&dmd=2"")
-    Next
-    DMD.DisplayJPSScene ""jps"", ""VPX.extraball&dmd=2"", topLine, botLine, 14, 10000, 14
-
-    DMD.DisplayScene00 ""VPX.extraball&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
-    DMD.DisplayScene00 ""VPX.gameover&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
-    DMD.DisplayScene00 ""VPX.tilt&dmd=2"", ""FlexDMD"", 15, ""."", 15, 14, 5000, 14
-End Sub
-
 ' Check that FlexDMD renders the same as UltraDMD
 Public Sub CompareUltraFlex()
     ' Animations :
     '  FadeIn = 0, // Fade from black to scene
     '  FadeOut = 1, // Fade from scene to black
-    '  ZoomIn = 2, // zoom from a centered small dmd to full size
-    '  ZoomOut = 3, // zoom from a full sized dmd to an oversize one
+    '  ZoomIn = 2, // zoom from a centered small dmd to full size [Not supported yet]
+    '  ZoomOut = 3, // zoom from a full sized dmd to an oversize one [Not supported yet]
     '  ScrollOffLeft = 4,
     '  ScrollOffRight = 5,
     '  ScrollOnLeft = 6,
@@ -146,7 +105,7 @@ If FlexDMDMode And UltraDMDMode Then
 ElseIf FlexDMDMode Then
     FlexDemo()
 Else
-    DMD.DisplayScene00 """", ""UltraDMD"", 15, ""."", 15, 14, 1000, 14
+    UDMD.DisplayScene00 """", ""UltraDMD"", 15, ""."", 15, 14, 1000, 14
 End If
 ";
             var flexPath = GetComponentLocation(flexDMDclsid);
@@ -213,8 +172,8 @@ End If
                 dmdDeviceInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 dmdDeviceInstallLabel.Content = "DmdDevice.dll was not found alongside FlexDMD.dll. No rendering will happen.";
             }
+
             var flexDMDinstall = GetComponentLocation(flexDMDclsid);
-            var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
             if (flexDMDinstall != null)
             {
                 flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
@@ -227,13 +186,15 @@ End If
                 flexDMDInstallLabel.Content = "FlexDMD is not registered and may not be used on your system.";
                 registerFlexDMDBtn.Content = "Register";
             }
-            if (ultraDMDinstall != null && ultraDMDinstall.EndsWith("/FlexUDMD.dll"))
+
+            var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
+            if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("FLEXUDMD.DLL"))
             {
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexDMD is registered to be used instead of UltraDMD.";
                 registerUltraDMDBtn.Content = "Unregister";
             }
-            else if (ultraDMDinstall != null && ultraDMDinstall.EndsWith("/UltraDMD.exe"))
+            else if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("ULTRADMD.EXE"))
             {
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexDMD is not registered to be used instead of UltraDMD (UltraDMD is registered though).";
@@ -366,7 +327,7 @@ End If
         public void OnRegisterUltra(object sender, RoutedEventArgs e)
         {
             var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
-            if (ultraDMDinstall != null && ultraDMDinstall.EndsWith("/FlexUDMD.dll"))
+            if (ultraDMDinstall != null && ultraDMDinstall.EndsWith("FlexUDMD.dll"))
                 Register("/unregister-udmd \"" + _installPath + "\"");
             else
                 Register("/register-udmd \"" + _installPath + "\"");

@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace FlexUDMD
+namespace UltraDMD
 {
     /// <summary>
     /// An object that fakes the UltraDMD object, delegating all the calls to a FlexDMD instance.

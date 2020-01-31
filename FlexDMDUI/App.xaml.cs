@@ -51,6 +51,7 @@ namespace FlexDMDUI
             var file = "";
             var register = true;
             var regAsmPath = GetRegAsmPath();
+            // Console.WriteLine("'" + path + "' > " + command);
             switch (command)
             {
                 case "/register":
