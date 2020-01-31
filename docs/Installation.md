@@ -1,6 +1,6 @@
 # Installation
 
-Releases of FlexDMD come with the following files ;
+Releases of FlexDMD are available [here](https://github.com/vbousquet/flexdmd/releases/latest/), and come with the following files ;
 - FlexDMDUI.exe, an application to install and test it,
 - FlexDMD.dll, the FlexDMD library itself,
 - FlexUDMD.dll, the UltraDMD replacement.
