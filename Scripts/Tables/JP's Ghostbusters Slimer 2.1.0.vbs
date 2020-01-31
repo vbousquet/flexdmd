@@ -1792,6 +1792,7 @@ Sub DMD_Init() 'default/startup values
 		FlexDMD.RenderMode = 2
 		FlexDMD.Width = 128
 		FlexDMD.Height = 36
+		FlexDMD.Clear = True
 		FlexDMD.GameName = cGameName
 		FlexDMD.Run = True
 		Set DMDScene = FlexDMD.NewGroup("Scene")
