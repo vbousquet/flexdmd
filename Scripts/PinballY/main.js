@@ -156,7 +156,7 @@ gameList.on("highscoresready", event => {
 mainWindow.on("prelaunch", event => {
 	clearInterval(updater);
 	udmd.CancelRendering();
-	dmd.Show = false;
+	dmd.Run = false;
 	logfile.log("> launch", event.commandId);
 	logfile.log(getMethods(event).join("\n"));
 	if (event.command == command.CaptureGo || event.command == command.BatchCaptureGo) {
@@ -165,6 +165,6 @@ mainWindow.on("prelaunch", event => {
 });
 
 mainWindow.on("postlaunch", event => {
-	dmd.Show = true;
+	dmd.Run = true;
 	updater = setInterval(UpdateDMD, 1000);
 });
