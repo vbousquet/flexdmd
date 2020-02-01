@@ -31,7 +31,7 @@ let dmd = createAutomationObject("FlexDMD.FlexDMD");
 let udmd = dmd.NewUltraDMD();
 dmd.Width = 128;
 dmd.Height = 32;
-dmd.Show = true;
+dmd.Run = true;
 // logfile.log(getMethods(dmd).join("\n"));
 
 var hiscores = {};
@@ -47,6 +47,8 @@ function UpdateDMD() {
 		logfile.log("> manufacturer:", info.manufacturer);
 		logfile.log("> title:", info.title);
 		logfile.log("> year:", info.year);
+		logfile.log("> Table type: ", info.tableType);
+		logfile.log("> Highscore style: ", info.highScoreStyle);
 		loopCount = 0;
 	} else {
 		loopCount++;
@@ -133,6 +135,7 @@ gameList.on("gameselect", event => {
 	clearInterval(updater);
 	info = event.game;
 	udmd.CancelRendering();
+	if (info != null) dmd.Show = info.tableType == "SS" && (info.highScoreStyle == "Auto" || info.highScoreStyle == "DMD");
 	updater = setInterval(UpdateDMD, 1000);
 });
 
@@ -141,8 +144,6 @@ gameList.on("highscoresready", event => {
 		logfile.log("> scores received");
 		var i;
 		for (i = 0; i < event.scores.length; i++) {
-			// logfile.log("> ", event.scores[i], event.scores[i].codePointAt(15));
-			// logfile.log("> ", event.scores[i], event.scores[i].replace(/\u00FF/g, ','));
 			event.scores[i] = event.scores[i].replace(/\u00FF/g, ',');
 		}
 		hiscores[event.game.id] = event.scores;

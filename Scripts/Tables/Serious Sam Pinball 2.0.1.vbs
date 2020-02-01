@@ -1998,7 +1998,7 @@ Sub DMDDisplayChar(achar, adigit)
     If achar = "" Then achar = " "
     achar = ASC(achar)
     Digits(adigit).ImageA = Chars(achar)
-	If Not FlexDMD is Nothing Then DMDScene.GetImage("Dig" & adigit).Bitmap = FlexDMD.NewImage("", "VPX." & Chars(achar) & "&dmd=2").Bitmap
+	If Not FlexDMD is Nothing Then DMDScene.GetImage("Dig" & adigit).Bitmap = FlexDMD.NewImage("", "VPX." & Chars(achar) & "&dmd=2&add").Bitmap
 End Sub
 
 '****************************
