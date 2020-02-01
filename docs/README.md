@@ -7,8 +7,9 @@ FlexDMD is a DMD renderer extension for [Visual Pinball](https://sourceforge.net
 Documentation :
 * [Features](#features)
 * [Installation](#installation)
-* [Architecture](#architecture)
+* [Configuration](#configuration)
 * [Build Instructions](#build-instructions)
+* [Architecture](#architecture)
 * [Embedding the DMD inside VPX](./VPXDMD.md)
 * [Adding a DMD to latest tables from JPSalas](./JPSalas.md)
 * [Porting an UltraDMD to FlexDMD](./UltraDMD.md)
@@ -36,6 +37,26 @@ The FlexDMDUI.exe application allows you to install the different parts and test
 To check that everything is fine, switch from the 'Installer' tab to the 'Designer' tab, select the output you want to test between FlexDMD, UltraDMD or both, and press 'Run'.
 
 Finally, you should head to the [Scripts folder](./Scripts/) where you will find a few prepared scripts for some popular tables. Just download them and place them in your 'table' directory alongside the .vpx table file and VPX 10.6+ will detect and use them.
+
+## Configuration
+There is no configuration file:
+* The DMD is entirely defined in the table script,
+* The output is configured using the DmdDevice configuration file.
+
+You may want to change the render mode of a table from monochrome to full color, or set the color of the DMD of one table. To do so, you will need to edit the table's script, and, after creating the FlexDMD object, change its RenderMode or Color property.
+
+RenderMode can have 3 values : GRAY_2 (0), GRAY_4 (1), RGB (2). The default is GRAY_4, that is to say it renders to a monochrome DMD with 16 shades of colors. To use full color, you will add `FlexDMD.RenderMode = 2`
+
+Color is used to set the color of monochroms DMD. By default, FlexDMD uses a classic red/orange color. To use something else, just add `FlexDMD.Color = &hFFFF00` where `&hFFFF00` stands for a BGR color expressed as an hexadecimal value. That is to say, that each of the Blue, Green, Red colors are expressed as 2 letters, from 00 to FF where 0 is the minimum and FF correspond to 255 and is the maximum for this component. Here are a few examples to better understand;
+```vbscript
+FlexDMD.Color = &hFF0000 ' Blue
+FlexDMD.Color = &h00FF00 ' Green
+FlexDMD.Color = &h0000FF ' Red
+FlexDMD.Color = &hFFFFFF ' White
+FlexDMD.Color = &h2058FF ' Default reddish color
+```
+
+You can find example scripts in the Scripts folder (America's Most Haunted shows how to set a custom DMD color, Diablo shows how to render in full color).
 
 ## Build Instructions
 1. Download and install [Visual Studio 2019](https://visualstudio.microsoft.com/fr/downloads/)

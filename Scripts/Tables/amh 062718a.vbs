@@ -456,7 +456,7 @@ Sub LoadUltraDMD
 		MsgBox "No UltraDMD found.  This table MAY run without it (but why would you want to??)."
         Exit Sub
     End If
-	FlexDMD.Color = &hFFFF00
+	FlexDMD.Color = &h77FF22
 	Set UltraDMD = FlexDMD.NewUltraDMD()
     UltraDMD.Init
     If Not UltraDMD.GetMajorVersion = 1 Then
