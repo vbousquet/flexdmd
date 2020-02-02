@@ -14,13 +14,27 @@ UltraDMD does not define if the table is monochrome or color from the script but
 
 Finally, create the UltraDMD's API object by calling `NewUltraDMD()` and call `Init`.
 
+I th etable is missing UltraDMD Uninit call on exit, you should also add it in `table1_Exit` like this:
+```VBScript
+Sub table1_Exit
+    If Not UltraDMD is Nothing Then
+        If UltraDMD.IsRendering Then
+            UltraDMD.CancelRendering
+        End If
+        UltraDMD.Uninit
+        UltraDMD = NULL
+    End If
+    ...
+End Sub
+```
+
 As an example, here is the modification for the [great Diablo III table](https://www.vpforums.org/index.php?app=downloads&showfile=12750) from JPSalas:
 ```VBScript
 Sub DMD_Init
     'Set UltraDMD = CreateObject("UltraDMD.DMDObject")
 
     Dim FlexDMD
-    Set FlexDMD = CreateObject("FlexDMD.FlexObject")
+    Set FlexDMD = CreateObject("FlexDMD.FlexDMD")
     If FlexDMD is Nothing Then
         MsgBox "No UltraDMD found.  This table will NOT run without it."
         Exit Sub
