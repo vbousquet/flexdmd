@@ -60,23 +60,23 @@ function UpdateDMD() {
 	
 	// Manufacturer
 	if (info.manufacturer == "Williams") {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.williams.gif", "", 15, "", 15, 10, 5633, 8);
+		udmd.DisplayScene00("./Scripts/dmds/williams.gif", "", 15, "", 15, 10, 5633, 8);
 	} else if (info.manufacturer == "Premier") {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.premier.gif", "", 15, "", 15, 10, 2660, 8);
+		udmd.DisplayScene00("./Scripts/dmds/premier.gif", "", 15, "", 15, 10, 2660, 8);
 	} else if (info.manufacturer == "Gottlieb") {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.gottlieb.png", "", 15, "", 15, 10, 3000, 8);
+		udmd.DisplayScene00("./Scripts/dmds/gottlieb.png", "", 15, "", 15, 10, 3000, 8);
 	} else if (info.manufacturer == "Bally" || info.manufacturer == "Midway") {
 		// Missing: Midway
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.bally.gif", "", 15, "", 15, 10, 3199, 8);
+		udmd.DisplayScene00("./Scripts/dmds/bally.gif", "", 15, "", 15, 10, 3199, 8);
 	} else if (info.manufacturer == "Data East") {
 		if (Math.random() < 0.5)
-			udmd.DisplayScene00("FlexDMD.Resources.dmds.dataeast-1.gif", "", 15, "", 15, 10, 2766, 8);
+			udmd.DisplayScene00("./Scripts/dmds/dataeast-1.gif", "", 15, "", 15, 10, 2766, 8);
 		else
-			udmd.DisplayScene00("FlexDMD.Resources.dmds.dataeast-2.gif", "", 15, "", 15, 10, 2799, 8);
+			udmd.DisplayScene00("./Scripts/dmds/dataeast-2.gif", "", 15, "", 15, 10, 2799, 8);
 	} else if (info.manufacturer == "Sega") {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.sega.gif", "", 15, "", 15, 10, 2733, 8);
+		udmd.DisplayScene00("./Scripts/dmds/sega.gif", "", 15, "", 15, 10, 2733, 8);
 	} else if (info.manufacturer == "Stern") {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.stern.gif", "", 15, "", 15, 10, 2633, 8);
+		udmd.DisplayScene00("./Scripts/dmds/stern.gif", "", 15, "", 15, 10, 2633, 8);
 	} else {
 		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000, 8);
 	}
@@ -109,13 +109,13 @@ function UpdateDMD() {
 
 	// Drink'n drive (every 4 loops)
 	if (((loopCount - 1) & 2) == 0) {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.drink'n drive.png", "", 15, "", 15, 10, 3000, 8);
+		udmd.DisplayScene00("./Scripts/dmds/drink'n drive.png", "", 15, "", 15, 10, 3000, 8);
 	}
 	
 	// Insert Coin (every 4 loops)
 	if (((loopCount - 3) & 2) == 0) {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.insertcoin.gif", "", 15, "", 15, 10, 1399, 14);
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.insertcoin.gif", "", 15, "", 15, 14, 1399, 4);
+		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 10, 1399, 14);
+		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 14, 1399, 4);
 	}
 
 	// udmd.DisplayScene00("FlexDMD.Resources.dmds.bsmt2000.gif", "", 15, "", 15, 10, 2499, 8);
