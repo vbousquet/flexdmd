@@ -263,13 +263,21 @@ End If
 
         private void OnUltraDMDSelected(object sender, RoutedEventArgs args)
         {
-            _ultraScript = new ScriptThread("UltraDMD Script Thread");
-            _ultraScript.Post(@"
+            var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
+            if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("ULTRADMD.EXE"))
+            {
+                _ultraScript = new ScriptThread("UltraDMD Script Thread");
+                _ultraScript.Post(@"
                 Dim DMD
                 Dim UDMD
                 Set UDMD = CreateObject(""UltraDMD.DMDObject"")
                 UDMD.Init
                 ");
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("To compare FlexDMD rendering to UltraDMD's rendering, you need to have the original UltraDMD registered.", "UltraDMD is not registered");
+            }
         }
 
         private void OnUltraDMDUnselected(object sender, RoutedEventArgs args)
