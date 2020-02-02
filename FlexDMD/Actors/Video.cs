@@ -133,10 +133,20 @@ namespace FlexDMD
             if (shouldBeOpened && !_opened)
             {
                 _opened = true;
-                _audioReader = new MediaFoundationReader(_path);
-                _audioDevice = new WaveOutEvent();
-                _audioDevice.Init(_audioReader);
-                _audioDevice.Play();
+                try
+                {
+                    _audioReader = new MediaFoundationReader(_path);
+                    _audioDevice = new WaveOutEvent();
+                    _audioDevice.Init(_audioReader);
+                    _audioDevice.Play();
+                }
+                catch
+                {
+                    _audioReader?.Dispose();
+                    _audioReader = null;
+                    _audioDevice?.Dispose();
+                    _audioDevice = null;
+                }
                 MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out _videoReader);
                 SetupVideoDecoder(_videoReader);
                 ReadNextFrame();
