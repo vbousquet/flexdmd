@@ -36,6 +36,7 @@ namespace FlexDMDUI
 @"' Demo script
 
 Public Sub FlexDemo()
+    ' Use DMD object for FlexDMD or UDMD object for UltraDMD
     DMD.GameName = NULL
     DMD.GameName = ""ft""
 
@@ -241,7 +242,7 @@ End If
                 Dim UDMD
                 Set DMD = CreateObject(""FlexDMD.FlexDMD"")
                 Set UDMD = DMD.NewUltraDMD()
-                DMD.Show = True
+                DMD.Run = True
                 ");
         }
 
@@ -252,7 +253,7 @@ End If
                 _flexScript.Interrupt();
                 _flexScript.Post(@"
                     If Not DMD is Nothing Then
-                        DMD.Show = False
+                        DMD.Run = False
                         DMD = NULL
                     End If
                     ");

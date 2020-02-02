@@ -13,6 +13,7 @@
    limitations under the License.
    */
 using NLog;
+using System;
 using System.Drawing;
 
 namespace FlexDMD
@@ -92,7 +93,7 @@ namespace FlexDMD
             }
         }
 
-        public void SetScore(int score1, int score2, int score3, int score4)
+        public void SetScore(Int64 score1, Int64 score2, Int64 score3, Int64 score4)
         {
             _scores[0].Text = score1.ToString("#,##0");
             _scores[1].Text = score2.ToString("#,##0");

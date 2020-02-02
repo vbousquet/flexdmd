@@ -368,7 +368,7 @@ namespace UltraDMD
             });
         }
 
-        public void DisplayScoreboard(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight)
+        public void DisplayScoreboard(int cPlayers, int highlightedPlayer, Int64 score1, Int64 score2, Int64 score3, Int64 score4, string lowerLeft, string lowerRight)
         {
             _flexDMD.Post(() =>
             {
@@ -388,7 +388,7 @@ namespace UltraDMD
 
         // KissDMDv2.vbs use this undocumented function as far as I know. As far as I can tell, this will just change the font.
         // UltraDMD.DisplayScoreboard00 PlayersPlayingGame, 0, Score(1), Score(2), Score(3), Score(4), "credits " & Credits, ""
-        public void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight)
+        public void DisplayScoreboard00(int cPlayers, int highlightedPlayer, Int64 score1, Int64 score2, Int64 score3, Int64 score4, string lowerLeft, string lowerRight)
         {
             // TODO use an UltraDMD matching font
             DisplayScoreboard(cPlayers, highlightedPlayer, score1, score2, score3, score4, lowerLeft, lowerRight);

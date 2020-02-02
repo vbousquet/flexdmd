@@ -509,9 +509,9 @@ namespace FlexDMD
         /// <param name="score4">Score player 4 displayed beneath player 2</param>
         /// <param name="lowerLeft">Text will appear left aligned at the bottom left</param>
         /// <param name="lowerRight">Text will appear right aligned at the bottom right</param>
-        void DisplayScoreboard(Int32 cPlayers, Int32 highlightedPlayer, Int32 score1, Int32 score2, Int32 score3, Int32 score4, string lowerLeft, string lowerRight);
+        void DisplayScoreboard(Int32 cPlayers, Int32 highlightedPlayer, Int64 score1, Int64 score2, Int64 score3, Int64 score4, string lowerLeft, string lowerRight);
 
-        void DisplayScoreboard00(int cPlayers, int highlightedPlayer, int score1, int score2, int score3, int score4, string lowerLeft, string lowerRight);
+        void DisplayScoreboard00(int cPlayers, int highlightedPlayer, Int64 score1, Int64 score2, Int64 score3, Int64 score4, string lowerLeft, string lowerRight);
 
         /// <summary>
         /// Other than the scoreboard scene, Scene00 may be the only scene required for a pinball table.  It can
