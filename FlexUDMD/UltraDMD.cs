@@ -1,5 +1,7 @@
 ﻿using FlexDMD;
+using Microsoft.Win32;
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace UltraDMD
@@ -10,7 +12,28 @@ namespace UltraDMD
     [Guid("E1612654-304A-4E07-A236-EB64D6D4F511"), ComVisible(true), ClassInterface(ClassInterfaceType.None), ComSourceInterfaces(typeof(IDMDObjectEvents))]
     public class DMDObject : IUltraDMD
     {
-        private IUltraDMD _udmd = new FlexDMD.FlexDMD().NewUltraDMD();
+        private readonly IUltraDMD _udmd;
+
+        public DMDObject()
+        {
+            var flex = new FlexDMD.FlexDMD();
+            var color = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("UltraDMD")?.GetValue("color");
+            if (color != null && color is string c)
+            {
+                var col = Color.FromName(c);
+                if (col.R != 0 || col.G != 0 || col.B != 0) flex.Color = col;
+            }
+            var fullcolor = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("UltraDMD")?.GetValue("fullcolor");
+            if (fullcolor != null && fullcolor is string fc)
+            {
+                if ("True".Equals(fc, StringComparison.InvariantCultureIgnoreCase))
+                    flex.RenderMode = RenderMode.RGB;
+                else
+                    flex.RenderMode = RenderMode.GRAY_4;
+            }
+            _udmd = flex.NewUltraDMD();
+        }
+
         public void Init() => _udmd.Init();
         public void Uninit() => _udmd.Uninit();
         public int GetMajorVersion() => _udmd.GetMajorVersion();
