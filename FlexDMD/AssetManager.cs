@@ -225,19 +225,6 @@ namespace FlexDMD
                     _value = (T)Convert.ChangeType(font, typeof(T));
                     _loaded = true;
                 }
-                else if (typeof(T) == typeof(ImageSequence) && _id.GetType() == typeof(ImageSequenceDef))
-                {
-                    ImageSequenceDef def = (ImageSequenceDef)_id;
-                    List<Bitmap> images = new List<Bitmap>();
-                    foreach (string filename in def._images)
-                    {
-                        var bmp = _assets.Load<Bitmap>(filename).Load();
-                        images.Add(bmp);
-                    }
-                    ImageSequence actor = new ImageSequence(images, def.Fps, def.Loop);
-                    _value = (T)Convert.ChangeType(actor, typeof(T));
-                    _loaded = true;
-                }
                 else
                 {
                     throw new InvalidOperationException(string.Format("Unsupported asset type {0}", typeof(T)));

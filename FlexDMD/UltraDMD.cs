@@ -91,13 +91,13 @@ namespace UltraDMD
                     }
                     else if (preload is ImageSequenceDef ai)
                     {
-                        // TODO implement
-                        /* var actor = _flexDMD.ResolveImage(vp._videoFilename);
-						if (actor != null && actor is Video v)
-						{
-							v.Loop = vp._loop;
-							return v;
-						} */
+                        List<Bitmap> images = new List<Bitmap>();
+                        foreach (string file in ai._images)
+                        {
+                            var bmp = _flexDMD.AssetManager.Load<Bitmap>(file).Load();
+                            images.Add(bmp);
+                        }
+                        return new ImageSequence(images, ai.Fps, ai.Loop);
                     }
                 }
                 else
@@ -183,7 +183,6 @@ namespace UltraDMD
             var finished = _queue.IsFinished();
             _flexDMD.UnlockRenderThread();
             return !finished;
-            // return !_queue.IsFinished();
         }
 
         public void CancelRendering()

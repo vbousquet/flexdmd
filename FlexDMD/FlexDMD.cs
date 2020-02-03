@@ -248,6 +248,8 @@ namespace FlexDMD
             }
         }
 
+        public AssetManager AssetManager { get => _assets; }
+
         public FlexDMD()
         {
             MediaFoundationApi.Startup();
