@@ -116,7 +116,7 @@ End If
             }
             else
             {
-                _installPath = Path.GetFullPath("./");
+                _installPath = Path.GetFullPath(".");
             }
             System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += new EventHandler(OnUpdateTimer);
