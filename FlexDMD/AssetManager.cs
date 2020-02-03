@@ -449,10 +449,6 @@ namespace FlexDMD
                     var filter = new AdditiveFilter();
                     filters.Add(filter);
                 }
-                else if (definition.StartsWith("sub="))
-                {
-                    // TODO parse sub rect
-                }
             }
             return filters;
         }
