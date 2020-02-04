@@ -24,10 +24,11 @@ namespace FlexDMDUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
-        private const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
         private string _installPath;
         private ScriptThread _flexScript, _ultraScript;
+
+        public const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
+        public const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
 
         public MainWindow()
         {
@@ -336,7 +337,7 @@ End If
         public void OnRegisterUltra(object sender, RoutedEventArgs e)
         {
             var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
-            if (ultraDMDinstall != null && ultraDMDinstall.EndsWith("FlexUDMD.dll"))
+            if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("FLEXUDMD.DLL"))
                 Register("/unregister-udmd \"" + _installPath + "\"");
             else
                 Register("/register-udmd \"" + _installPath + "\"");

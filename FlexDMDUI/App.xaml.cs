@@ -24,7 +24,6 @@ namespace FlexDMDUI
         private static string GetRegAsmPath()
         {
             var basepath = "";
-            var version = "";
             var regkey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\.NetFramework", false);
             if (regkey != null)
             {
@@ -34,7 +33,7 @@ namespace FlexDMDUI
             regkey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\.NetFramework\Policy\v4.0", false);
             if (regkey != null)
             {
-                version = "v4.0";
+                var version = "v4.0";
                 foreach (string valuename in regkey.GetValueNames())
                 {
                     var regAsmPath = Path.Combine(basepath, version + "." + valuename);
@@ -48,29 +47,37 @@ namespace FlexDMDUI
         [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
         private static void Register(string path, string command)
         {
-            var file = "";
-            var register = true;
-            var regAsmPath = GetRegAsmPath();
-            // Console.WriteLine("'" + path + "' > " + command);
             switch (command)
             {
                 case "/register":
-                    file = "FlexDMD.dll";
-                    register = true;
-                    break;
                 case "/unregister":
-                    file = "FlexDMD.dll";
-                    register = false;
+                    Registry.ClassesRoot.DeleteSubKeyTree(@"FlexDMD.FlexDMD", false);
+                    Registry.ClassesRoot.OpenSubKey(@"CLSID", true).DeleteSubKeyTree("{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}", false);
+                    Registry.ClassesRoot.OpenSubKey(@"Wow6432Node\CLSID", true).DeleteSubKeyTree("{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}", false);
                     break;
                 case "/register-udmd":
-                    file = "FlexUDMD.dll";
-                    register = true;
-                    break;
                 case "/unregister-udmd":
-                    file = "FlexUDMD.dll";
-                    register = false;
+                    Registry.ClassesRoot.DeleteSubKeyTree(@"UltraDMD.DMDObject", false);
+                    Registry.ClassesRoot.OpenSubKey(@"CLSID", true).DeleteSubKeyTree("{E1612654-304A-4E07-A236-EB64D6D4F511}", false);
+                    Registry.ClassesRoot.OpenSubKey(@"Wow6432Node\CLSID", true).DeleteSubKeyTree("{E1612654-304A-4E07-A236-EB64D6D4F511}", false);
                     break;
             }
+            switch (command)
+            {
+                case "/register":
+                    RegisterAssembly(path, "FlexDMD.dll", true);
+                    break;
+                case "/register-udmd":
+                    RegisterAssembly(path, "FlexUDMD.dll", true);
+                    break;
+            }
+            Environment.Exit(0);
+        }
+
+        [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
+        private static void RegisterAssembly(string path, string file, bool register)
+        {
+            var regAsmPath = GetRegAsmPath();
             if (regAsmPath == null)
             {
                 System.Windows.Forms.MessageBox.Show("Failed to register " + file + ".\n\nThe .NET framework was not found.", "Failed to register " + file);
@@ -157,7 +164,6 @@ namespace FlexDMDUI
             {
                 System.Windows.Forms.MessageBox.Show("Failed to register " + file + ".\n\nUnhandled exception: " + e.Message, "Failed to register " + file);
             }*/
-            Environment.Exit(0);
         }
 
     }
