@@ -57,7 +57,7 @@ function UpdateDMD() {
 	// dmd.GameName = "Metal Slug";
 	// dmd.GameName = rom;
 	udmd.CancelRendering();
-	
+
 	// Manufacturer
 	if (info.manufacturer == "Williams") {
 		udmd.DisplayScene00("./Scripts/dmds/williams.gif", "", 15, "", 15, 10, 5633, 8);
@@ -77,10 +77,12 @@ function UpdateDMD() {
 		udmd.DisplayScene00("./Scripts/dmds/sega.gif", "", 15, "", 15, 10, 2733, 8);
 	} else if (info.manufacturer == "Stern") {
 		udmd.DisplayScene00("./Scripts/dmds/stern.gif", "", 15, "", 15, 10, 2633, 8);
+	} else if (info.manufacturer == "VPX") {
+		udmd.DisplayScene00("./Scripts/dmds/vpx.png", "", 15, "", 15, 10, 3000, 8);
 	} else {
 		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000, 8);
 	}
-	
+
 	// Game name
 	var name = info.title.trim();
 	var subname = "";
@@ -111,7 +113,7 @@ function UpdateDMD() {
 	if (((loopCount - 1) & 2) == 0) {
 		udmd.DisplayScene00("./Scripts/dmds/drink'n drive.png", "", 15, "", 15, 10, 3000, 8);
 	}
-	
+
 	// Insert Coin (every 4 loops)
 	if (((loopCount - 3) & 2) == 0) {
 		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 10, 1399, 14);
@@ -124,7 +126,7 @@ function UpdateDMD() {
 	if (hiscores[info.id] != null) {
 		udmd.ScrollingCredits("", hiscores[info.id].join("|"), 15, 14, 2800 + hiscores[info.id].length * 400, 14);
 	}
-	
+
 	logfile.log("< Update DMD done");
 	shownInfo = info;
 }
