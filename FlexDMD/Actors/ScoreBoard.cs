@@ -126,9 +126,12 @@ namespace FlexDMD
 
         public override void Draw(Graphics graphics)
         {
-            graphics.Clear(Color.Black);
-            _background?.SetSize(Width, Height);
-            base.Draw(graphics);
+            if (Visible)
+            {
+                graphics.Clear(Color.Black);
+                _background?.SetSize(Width, Height);
+                base.Draw(graphics);
+            }
         }
     }
 }
