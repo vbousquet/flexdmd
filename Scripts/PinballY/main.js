@@ -78,25 +78,27 @@ function UpdateDMD() {
 	
 	// Manufacturer
 	if (info.manufacturer == "Williams") {
-		udmd.DisplayScene00("./Scripts/dmds/williams.gif", "", 15, "", 15, 10, 5633, 8);
+		udmd.DisplayScene00("./Scripts/dmds/williams.gif", "", 15, "", 15, 10, 5633 - 100, 8);
 	} else if (info.manufacturer == "Premier") {
-		udmd.DisplayScene00("./Scripts/dmds/premier.gif", "", 15, "", 15, 10, 2660, 8);
+		udmd.DisplayScene00("./Scripts/dmds/premier.gif", "", 15, "", 15, 10, 2660 - 100, 8);
 	} else if (info.manufacturer == "Gottlieb") {
-		udmd.DisplayScene00("./Scripts/dmds/gottlieb.png", "", 15, "", 15, 10, 3000, 8);
+		udmd.DisplayScene00("./Scripts/dmds/gottlieb.png", "", 15, "", 15, 10, 3000 - 100, 8);
 	} else if (info.manufacturer == "Bally" || info.manufacturer == "Midway") {
 		// Missing: Midway
-		udmd.DisplayScene00("./Scripts/dmds/bally.gif", "", 15, "", 15, 10, 3199, 8);
+		udmd.DisplayScene00("./Scripts/dmds/bally.gif", "", 15, "", 15, 10, 3199 - 100, 8);
 	} else if (info.manufacturer == "Data East") {
 		if (Math.random() < 0.5)
-			udmd.DisplayScene00("./Scripts/dmds/dataeast-1.gif", "", 15, "", 15, 10, 2766, 8);
+			udmd.DisplayScene00("./Scripts/dmds/dataeast-1.gif", "", 15, "", 15, 10, 2766 - 100, 8);
 		else
-			udmd.DisplayScene00("./Scripts/dmds/dataeast-2.gif", "", 15, "", 15, 10, 2799, 8);
+			udmd.DisplayScene00("./Scripts/dmds/dataeast-2.gif", "", 15, "", 15, 10, 2799 - 100, 8);
 	} else if (info.manufacturer == "Sega") {
-		udmd.DisplayScene00("./Scripts/dmds/sega.gif", "", 15, "", 15, 10, 2733, 8);
+		udmd.DisplayScene00("./Scripts/dmds/sega.gif", "", 15, "", 15, 10, 2733 - 100, 8);
 	} else if (info.manufacturer == "Stern") {
-		udmd.DisplayScene00("./Scripts/dmds/stern.gif", "", 15, "", 15, 10, 2633, 8);
+		udmd.DisplayScene00("./Scripts/dmds/stern.gif", "", 15, "", 15, 10, 2633 - 100, 8);
+	} else if (info.manufacturer == "VPX") {
+		udmd.DisplayScene00("./Scripts/dmds/vpx.png", "", 15, "", 15, 10, 3000 - 100, 8);
 	} else {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000, 8);
+		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000 - 100, 8);
 	}
 	
 	// Game name
