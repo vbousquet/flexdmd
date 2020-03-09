@@ -56,6 +56,8 @@ FlexDMD.Color = &hFFFFFF ' White
 FlexDMD.Color = &h2058FF ' Default reddish color
 ```
 
+If you use a virtual DMD, the position & size of the DMD is defined using the [DmdDevice configuration file](https://github.com/freezy/dmd-extensions#configuration). If you want to define this position & size for a specific table, the name of the table must be given to FlexDMD using `FlexDMD.GameName = "..."`. The name you give to FlexDMD will be sent to DmdDevice and you will be able to use it as a section in the DmdDevice.ini configuration file.
+
 You can find example scripts in the Scripts folder (America's Most Haunted shows how to set a custom DMD color, Diablo shows how to render in full color).
 
 ## Build Instructions

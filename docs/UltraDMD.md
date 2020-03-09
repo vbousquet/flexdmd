@@ -8,7 +8,7 @@ Note that the script folder of this repository contains scripts which includes t
 
 To convert a table to FlexDMD, load the table in VPX, open the script, then find a line containing `Set UltraDMD = CreateObject("UltraDMD.DMDObject")` and replace it with `Set FlexDMD = CreateObject("FlexDMD.FlexDMD")`.
 
-You should share the game name with the render device (This allows virtual DMD to adapt their rendering to the played games with contextual frame,...). To do so, simply add `FlexDMD.GameName = cGameName` before `Init`.
+You should share the game name with the render device (This allows virtual DMD to adapt their rendering to the played table with per table layout, contextual frame,...). To do so, simply add `FlexDMD.GameName = cGameName` before `Init`.
 
 UltraDMD does not define if the table is monochrome or color from the script but from its UI. FlexDMD lets this choice to the table designer. So, to enable colors, you have to add `FlexDMD.RenderMode = 2` before `Init`.
 
