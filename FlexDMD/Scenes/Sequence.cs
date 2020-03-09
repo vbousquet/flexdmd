@@ -14,6 +14,7 @@
    */
 using FlexDMD.Scenes;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace FlexDMD.Actors
@@ -67,5 +68,15 @@ namespace FlexDMD.Actors
                 ActiveScene.Update(0);
             }
         }
+
+        public override void Draw(Graphics graphics)
+        {
+            if (Visible && ActiveScene != null)
+            {
+                graphics.Clear(Color.Black);
+                base.Draw(graphics);
+            }
+        }
+
     }
 }

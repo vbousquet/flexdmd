@@ -247,36 +247,21 @@ namespace UltraDMD
             return id;
         }
 
-		private FlexDMD.Font GetFont(string path, float brightness, float outlineBrightness) 
-		{
-            if (_flexDMD.RenderMode == RenderMode.RGB)
+        private FlexDMD.Font GetFont(string path, float brightness, float outlineBrightness)
+        {
+            var baseColor = _flexDMD.RenderMode == RenderMode.RGB ? _flexDMD.Color : Color.White;
+            var tint = brightness >= 0f ? Color.FromArgb((int)(baseColor.R * brightness), (int)(baseColor.G * brightness), (int)(baseColor.B * brightness)) : Color.FromArgb(0, 0, 0, 0);
+            if (outlineBrightness >= 0f)
             {
-                var tint = Color.FromArgb((int)(_flexDMD.Color.R * brightness), (int)(_flexDMD.Color.G * brightness), (int)(_flexDMD.Color.B * brightness));
-                if (outlineBrightness >= 0f)
-                {
-                    var borderTint = Color.FromArgb((int)(_flexDMD.Color.R * outlineBrightness), (int)(_flexDMD.Color.G * outlineBrightness), (int)(_flexDMD.Color.B * outlineBrightness));
-                    return _flexDMD.NewFont(path, tint, borderTint, 1);
-                }
-                else
-                {
-                    return _flexDMD.NewFont(path, tint, Color.White, 0);
-                }
+                var borderTint = Color.FromArgb((int)(baseColor.R * outlineBrightness), (int)(baseColor.G * outlineBrightness), (int)(baseColor.B * outlineBrightness));
+                return _flexDMD.NewFont(path, tint, borderTint, 1);
             }
             else
             {
-                var tint = Color.FromArgb((int)(255 * brightness), (int)(255 * brightness), (int)(255 * brightness));
-                if (outlineBrightness >= 0f)
-                {
-                    var borderTint = Color.FromArgb((int)(255 * outlineBrightness), (int)(255 * outlineBrightness), (int)(255 * outlineBrightness));
-                    return _flexDMD.NewFont(path, tint, borderTint, 1);
-                }
-                else
-                {
-                    return _flexDMD.NewFont(path, tint, Color.White, 0);
-                }
+                return _flexDMD.NewFont(path, tint, Color.White, 0);
             }
         }
-		
+
         private Label GetFittedLabel(string text, float fillBrightness, float outlineBrightness)
         {
             foreach (FontDef f in _singleLineFont)
@@ -392,9 +377,9 @@ namespace UltraDMD
             {
                 _scoreBoard.SetBackground(ResolveImage(filename, false));
                 _scoreBoard.SetFonts(
-                    GetFont(_scoreFontNormal.Path, unselectedBrightness, -1),
-                    GetFont(_scoreFontHighlight.Path, selectedBrightness, -1),
-                    GetFont(_scoreFontText.Path, unselectedBrightness, -1));
+                    GetFont(_scoreFontNormal.Path, unselectedBrightness / 15f, -1),
+                    GetFont(_scoreFontHighlight.Path, selectedBrightness / 15f, -1),
+                    GetFont(_scoreFontText.Path, unselectedBrightness / 15f, -1));
             });
         }
 
