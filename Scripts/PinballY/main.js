@@ -21,9 +21,21 @@ Number.prototype.toHHMMSS = function () {
     return hours+':'+minutes+':'+seconds;
 }
 
+Number.prototype.toDDHHMMSS = function () {
+    var sec_num = this;
+    var days   = Math.floor(sec_num / 86400);
+    var hours   = Math.floor((sec_num - (days * 86400))/ 3600);
+    var minutes = Math.floor((sec_num - (days * 86400) - (hours * 3600)) / 60);
+    var seconds = sec_num - (days * 86400) - (hours * 3600) - (minutes * 60);
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return days+"d "+hours+':'+minutes+':'+seconds;
+}
+
 // TODO:
 // - If we use browser, there will  be a socket's port conflict since Freezy's DMD is not completely closed
-// - GameName can not be modified for soem reason
+// - GameName can not be modified for some reason
 // - Missing Capcom logo
 // - Move to FlexDMD API instead of UltraDMD when PinballY will marshall COM objects
 
@@ -40,6 +52,9 @@ let shownInfo = null;
 let loopCount = 0;
 function UpdateDMD() {
 	if (info == null || udmd.IsRendering()) return;
+
+	var i;
+	dmd.Show = info.tableType == "SS" && (info.highScoreStyle == "Auto" || info.highScoreStyle == "DMD");
 	let rom = info.resolveROM().vpmRom;
 	if (shownInfo == null || shownInfo.id != info.id) {
 		logfile.log("> Update DMD for:");
@@ -53,9 +68,12 @@ function UpdateDMD() {
 	} else {
 		loopCount++;
 	}
-	// dmd.GameName = null;
-	// dmd.GameName = "Metal Slug";
-	// dmd.GameName = rom;
+	if (rom == null) {
+		dmd.GameName = null;
+	} else {
+		// dmd.GameName = rom.toString();
+		// dmd.GameName = "Metal Slug";
+	}
 	udmd.CancelRendering();
 	
 	// Manufacturer
@@ -90,7 +108,6 @@ function UpdateDMD() {
 	}
 	if (name.length >= 16) {
 		var split = 16;
-		var i;
 		for (i = 15; i > 0; i--) {
 			if (name.charCodeAt(i) == 32) {
 				subname = name.slice(i).trim();
@@ -107,17 +124,31 @@ function UpdateDMD() {
 	else
 		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", "Played " + info.playCount + " times", 15, "Playtime " + info.playTime.toHHMMSS(), 15, 10, 3000, 8);
 
+	// Insert Coin (every 4 loops)
+	if (((loopCount + 0) & 3) == 0) {
+		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 10, 1399, 14);
+		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 14, 1399, 14);
+	}
+
+	// Global stats (every 4 loops)
+	if (((loopCount + 1) & 3) == 0) {
+		var totalCount = 0;
+		var totalTime = 0;
+		var nGames = gameList.getGameCount();
+		for (i = 0; i < nGames; i++) {
+			var inf = gameList.getGame(i);
+			totalCount += inf.playCount;
+			totalTime += inf.playTime;
+		}
+		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", "Total play count:" , 15, "" + totalCount, 15, 10, 1500, 8);
+		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", "Total play time:" , 15, "" + totalTime.toDDHHMMSS(), 15, 10, 1500, 8);
+	}
+	
 	// Drink'n drive (every 4 loops)
-	if (((loopCount - 1) & 2) == 0) {
+	if (((loopCount + 2) & 3) == 0) {
 		udmd.DisplayScene00("./Scripts/dmds/drink'n drive.png", "", 15, "", 15, 10, 3000, 8);
 	}
 	
-	// Insert Coin (every 4 loops)
-	if (((loopCount - 3) & 2) == 0) {
-		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 10, 1399, 14);
-		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 14, 1399, 4);
-	}
-
 	// udmd.DisplayScene00("FlexDMD.Resources.dmds.bsmt2000.gif", "", 15, "", 15, 10, 2499, 8);
 
 	// Highscores
@@ -135,7 +166,6 @@ gameList.on("gameselect", event => {
 	clearInterval(updater);
 	info = event.game;
 	udmd.CancelRendering();
-	if (info != null) dmd.Show = info.tableType == "SS" && (info.highScoreStyle == "Auto" || info.highScoreStyle == "DMD");
 	updater = setInterval(UpdateDMD, 1000);
 });
 
