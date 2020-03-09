@@ -56,7 +56,7 @@ namespace FlexDMD
         public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
         public IVideoActor NewVideo(string name, string video) { var g = (IVideoActor)ResolveImage(video); g.Name = name; return g; }
         public IImageActor NewImage(string name, string image) { var g = (IImageActor)ResolveImage(image); g.Name = name; return g; }
-        public Font NewFont(string font, float brightness, float outline) => _assets.Load<Font>(new FontDef(font, brightness, outline)).Load();
+        public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => _assets.Load<Font>(new FontDef(font, tint, borderTint, borderSize)).Load();
         public IUltraDMD NewUltraDMD() => new UltraDMD.UltraDMD(this);
 
         public Graphics Graphics { get; private set; } = null;
@@ -145,11 +145,11 @@ namespace FlexDMD
                     return;
                 }
                 if (_gameName == value) return;
-                bool wasVisible = Show;
-                Show = false;
+                bool wasVisible = Run;
+                Run = false;
                 log.Info("Game name set to {0}", value);
                 _gameName = value;
-                Show = wasVisible;
+                Run = wasVisible;
             }
         }
 
@@ -160,10 +160,10 @@ namespace FlexDMD
             {
                 if (_width < 1) return;
                 if (_width == value) return;
-                bool wasVisible = Show;
-                Show = false;
+                bool wasVisible = Run;
+                Run = false;
                 _width = value;
-                Show = wasVisible;
+                Run = wasVisible;
             }
         }
 
@@ -174,10 +174,10 @@ namespace FlexDMD
             {
                 if (_height < 1) return;
                 if (_height == value) return;
-                bool wasVisible = Show;
-                Show = false;
+                bool wasVisible = Run;
+                Run = false;
                 _height = value;
-                Show = wasVisible;
+                Run = wasVisible;
             }
         }
 
@@ -187,10 +187,10 @@ namespace FlexDMD
             set
             {
                 if (_dmdColor == value) return;
-                bool wasVisible = Show;
-                Show = false;
+                bool wasVisible = Run;
+                Run = false;
                 _dmdColor = value;
-                Show = wasVisible;
+                Run = wasVisible;
             }
         }
 
@@ -200,11 +200,11 @@ namespace FlexDMD
             set
             {
                 if (_renderMode == value) return;
-                bool wasVisible = Show;
-                Show = false;
+                bool wasVisible = Run;
+                Run = false;
                 log.Info("Render mode set to {0}", value);
                 _renderMode = value;
-                Show = wasVisible;
+                Run = wasVisible;
             }
         }
 

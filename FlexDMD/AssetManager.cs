@@ -138,37 +138,41 @@ namespace FlexDMD
 
     public class FontDef
     {
-        public float FillBrightness { get; set; } = 1f;
-        public float OutlineBrightness { get; set; } = -1f;
+        public Color Tint { get; set; } = Color.White;
+        public Color BorderTint { get; set; } = Color.White;
+        public int BorderSize { get; set; } = 0;
         public string Path { get; set; } = "";
 
-        public FontDef(string path, float fillBrightness = 1f, float outlineBrightness = -1f)
+        public FontDef(string path, Color tint, Color borderTint, int borderSize = 0)
         {
             Path = path;
-            FillBrightness = fillBrightness;
-            OutlineBrightness = outlineBrightness;
+            Tint = tint;
+            BorderTint = borderTint;
+            BorderSize = borderSize;
         }
 
         public override bool Equals(object obj)
         {
             return obj is FontDef def &&
-                   FillBrightness == def.FillBrightness &&
-                   OutlineBrightness == def.OutlineBrightness &&
+                   Tint == def.Tint &&
+                   BorderTint == def.BorderTint &&
+                   BorderSize == def.BorderSize &&
                    Path == def.Path;
         }
 
         public override int GetHashCode()
         {
             var hashCode = -1876634251;
-            hashCode = hashCode * -1521134295 + FillBrightness.GetHashCode();
-            hashCode = hashCode * -1521134295 + OutlineBrightness.GetHashCode();
+            hashCode = hashCode * -1521134295 + Tint.GetHashCode();
+            hashCode = hashCode * -1521134295 + BorderTint.GetHashCode();
+            hashCode = hashCode * -1521134295 + BorderSize;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
             return hashCode;
         }
 
         public override string ToString()
         {
-            return string.Format("FontDef [path={0}, fill={1}, outline={2}]", Path, FillBrightness, OutlineBrightness);
+            return string.Format("FontDef [path={0}, tint={1}, border tint={2}, border size={3}]", Path, Tint, BorderTint, BorderSize);
         }
 
     }
@@ -221,7 +225,7 @@ namespace FlexDMD
                 {
                     var fontDef = (FontDef)_id;
                     log.Info("New font added to asset manager: {0}", fontDef);
-                    var font = new Font(_assets, fontDef, fontDef.FillBrightness, fontDef.OutlineBrightness);
+                    var font = new Font(_assets, fontDef);
                     _value = (T)Convert.ChangeType(font, typeof(T));
                     _loaded = true;
                 }

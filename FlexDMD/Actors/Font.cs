@@ -26,19 +26,15 @@ namespace FlexDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private Bitmap[] _textures;
-        private readonly float _fillBrightness;
-        private readonly float _outlineBrightness;
         private readonly AssetManager _assets;
 
         public FontDef FontDef { get; }
         public BitmapFont BitmapFont { get; }
 
-        public Font(AssetManager assets, FontDef fontDef, float fillBrightness = 1f, float outlineBrightness = -1f)
+        public Font(AssetManager assets, FontDef fontDef)
         {
             _assets = assets;
             FontDef = fontDef;
-            _fillBrightness = fillBrightness;
-            _outlineBrightness = outlineBrightness;
             BitmapFont = new BitmapFont();
             using (Stream stream = assets.OpenStream(fontDef.Path))
             {
@@ -56,13 +52,10 @@ namespace FlexDMD
                 _textures[i] = new Bitmap(_assets.OpenStream(BitmapFont.Pages[i].FileName, FontDef.Path));
 
             // Render outlines font (note that the outline is created in the glyph padding area, so the font must have a padding of 1 pixel per char on all sides)
-            if (_outlineBrightness >= 0f)
+            if (FontDef.BorderSize > 0)
             {
-                uint outlineValue = (uint)(255 * _outlineBrightness);
-                uint outline = 0xFF000000 | (outlineValue * 0x00010101);
-                uint fillValue = (uint)(255 * _fillBrightness);
-                uint fill = fillValue * 0x00010101;
-                if (_fillBrightness >= 0f) fill |= 0xFF000000;
+				uint outline = (uint) FontDef.BorderTint.ToArgb();
+				uint fill = (uint)FontDef.Tint.ToArgb();
                 // TODO do not process the complete bitmap but only the glyph areas
                 for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
@@ -77,6 +70,7 @@ namespace FlexDMD
                         int dstStride = dstData.Stride / 4;
                         int srcOffset = srcStride - w;
                         int dstOffset = dstStride - w;
+						// First pass draw the borders (spill in the inside of the glyph as well)
                         uint* srcP = (uint*)srcData.Scan0;
                         uint* dstP = (uint*)dstData.Scan0;
                         for (int y = 0; y < h; y++)
@@ -106,19 +100,41 @@ namespace FlexDMD
                             srcP += srcOffset;
                             dstP += dstOffset;
                         }
-                        srcP = (uint*)srcData.Scan0;
-                        dstP = (uint*)dstData.Scan0;
-                        for (int y = 0; y < h; y++)
+						// Second pass redraw the glyph (to tint it and clean up border spills)
+                        byte* srcPt = (byte*)srcData.Scan0;
+                        byte* dstPt = (byte*)dstData.Scan0;
+						for (int y = 0; y < h; ++y)
                         {
-                            for (int x = 0; x < w; x++)
+                            for (int x = 0; x < w; ++x)
                             {
-                                if ((*srcP & 0xFF000000) > 0) *dstP = fill;
-                                srcP++;
-                                dstP++;
+								byte srcR = (byte)*srcPt;
+								srcPt++;
+								byte srcG = (byte)*srcPt;
+								srcPt++;
+								byte srcB = (byte)*srcPt;
+								srcPt++;
+								byte srcA = (byte)*srcPt;
+								srcPt++;
+								if (srcA == 0)
+								{
+									dstPt += 4;
+								}
+								else 
+								{
+									*dstPt = (byte)((srcR * FontDef.Tint.R) / 255);
+									dstPt++;
+									*dstPt = (byte)((srcG * FontDef.Tint.G) / 255);
+									dstPt++;
+									*dstPt = (byte)((srcB * FontDef.Tint.B) / 255);
+									dstPt++;
+									*dstPt = (byte)((srcA * FontDef.Tint.A) / 255);
+									dstPt++;
+								}
                             }
-                            srcP += srcOffset;
-                            dstP += dstOffset;
+                            srcPt += srcOffset * 4;
+                            dstPt += dstOffset * 4;
                         }
+
                     }
                     src.UnlockBits(srcData);
                     dst.UnlockBits(dstData);
@@ -136,41 +152,31 @@ namespace FlexDMD
                 BitmapFont.Characters = charDictionary;
             }
 
-            // Render modulated brightness font
-            else if (_fillBrightness >= 0f && _fillBrightness < 1f)
+            // Render tinted font
+            else if (FontDef.Tint != Color.White)
             {
                 for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
                     BitmapData bmData = _textures[i].LockBits(new Rectangle(0, 0, _textures[i].Width, _textures[i].Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
                     int stride = bmData.Stride;
-                    IntPtr Scan0 = bmData.Scan0;
-                    int nVal = 0;
                     unsafe
                     {
-                        byte* p = (byte*)Scan0;
-                        int nOffset = stride - _textures[i].Width * 4;
-                        int nWidth = _textures[i].Width;
+                        byte* p = (byte*)bmData.Scan0;
+                        int offset = stride - _textures[i].Width * 4;
                         for (int y = 0; y < _textures[i].Height; ++y)
                         {
-                            for (int x = 0; x < nWidth; ++x)
+                            for (int x = 0; x < _textures[i].Width; ++x)
                             {
-                                nVal = (int)((*p) * _fillBrightness);
-                                if (nVal < 0) nVal = 0;
-                                if (nVal > 255) nVal = 255;
-                                *p = (byte)nVal;
+                                *p = (byte)(((*p) * FontDef.Tint.R) / 255);
                                 p++;
-                                nVal = (int)((*p) * _fillBrightness);
-                                if (nVal < 0) nVal = 0;
-                                if (nVal > 255) nVal = 255;
-                                *p = (byte)nVal;
+                                *p = (byte)(((*p) * FontDef.Tint.G) / 255);
                                 p++;
-                                nVal = (int)((*p) * _fillBrightness);
-                                if (nVal < 0) nVal = 0;
-                                if (nVal > 255) nVal = 255;
-                                *p = (byte)nVal;
-                                p += 2;
+                                *p = (byte)(((*p) * FontDef.Tint.B) / 255);
+                                p++;
+                                *p = (byte)(((*p) * FontDef.Tint.A) / 255);
+                                p++;
                             }
-                            p += nOffset;
+                            p += offset;
                         }
                     }
                     _textures[i].UnlockBits(bmData);

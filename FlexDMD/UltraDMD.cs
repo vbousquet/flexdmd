@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 
+// FIXME use the DMD color as the tint for all fonts
 namespace UltraDMD
 {
     /// <summary>
@@ -48,23 +49,23 @@ namespace UltraDMD
             _flexDMD = flexDMD;
             _queue.FillParent = true;
             // UltraDMD uses f4by5 / f5by7 / f6by12
-            _scoreFontText = new FontDef("FlexDMD.Resources.udmd-f4by5.fnt", 0.66f);
-            _scoreFontNormal = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt", 0.66f);
-            _scoreFontHighlight = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt");
+            _scoreFontText = new FontDef("FlexDMD.Resources.udmd-f4by5.fnt", Color.FromArgb(168, 168, 168), Color.White);
+            _scoreFontNormal = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt", Color.FromArgb(168, 168, 168), Color.White);
+            _scoreFontHighlight = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt", Color.White, Color.White);
             // UltraDMD uses f14by26 or f12by24 or f7by13 to fit in
             _singleLineFont = new FontDef[] {
-                new FontDef("FlexDMD.Resources.udmd-f14by26.fnt"),
-                new FontDef("FlexDMD.Resources.udmd-f12by24.fnt"),
-                new FontDef("FlexDMD.Resources.udmd-f7by13.fnt")
+                new FontDef("FlexDMD.Resources.udmd-f14by26.fnt", Color.White, Color.White),
+                new FontDef("FlexDMD.Resources.udmd-f12by24.fnt", Color.White, Color.White),
+                new FontDef("FlexDMD.Resources.udmd-f7by13.fnt", Color.White, Color.White)
             };
             // UltraDMD uses f5by7 / f6by12 for top / bottom line
-            _twoLinesFontTop = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt");
-            _twoLinesFontBottom = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt");
+            _twoLinesFontTop = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt", Color.White, Color.White);
+            _twoLinesFontBottom = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt", Color.White, Color.White);
             // Core rendering tree
             _scoreBoard = new ScoreBoard(
-                _flexDMD.NewFont(_scoreFontNormal.Path, _scoreFontNormal.FillBrightness, _scoreFontNormal.OutlineBrightness),
-                _flexDMD.NewFont(_scoreFontHighlight.Path, _scoreFontHighlight.FillBrightness, _scoreFontHighlight.OutlineBrightness),
-                _flexDMD.NewFont(_scoreFontText.Path, _scoreFontText.FillBrightness, _scoreFontText.OutlineBrightness)
+                _flexDMD.NewFont(_scoreFontNormal.Path, _scoreFontNormal.Tint, _scoreFontNormal.BorderTint, _scoreFontNormal.BorderSize),
+                _flexDMD.NewFont(_scoreFontHighlight.Path, _scoreFontHighlight.Tint, _scoreFontHighlight.BorderTint, _scoreFontHighlight.BorderSize),
+                _flexDMD.NewFont(_scoreFontText.Path, _scoreFontText.Tint, _scoreFontText.BorderTint, _scoreFontText.BorderSize)
                 )
             { Visible = false };
             _flexDMD.Stage.AddActor(_scoreBoard);
@@ -246,11 +247,41 @@ namespace UltraDMD
             return id;
         }
 
+		private FlexDMD.Font GetFont(string path, float brightness, float outlineBrightness) 
+		{
+            if (_flexDMD.RenderMode == RenderMode.RGB)
+            {
+                var tint = Color.FromArgb((int)(_flexDMD.Color.R * brightness), (int)(_flexDMD.Color.G * brightness), (int)(_flexDMD.Color.B * brightness));
+                if (outlineBrightness >= 0f)
+                {
+                    var borderTint = Color.FromArgb((int)(_flexDMD.Color.R * outlineBrightness), (int)(_flexDMD.Color.G * outlineBrightness), (int)(_flexDMD.Color.B * outlineBrightness));
+                    return _flexDMD.NewFont(path, tint, borderTint, 1);
+                }
+                else
+                {
+                    return _flexDMD.NewFont(path, tint, Color.White, 0);
+                }
+            }
+            else
+            {
+                var tint = Color.FromArgb((int)(255 * brightness), (int)(255 * brightness), (int)(255 * brightness));
+                if (outlineBrightness >= 0f)
+                {
+                    var borderTint = Color.FromArgb((int)(255 * outlineBrightness), (int)(255 * outlineBrightness), (int)(255 * outlineBrightness));
+                    return _flexDMD.NewFont(path, tint, borderTint, 1);
+                }
+                else
+                {
+                    return _flexDMD.NewFont(path, tint, Color.White, 0);
+                }
+            }
+        }
+		
         private Label GetFittedLabel(string text, float fillBrightness, float outlineBrightness)
         {
             foreach (FontDef f in _singleLineFont)
             {
-                var font = _flexDMD.NewFont(f.Path, fillBrightness, outlineBrightness);
+                var font = GetFont(f.Path, fillBrightness, outlineBrightness);
                 var label = new Label(font, text);
                 label.SetPosition((_flexDMD.Width - label.Width) / 2, (_flexDMD.Height - label.Height) / 2);
                 if ((label.X >= 0 && label.Y >= 0) || f == _singleLineFont[_singleLineFont.Length - 1]) return label;
@@ -291,8 +322,8 @@ namespace UltraDMD
                 _queue.Visible = true;
                 if (toptext != null && toptext.Length > 0 && bottomtext != null && bottomtext.Length > 0)
                 {
-                    var fontTop = _flexDMD.NewFont(_twoLinesFontTop.Path, topBrightness / 15f, topOutlineBrightness / 15f);
-                    var fontBottom = _flexDMD.NewFont(_twoLinesFontBottom.Path, bottomBrightness / 15f, bottomOutlineBrightness / 15f);
+                    var fontTop = GetFont(_twoLinesFontTop.Path, topBrightness / 15f, topOutlineBrightness / 15f);
+                    var fontBottom = GetFont(_twoLinesFontBottom.Path, bottomBrightness / 15f, bottomOutlineBrightness / 15f);
                     var scene = new TwoLineScene(ResolveImage(background, true), toptext, fontTop, bottomtext, fontBottom, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
                     _queue.Enqueue(scene);
                 }
@@ -347,7 +378,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
-                var font = _flexDMD.NewFont(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f);
+                var font = GetFont(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f);
                 var scene = new SingleLineScene(ResolveImage(background, false), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
                 _scoreBoard.Visible = false;
                 _queue.Visible = true;
@@ -361,9 +392,9 @@ namespace UltraDMD
             {
                 _scoreBoard.SetBackground(ResolveImage(filename, false));
                 _scoreBoard.SetFonts(
-                    _flexDMD.NewFont(_scoreFontNormal.Path, unselectedBrightness, -1),
-                    _flexDMD.NewFont(_scoreFontHighlight.Path, selectedBrightness, -1),
-                    _flexDMD.NewFont(_scoreFontText.Path, unselectedBrightness, -1));
+                    GetFont(_scoreFontNormal.Path, unselectedBrightness, -1),
+                    GetFont(_scoreFontHighlight.Path, selectedBrightness, -1),
+                    GetFont(_scoreFontText.Path, unselectedBrightness, -1));
             });
         }
 
@@ -414,7 +445,7 @@ namespace UltraDMD
             {
                 _scoreBoard.Visible = false;
                 string[] lines = text.Split(new char[] { '\n', '|' });
-                var font12 = _flexDMD.NewFont(_scoreFontText.Path, textBrightness / 15f, -1);
+                var font12 = GetFont(_scoreFontText.Path, textBrightness / 15f, -1);
                 var scene = new ScrollingCreditsScene(ResolveImage(background, false), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
                 _queue.Visible = true;
                 _queue.Enqueue(scene);

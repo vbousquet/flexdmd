@@ -333,8 +333,10 @@ namespace FlexDMD
         IImageActor NewImage(string name, string image);
 
         /// <summary>
+		/// Create a new font to be used for labels.
+		/// Note that for the time being, border size is limited to either 0 (no border) or 1 (1px border)
         /// </summary>
-        [return: MarshalAs(UnmanagedType.Struct)] Font NewFont(string font, float brightness, float outline);
+        [return: MarshalAs(UnmanagedType.Struct)] Font NewFont(string font, Color tint, Color borderTint, int borderSize);
 
         /// <summary>
         /// </summary>
