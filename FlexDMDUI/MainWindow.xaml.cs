@@ -3,12 +3,16 @@ using Microsoft.Win32;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Security.Permissions;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace FlexDMDUI
@@ -26,6 +30,7 @@ namespace FlexDMDUI
     {
         private string _installPath;
         private ScriptThread _flexScript, _ultraScript;
+        private readonly KnownColor[] _allColors;
 
         public const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
         public const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
@@ -33,6 +38,56 @@ namespace FlexDMDUI
         public MainWindow()
         {
             InitializeComponent();
+            Array colorsArray = Enum.GetValues(typeof(KnownColor));
+            _allColors = new KnownColor[colorsArray.Length - 28 - 7]; // Create a list of user color, skipping system ones
+            Array.Copy(colorsArray, 28, _allColors, 0, _allColors.Length);
+            for (int i = 0; i < _allColors.Length; i++)
+            {
+                SolidColorBrush brush = new SolidColorBrush();
+                var col = System.Drawing.Color.FromName(_allColors[i].ToString());
+                brush.Color = System.Windows.Media.Color.FromArgb(col.A, col.R, col.G, col.B);
+                var rect = new System.Windows.Shapes.Rectangle { Width = 10, Height = 10, Fill = brush };
+                var margin = rect.Margin;
+                margin.Right = 5;
+                rect.Margin = margin;
+                var block = new TextBlock();
+                block.Inlines.Add(new Run(_allColors[i].ToString() + " [RGB: " + col.ToArgb().ToString("X8").Substring(2) + "]"));
+                var panel = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal };
+                panel.Children.Add(rect);
+                panel.Children.Add(block);
+                ultraDMDColors.Items.Add(panel);
+            }
+            var color = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("UltraDMD")?.GetValue("color");
+            if (color == null || !(color is string))
+            {
+                color = "OrangeRed";
+                Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("color", color);
+            }
+            if (color != null && color is string c)
+            {
+                for (int i = 0; i < _allColors.Length; i++)
+                {
+                    if (_allColors[i].ToString().ToLowerInvariant().Equals(c.ToLowerInvariant()))
+                    {
+                        ultraDMDColors.SelectedItem = ultraDMDColors.Items[i];
+                    }
+                }
+            }
+            ultraDMDColors.ScrollIntoView(ultraDMDColors.SelectedItem);
+            var fullcolor = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("UltraDMD")?.GetValue("fullcolor");
+            if (fullcolor != null && fullcolor is string fc)
+            {
+                if ("True".Equals(fc, StringComparison.InvariantCultureIgnoreCase))
+                    ultraDMDFullColor.IsChecked = true;
+                else
+                    ultraDMDMonochrome.IsChecked = true;
+            }
+            else
+            {
+                ultraDMDFullColor.IsChecked = true;
+                Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("fullcolor", "True");
+            }
+
             scriptTextBox.Text =
 @"' Demo script
 
@@ -218,6 +273,19 @@ End If
                         Registry.GetValue(@"HKEY_CLASSES_ROOT\CLSID\" + clsid + @"\LocalServer32", null, null);
             if (path != null) return new Uri(path.ToString()).LocalPath;
             return null;
+        }
+
+        public void OnUltraDMDRenderMode(object sender, RoutedEventArgs e)
+        {
+            if (ultraDMDFullColor.IsChecked == true)
+                Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("fullcolor", "True");
+            else
+                Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("fullcolor", "False");
+        }
+
+        private void OnltraDMDColorChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("color", _allColors[ultraDMDColors.SelectedIndex].ToString());
         }
 
         public void OnSelectInstallFolder(object sender, RoutedEventArgs e)

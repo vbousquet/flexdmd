@@ -17,7 +17,7 @@
     </Window.InputBindings>
     <Grid>
         <TabControl>
-            <TabItem Header="Installer">
+            <TabItem Header="Install">
                 <StackPanel Background="#FFE5E5E5" Margin="0,0,0,0">
                     <RichTextBox Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
                         <FlowDocument>
@@ -105,6 +105,42 @@
                             <Button x:Name="registerUltraDMDBtn" Grid.Column="2" Content="Unregister" HorizontalAlignment="Right" Click="OnRegisterUltra"/>
                         </Grid>
                     </GroupBox>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="UltraDMD Setup">
+                <StackPanel Background="#FFE5E5E5" Margin="0,0,0,0">
+                    <RichTextBox Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
+                        <FlowDocument>
+                            <Paragraph>
+                                <Run FontWeight="Bold" Text="UltraDMD default setup"/>
+                                <LineBreak/>
+                                <LineBreak/>
+                                <Run Text="UltraDMD uses a single setup for all the tables that you can define using this interface."/>
+                                <Run Text=" "/>
+                                <Run Text=" "/>
+                                <Run Text=" "/>
+                                <Run Text="These settings have effects only on UltraDMD tables, not on FlexDMD ones"/>
+                                <Run Text=" where the DMD is directly configured from the script"/>
+                                <Run Text=" "/>
+                                <Run Text="."/>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                    <StackPanel Orientation="Horizontal">
+                        <GroupBox Header="Render mode" Margin="10,0,10,10">
+                            <StackPanel>
+                                <RadioButton x:Name="ultraDMDFullColor" Content="Full color" Margin="10" Click="OnUltraDMDRenderMode"/>
+                                <RadioButton x:Name="ultraDMDMonochrome" Content="Monochrome" Margin="10,0,10,10" Click="OnUltraDMDRenderMode"/>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Header="Base color" Margin="5,0,10,10" Height="230">
+                            <StackPanel>
+                                <Label Content="The base color is used to render text in full color render mode, or as the DMD color in monochrome render mode." Margin="0,5,0,5"/>
+                                <ListView x:Name="ultraDMDColors" Height="160" SelectionChanged="OnltraDMDColorChanged" Margin="10,0,10,0"/>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                    <Image Name="ultraDMDImage" Height="128" Width="512" />
                 </StackPanel>
             </TabItem>
             <TabItem Header="Designer">
