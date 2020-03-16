@@ -12,14 +12,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using FlexDMD.Actors;
-using NLog;
 using OpenMcdf;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 
@@ -28,7 +24,7 @@ namespace FlexDMD
     public class VPXFile : IDisposable
     {
         private readonly Dictionary<string, Entry> _images = new Dictionary<string, Entry>();
-        private CompoundFile _cf;
+        private readonly CompoundFile _cf;
 
         private class Entry
         {
@@ -57,18 +53,18 @@ namespace FlexDMD
 
         public bool Contains(string name)
         {
-            return _images.ContainsKey(name);
+            return _images.ContainsKey(name.ToLowerInvariant());
         }
 
         public string GetImportFile(string name)
         {
-            if (_images.TryGetValue(name, out Entry entry)) return entry._file;
+            if (_images.TryGetValue(name.ToLowerInvariant(), out Entry entry)) return entry._file;
             return null;
         }
 
         public Stream OpenStream(string name)
         {
-            if (_images.TryGetValue(name, out Entry entry))
+            if (_images.TryGetValue(name.ToLowerInvariant(), out Entry entry))
             {
                 var data = ReadImage(entry._stream, false);
                 return new MemoryStream(data);
@@ -83,8 +79,7 @@ namespace FlexDMD
             int size = 0;
             var done = false;
             byte[] data = null;
-            var entry = new Entry();
-            entry._stream = stream;
+            var entry = new Entry { _stream = stream };
             while (!done)
             {
                 var bytesInRecordRemaining = reader.ReadUInt32();
@@ -99,7 +94,7 @@ namespace FlexDMD
                         break;
                     case "NAME":
                         entry._name = reader.ReadLenPrefixedString(Encoding.ASCII);
-                        _images[entry._name] = entry;
+                        _images[entry._name.ToLowerInvariant()] = entry;
                         break;
                     case "PATH":
                         entry._file = reader.ReadLenPrefixedString(Encoding.ASCII);
@@ -123,7 +118,7 @@ namespace FlexDMD
                         inJpg = true;
                         break;
                     case "DATA":
-                        if (nameOnly) 
+                        if (nameOnly)
                             done = true;
                         else
                         {
@@ -154,10 +149,10 @@ namespace FlexDMD
 
         private class VPXReader
         {
-            private CFStream _stream;
-            private bool _reverse;
+            private readonly CFStream _stream;
+            private readonly bool _reverse;
+            private readonly byte[] _buffer = new byte[1024];
             private long _pos;
-            private byte[] _buffer = new byte[1024];
 
             public VPXReader(CFStream stream)
             {
