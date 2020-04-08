@@ -249,6 +249,8 @@ namespace UltraDMD
 
         private FlexDMD.Font GetFont(string path, float brightness, float outlineBrightness)
         {
+            brightness = brightness > 1f ? 1f : brightness;
+            outlineBrightness = outlineBrightness > 1f ? 1f : outlineBrightness;
             var baseColor = _flexDMD.RenderMode == RenderMode.RGB ? _flexDMD.Color : Color.White;
             var tint = brightness >= 0f ? Color.FromArgb((int)(baseColor.R * brightness), (int)(baseColor.G * brightness), (int)(baseColor.B * brightness)) : Color.FromArgb(0, 0, 0, 0);
             if (outlineBrightness >= 0f)
