@@ -115,14 +115,7 @@
                                 <Run FontWeight="Bold" Text="UltraDMD default setup"/>
                                 <LineBreak/>
                                 <LineBreak/>
-                                <Run Text="UltraDMD uses a single setup for all the tables that you can define using this interface."/>
-                                <Run Text=" "/>
-                                <Run Text=" "/>
-                                <Run Text=" "/>
-                                <Run Text="These settings have effects only on UltraDMD tables, not on FlexDMD ones"/>
-                                <Run Text=" where the DMD is directly configured from the script"/>
-                                <Run Text=" "/>
-                                <Run Text="."/>
+                                <Run Text="UltraDMD uses a single setup for all the tables that you can define using this interface. These settings have effects only on UltraDMD tables, not on FlexDMD ones where the DMD is directly configured from the script."/>
                             </Paragraph>
                         </FlowDocument>
                     </RichTextBox>
