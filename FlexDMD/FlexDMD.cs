@@ -78,7 +78,7 @@ namespace FlexDMD
                 else
                 {
                     log.Info("Stopping render thread");
-                    _processThread?.Join();
+                    if (Thread.CurrentThread != _processThread) _processThread?.Join();
                     _processThread = null;
                     ShowDMD(false);
                 }
@@ -344,7 +344,8 @@ namespace FlexDMD
                 stopWatch.Restart();
                 if (visualPinball == null)
                 {
-                    visualPinball = WindowHandle.FindWindow(wh => wh.IsVisible() && wh.GetWindowText().StartsWith("Visual Pinball Player"));
+                    visualPinball = WindowHandle.FindWindow(wh => wh.IsVisible() && wh.GetWindowText().StartsWith("Visual Pinball Player", StringComparison.CurrentCultureIgnoreCase));
+                    if (visualPinball != null) log.Info("Attaching to Visual Pinball Player window lifecycle");
                 }
                 else if (!visualPinball.IsWindow())
                 {
