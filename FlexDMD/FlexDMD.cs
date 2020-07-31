@@ -22,6 +22,10 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using static FlexDMD.DMDDevice;
 using NAudio.MediaFoundation;
+using System.Reflection;
+using System.IO;
+using NLog.Config;
+using System.Text.RegularExpressions;
 
 namespace FlexDMD
 {
@@ -122,6 +126,25 @@ namespace FlexDMD
                 options.Red0 = options.Perc0 * options.Red / 100;
                 options.Red33 = options.Perc33 * options.Red / 100;
                 options.Red66 = options.Perc66 * options.Red / 100;
+                if (_gameName == "")
+                {
+                    WindowHandle editor = WindowHandle.FindWindow(wh => wh.GetClassName().Equals("VPinball") && wh.GetWindowText().StartsWith("Visual Pinball - ["));
+                    if (editor != null)
+                    {
+                        // Used filename taken from window title, removing version pattern:
+                        // - First separator: space, _, v, V
+                        // - Then version: [0..9], ., _
+                        // - Then subversion as letter: optional final char
+                        // - Then optional qualifier: optional appended "-DOF"
+                        // - Then optional * marker (modified in editor)
+                        // - Then end of name
+                        string title = editor.GetWindowText();
+                        int trailer = "Visual Pinball - [".Length;
+                        _gameName = title.Substring(trailer, title.Length - trailer - 1).Trim();
+                        _gameName = new Regex("[\\s_vV][\\d_\\.]+[a-z]?(-DOF)?\\*?$").Replace(_gameName, "").Trim();
+                        log.Info("GameName was not set, using file name instead: '" + _gameName + "'");
+                    }
+                }
                 _dmd.GameSettings(_gameName, 0, options);
             }
             else if (!show && _dmd != null)
@@ -253,6 +276,15 @@ namespace FlexDMD
         public FlexDMD()
         {
             MediaFoundationApi.Startup();
+
+            var assembly = Assembly.GetCallingAssembly();
+            var assemblyPath = Path.GetDirectoryName(new Uri(assembly.CodeBase).LocalPath);
+            var logConfigPath = Path.Combine(assemblyPath, "FlexDMD.log.config");
+            if (File.Exists(logConfigPath))
+            {
+                LogManager.Configuration = new XmlLoggingConfiguration(logConfigPath, true);
+                LogManager.ReconfigExistingLoggers();
+            }
         }
 
         ~FlexDMD()
@@ -344,8 +376,9 @@ namespace FlexDMD
                 stopWatch.Restart();
                 if (visualPinball == null)
                 {
-                    visualPinball = WindowHandle.FindWindow(wh => wh.IsVisible() && wh.GetWindowText().StartsWith("Visual Pinball Player", StringComparison.CurrentCultureIgnoreCase));
-                    if (visualPinball != null) log.Info("Attaching to Visual Pinball Player window lifecycle");
+                    visualPinball = WindowHandle.FindWindow(wh => wh.IsVisible() && wh.GetClassName().Equals("VPPlayer") && wh.GetWindowText().StartsWith("Visual Pinball Player"));
+                    if (visualPinball != null)
+                        log.Info("Attaching to Visual Pinball Player window lifecycle");
                 }
                 else if (!visualPinball.IsWindow())
                 {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -25,8 +26,8 @@ namespace FlexDMD
         public string GetClassName()
         {
             int size = 255;
-            int actualSize = 0;
             StringBuilder builder;
+            int actualSize;
             do
             {
                 builder = new StringBuilder(size);
@@ -45,7 +46,7 @@ namespace FlexDMD
                 GetWindowText(RawPtr, builder, builder.Capacity);
                 return builder.ToString();
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         public static WindowHandle FindWindow(Predicate<WindowHandle> callback)
@@ -62,10 +63,8 @@ namespace FlexDMD
                     found = window;
                     return EnumWindows_StopEnumerating;
                 }
-
                 return EnumWindows_ContinueEnumerating;
-            },
-                                      IntPtr.Zero);
+            }, IntPtr.Zero);
 
             return found;
         }
