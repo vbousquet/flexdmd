@@ -1,9 +1,6 @@
 # FlexDMD
 FlexDMD is a DMD renderer extension for [Visual Pinball](https://sourceforge.net/projects/vpinball) and Pinball front-ends like [PinballY](https://github.com/mjrgh/PinballY). It can also be used as a drop-in replacement for [UltraDMD](https://ultradmd.wordpress.com/), solving some of its rough corners.
 
-<b>Disclaimer: this software is in a pre-alpha state. Use at your own risk !
-  The API and docs are not stabilized yet, and are likely to change.</b>
-
 Documentation :
 * [Features](#features)
 * [Installation](#installation)
