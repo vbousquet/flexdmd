@@ -43,10 +43,17 @@ FlexDMD does not have any configuration file:
 * The DMD is entirely defined in the table script,
 * The output is configured using the DmdDevice configuration file.
 
+
+For FlexDMD tables:
+* to position the DMD, if you are using Freezy's DMD, simply run the table, right click on the DMD and select the option to save its position,
+* all the rest is in the script.
+
+
 For UltraDMD tables:
 * to position the DMD, if you are using Freezy's DMD, simply run the table, right click on the DMD and select the option to save its position,
-* to select wether to run in full color or in monochrome, simply run FlexDMD's companion application (FlexDMDUI.exe) and use the UltraDMD configuration tab,
+* to select whether to run in full color or in monochrome, simply run FlexDMD's companion application (FlexDMDUI.exe) and use the UltraDMD configuration tab,
 * to select the text and monochrome color, simply run FlexDMD's companion application (FlexDMDUI.exe) and use the UltraDMD configuration tab.
+
 
 ## Build Instructions
 1. Download and install [Visual Studio 2019](https://visualstudio.microsoft.com/fr/downloads/)
