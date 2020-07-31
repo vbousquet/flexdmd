@@ -69,10 +69,9 @@ function UpdateDMD() {
 		loopCount++;
 	}
 	if (rom == null) {
-		dmd.GameName = null;
+		dmd.GameName = "";
 	} else {
-		// dmd.GameName = rom.toString();
-		// dmd.GameName = "Metal Slug";
+		dmd.GameName = rom.toString();
 	}
 	udmd.CancelRendering();
 	
