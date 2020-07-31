@@ -23,7 +23,8 @@ The main features are summarized below:
 [Download the latest release](https://github.com/vbousquet/flexdmd/releases). It comes with the following files ;
 - FlexDMDUI.exe, an application to install and test it,
 - FlexDMD.dll, the FlexDMD library itself,
-- FlexUDMD.dll, the UltraDMD replacement.
+- FlexUDMD.dll, the UltraDMD replacement,
+- FlexDMD.log.config, a file that instruct FlexDMD to produce a log file.
 
 Beside these files, you will need ```DMDDevice.dll``` for 32 bits rendering, and ```DMDDevice64.dll``` for 64 bits rendering. There can be different flavors of these. The ones used for developping FlexDMD are [Freezy's DMD Extensions](https://github.com/freezy/dmd-extensions), where you can find the needed files in the "Release" section. Just place them alongside the FlexDMD files.
 
