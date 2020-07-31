@@ -1,10 +1,22 @@
 # UltraDMD
 
-FlexDMD was created since UltraDMD has a few bugs and it was not updated any more. Therefore, it is designed to easily replace UltraDMD on existing tables.
+Among other needs, FlexDMD was created since the great UltraDMD sadely has a few bugs and it was not updated anymore by its author. Therefore, it is designed to easily replace UltraDMD on existing tables.
 
-Note that the script folder of this repository contains scripts which includes the changes below for a few popular tables.
+## Running an UltraDMD table
+
+The easiest way it to choose to register FlexDMD as UltraDMD when installing it (using the companion application). In this case, **you do not need to do anything else; all UltraDMD tables will just work.**
+
+When running like this;
+- to position the DMD, if you are using Freezy's DMD, simply run the table, right click on the DMD and select the option to save its position,
+- to select wether to run in full color or in monochrome, simply run FlexDMD's companion application and use the UltraDMD configuration tab,
+- to select the text and monochrome color, simply run FlexDMD's companion application and use the UltraDMD configuration tab.
+
+That's all !
+
 
 ## Converting a table from UltraDMD to FlexDMD
+
+The following instruction are for advanced users who want to try FlexDMD features on existing UltraDMD tables. Note that the script folder of this repository contains scripts which includes the changes below for a few popular tables.
 
 To convert a table to FlexDMD, load the table in VPX, open the script, then find a line containing `Set UltraDMD = CreateObject("UltraDMD.DMDObject")` and replace it with `Set FlexDMD = CreateObject("FlexDMD.FlexDMD")`.
 
