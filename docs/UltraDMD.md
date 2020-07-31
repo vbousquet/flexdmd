@@ -16,7 +16,9 @@ That's all !
 
 ## Converting a table from UltraDMD to FlexDMD
 
-The following instruction are for advanced users who want to try FlexDMD features on existing UltraDMD tables. Note that the script folder of this repository contains scripts which includes the changes below for a few popular tables.
+The following instruction are for advanced users who want to try FlexDMD features on existing UltraDMD tables. 
+
+Note that the script folder of this repository contains scripts which includes the changes below for a few popular tables.
 
 To convert a table to FlexDMD, load the table in VPX, open the script, then find a line containing `Set UltraDMD = CreateObject("UltraDMD.DMDObject")` and replace it with `Set FlexDMD = CreateObject("FlexDMD.FlexDMD")`.
 
