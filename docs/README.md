@@ -12,7 +12,7 @@ Documentation :
 * [Architecture](#architecture)
 * [Embedding the DMD inside VPX](./VPXDMD.md)
 * [Adding a DMD to latest tables from JPSalas](./JPSalas.md)
-* [Porting an UltraDMD to FlexDMD](./UltraDMD.md)
+* [Using FlexDMD with UltraDMD tables](./UltraDMD.md)
 
 ## Features
 The main features are summarized below:
@@ -36,29 +36,20 @@ The FlexDMDUI.exe application allows you to install the different parts and test
 
 To check that everything is fine, switch from the 'Installer' tab to the 'Designer' tab, select the output you want to test between FlexDMD, UltraDMD or both, and press 'Run'.
 
-Finally, you should head to the [Scripts folder](./Scripts/) where you will find a few prepared scripts for some popular tables. Just download them and place them in your 'table' directory alongside the .vpx table file and VPX 10.6+ will detect and use them.
+Finally, you should head to the [Scripts folder](./Scripts/) where you will find a few prepared scripts;
+* to add DMD for some popular tables: download and place them in your 'table' directory alongside the .vpx table file and VPX 10.6+ will detect and use them,
+* for PinballY front-end: download and place in the PinballY's "Scripts" folder,
+* to show some of the features offered by FlexDMD for more advanced users.
 
 ## Configuration
-There is no configuration file:
+FlexDMD does not have any configuration file:
 * The DMD is entirely defined in the table script,
 * The output is configured using the DmdDevice configuration file.
 
-You may want to change the render mode of a table from monochrome to full color, or set the color of the DMD of one table. To do so, you will need to edit the table's script, and, after creating the FlexDMD object, change its RenderMode or Color property.
-
-RenderMode can have 3 values : GRAY_2 (0), GRAY_4 (1), RGB (2). The default is GRAY_4, that is to say it renders to a monochrome DMD with 16 shades of colors. To use full color, you will add `FlexDMD.RenderMode = 2`
-
-Color is used to set the color of monochroms DMD. By default, FlexDMD uses a classic red/orange color. To use something else, just add `FlexDMD.Color = &hFFFF00` where `&hFFFF00` stands for a BGR color expressed as an hexadecimal value. That is to say, that each of the Blue, Green, Red colors are expressed as 2 letters, from 00 to FF where 0 is the minimum and FF correspond to 255 and is the maximum for this component. Here are a few examples to better understand;
-```vbscript
-FlexDMD.Color = &hFF0000 ' Blue
-FlexDMD.Color = &h00FF00 ' Green
-FlexDMD.Color = &h0000FF ' Red
-FlexDMD.Color = &hFFFFFF ' White
-FlexDMD.Color = &h2058FF ' Default reddish color
-```
-
-If you use a virtual DMD, the position & size of the DMD is defined using the [DmdDevice configuration file](https://github.com/freezy/dmd-extensions#configuration). If you want to define this position & size for a specific table, the name of the table must be given to FlexDMD using `FlexDMD.GameName = "..."`. The name you give to FlexDMD will be sent to DmdDevice and you will be able to use it as a section in the DmdDevice.ini configuration file.
-
-You can find example scripts in the Scripts folder (America's Most Haunted shows how to set a custom DMD color, Diablo shows how to render in full color).
+For UltraDMD tables:
+* to position the DMD, if you are using Freezy's DMD, simply run the table, right click on the DMD and select the option to save its position,
+* to select wether to run in full color or in monochrome, simply run FlexDMD's companion application (FlexDMDUI.exe) and use the UltraDMD configuration tab,
+* to select the text and monochrome color, simply run FlexDMD's companion application (FlexDMDUI.exe) and use the UltraDMD configuration tab.
 
 ## Build Instructions
 1. Download and install [Visual Studio 2019](https://visualstudio.microsoft.com/fr/downloads/)
