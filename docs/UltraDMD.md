@@ -8,7 +8,7 @@ The easiest way it to choose to register FlexDMD as UltraDMD when installing it 
 
 When running like this;
 - to position the DMD, if you are using Freezy's DMD, simply run the table, right click on the DMD and select the option to save its position,
-- to select wether to run in full color or in monochrome, simply run FlexDMD's companion application and use the UltraDMD configuration tab,
+- to select whether to run in full color or in monochrome, simply run FlexDMD's companion application and use the UltraDMD configuration tab,
 - to select the text and monochrome color, simply run FlexDMD's companion application and use the UltraDMD configuration tab.
 
 That's all !
