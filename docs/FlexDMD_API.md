@@ -1,5 +1,7 @@
 # FlexDMD API
 
+The following section contains preliminary documentation.
+
 ## Introduction
 
 FlexDMD API is inspired from [LibGDX Scene2D API](https://github.com/libgdx/libgdx/wiki/Scene2d) since it is very simple and easy to use.

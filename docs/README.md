@@ -1,5 +1,5 @@
 # FlexDMD
-FlexDMD is a DMD renderer extension for [Visual Pinball](https://sourceforge.net/projects/vpinball) and Pinball front-ends like [PinballY](https://github.com/mjrgh/PinballY). It can also be used as a drop-in replacement for [UltraDMD](https://ultradmd.wordpress.com/), solving some of its rough corners.
+FlexDMD is a DMD renderer extension for [Visual Pinball](https://sourceforge.net/projects/vpinball) and Pinball front-ends like [PinballY](https://github.com/mjrgh/PinballY). It can also be used as a drop-in replacement for the great [UltraDMD](https://ultradmd.wordpress.com/) from Stephen Rakonza, solving some of its rough corners since its development seems to have stopped.
 
 Documentation :
 * [Features](#features)
@@ -27,16 +27,16 @@ The main features are summarized below:
 - FlexUDMD.dll, the UltraDMD replacement,
 - FlexDMD.log.config, a file that instruct FlexDMD to produce a log file.
 
-Beside these files, you will need ```DMDDevice.dll``` for 32 bits rendering, and ```DMDDevice64.dll``` for 64 bits rendering. There can be different flavors of these. The ones used for developping FlexDMD are [Freezy's DMD Extensions](https://github.com/freezy/dmd-extensions), where you can find the needed files in the "Release" section. Just place them alongside the FlexDMD files (the 64bits version need to be renamed to DmdDevice64.dll).
+Beside these files, you will need ```DmdDevice.dll``` for 32 bits rendering, and ```DmdDevice64.dll``` for 64 bits rendering. There can be different flavors of these. The ones used for developping FlexDMD are [Freezy's DMD Extensions](https://github.com/freezy/dmd-extensions), where you can find the needed files in the "Release" section. Just place them alongside the FlexDMD files (the 64bits version need to be renamed to DmdDevice64.dll).
 
 You can place these 6 files where you want. It happens that [VPinMame](https://sourceforge.net/projects/pinmame/) also uses DMDDevice.dll and requires it to be placed alongside itself. Therefore a good place to place FlexDMD and DMDDevice files would be in your VPinMame folder (usually C:\Visual Pinball\VPinMAME).
 
 The FlexDMDUI.exe application allows you to install the different parts and test them. So just launch it, check it finds all the needed files (first panel), then simply press ```register``` (second panel) for the FlexDMD extension, and, if you want it, just press ```register``` (third panel) for the UltraDMD replacement.
 
-To check that everything is fine, switch from the 'Installer' tab to the 'Designer' tab, select the output you want to test between FlexDMD, UltraDMD or both, and press 'Run'.
+To check that everything is fine, switch from the 'Installer' tab to one of the 'Designer' tab and press 'Run'.
 
 Finally, you should head to the [Scripts folder](./Scripts/) where you will find a few prepared scripts;
-* to add DMD for some popular tables: download and place them in your 'table' directory alongside the .vpx table file and VPX 10.6+ will detect and use them,
+* to add DMD for some popular tables: download and place them in your 'Table' directory alongside the .vpx table file and VPX 10.6+ will detect and use them,
 * for PinballY front-end: download and place in the PinballY's "Scripts" folder,
 * to show some of the features offered by FlexDMD for more advanced users.
 
