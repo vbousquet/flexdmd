@@ -376,6 +376,11 @@ namespace FlexDMD
         #region Methods
 
         /// <summary>
+        /// Load the setup from the windows' registry.
+        /// </summary>
+        void LoadSetup();
+
+        /// <summary>
         /// Init must be called before any other method.  It initializes the scene queue and internal state.
         /// </summary>
         void Init();

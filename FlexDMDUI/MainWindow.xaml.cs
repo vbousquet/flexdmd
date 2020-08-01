@@ -29,11 +29,15 @@ namespace FlexDMDUI
     public partial class MainWindow : Window
     {
         private string _installPath;
-        private ScriptThread _flexScript, _ultraScript;
+        private ScriptThread _testScript;
         private readonly KnownColor[] _allColors;
 
         public const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
         public const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
+
+        public const int udmdConfigTab = 1;
+        public const int udmdDesignTab = 2;
+        public const int fdmdDesignTab = 3;
 
         public MainWindow()
         {
@@ -88,83 +92,83 @@ namespace FlexDMDUI
                 Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("fullcolor", "True");
             }
 
-            scriptTextBox.Text =
-@"' Demo script
+            /*            scriptTextBox.Text =
+            @"' Demo script
 
-Public Sub FlexDemo()
-    ' Use DMD object for FlexDMD or UDMD object for UltraDMD
-    DMD.GameName = NULL
-    DMD.GameName = ""ft""
+            Public Sub FlexDemo()
+                ' Use DMD object for FlexDMD or UDMD object for UltraDMD
+                DMD.GameName = NULL
+                DMD.GameName = ""ft""
 
-    Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
+                Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
 
-    Set scene1 = DMD.NewGroup(""Scene 1"")
-    scene1.AddActor DMD.NewImage(""Diablo"", ""Diablo.UltraDMD/black.jpg"")
-    scene1.AddActor DMD.NewLabel(""Label"", font, ""Test"")
-    scene1.GetLabel(""Label"").SetAlignedPosition 64, 16, 4
+                Set scene1 = DMD.NewGroup(""Scene 1"")
+                scene1.AddActor DMD.NewImage(""Diablo"", ""Diablo.UltraDMD/black.jpg"")
+                scene1.AddActor DMD.NewLabel(""Label"", font, ""Test"")
+                scene1.GetLabel(""Label"").SetAlignedPosition 64, 16, 4
 
-    Set scene2 = DMD.NewGroup(""Scene 2"")
-    scene2.AddActor DMD.NewVideo(""Video"", ""Diablo.UltraDMD/act1.wmv"")
+                Set scene2 = DMD.NewGroup(""Scene 2"")
+                scene2.AddActor DMD.NewVideo(""Video"", ""Diablo.UltraDMD/act1.wmv"")
 
-    Set sequence = DMD.NewGroup(""Sequence"")
-    sequence.SetSize 128, 32
-    Set af = sequence.ActionFactory
-    Set list = af.Sequence()
-    list.Add af.AddChild(scene1)
-    list.Add af.Wait(5)
-    list.Add af.RemoveChild(scene1)
-    list.Add scene2.GetVideo(""Video"").ActionFactory.Seek(0)
-    list.Add af.AddChild(scene2)
-    list.Add af.Wait(5)
-    list.Add af.RemoveChild(scene2)
-    sequence.AddAction af.Repeat(list, -1)
+                Set sequence = DMD.NewGroup(""Sequence"")
+                sequence.SetSize 128, 32
+                Set af = sequence.ActionFactory
+                Set list = af.Sequence()
+                list.Add af.AddChild(scene1)
+                list.Add af.Wait(5)
+                list.Add af.RemoveChild(scene1)
+                list.Add scene2.GetVideo(""Video"").ActionFactory.Seek(0)
+                list.Add af.AddChild(scene2)
+                list.Add af.Wait(5)
+                list.Add af.RemoveChild(scene2)
+                sequence.AddAction af.Repeat(list, -1)
 
-    DMD.LockRenderThread
-    DMD.Stage.RemoveAll
-    DMD.Stage.AddActor sequence
-    DMD.UnlockRenderThread
-End Sub
+                DMD.LockRenderThread
+                DMD.Stage.RemoveAll
+                DMD.Stage.AddActor sequence
+                DMD.UnlockRenderThread
+            End Sub
 
-' Check that FlexDMD renders the same as UltraDMD
-Public Sub CompareUltraFlex()
-    ' Animations :
-    '  FadeIn = 0, // Fade from black to scene
-    '  FadeOut = 1, // Fade from scene to black
-    '  ZoomIn = 2, // zoom from a centered small dmd to full size [Not supported yet]
-    '  ZoomOut = 3, // zoom from a full sized dmd to an oversize one [Not supported yet]
-    '  ScrollOffLeft = 4,
-    '  ScrollOffRight = 5,
-    '  ScrollOnLeft = 6,
-    '  ScrollOnRight = 7,
-    '  ScrollOffUp = 8,
-    '  ScrollOffDown = 9,
-    '  ScrollOnUp = 10,
-    '  ScrollOnDown = 11,
-    '  FillFadeIn = 12, // fade from black to white (the scene won't be seen)
-    '  FillFadeOut = 13, // fade from white to black (the scene won't be seen)
-    '  None = 14
-    UDMD.DisplayScene00 """", ""Fade In / Out"", 15, "".."", 15, 0, 1000, 1
-    UDMD.DisplayScene00 """", ""Scroll On/Off Right"", 15, ""..."", 15, 7, 1000, 5
-    UDMD.DisplayScene00 """", ""Scroll On/Off Left"", 15, ""..."", 15, 6, 1000, 4
-    UDMD.DisplayScene00 """", ""Scroll On/Off Down"", 15, ""..."", 15, 11, 1000, 9
-    UDMD.DisplayScene00 """", ""Scroll On/Off Up"", 15, ""..."", 15, 10, 1000, 8
-    UDMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
+            ' Check that FlexDMD renders the same as UltraDMD
+            Public Sub CompareUltraFlex()
+                ' Animations :
+                '  FadeIn = 0, // Fade from black to scene
+                '  FadeOut = 1, // Fade from scene to black
+                '  ZoomIn = 2, // zoom from a centered small dmd to full size [Not supported yet]
+                '  ZoomOut = 3, // zoom from a full sized dmd to an oversize one [Not supported yet]
+                '  ScrollOffLeft = 4,
+                '  ScrollOffRight = 5,
+                '  ScrollOnLeft = 6,
+                '  ScrollOnRight = 7,
+                '  ScrollOffUp = 8,
+                '  ScrollOffDown = 9,
+                '  ScrollOnUp = 10,
+                '  ScrollOnDown = 11,
+                '  FillFadeIn = 12, // fade from black to white (the scene won't be seen)
+                '  FillFadeOut = 13, // fade from white to black (the scene won't be seen)
+                '  None = 14
+                UDMD.DisplayScene00 """", ""Fade In / Out"", 15, "".."", 15, 0, 1000, 1
+                UDMD.DisplayScene00 """", ""Scroll On/Off Right"", 15, ""..."", 15, 7, 1000, 5
+                UDMD.DisplayScene00 """", ""Scroll On/Off Left"", 15, ""..."", 15, 6, 1000, 4
+                UDMD.DisplayScene00 """", ""Scroll On/Off Down"", 15, ""..."", 15, 11, 1000, 9
+                UDMD.DisplayScene00 """", ""Scroll On/Off Up"", 15, ""..."", 15, 10, 1000, 8
+                UDMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
 
-    ' Scrolling text scene
-    UDMD.DisplayScene01 """", """", ""Scrolling Text"", 5, 15, 14, 5000, 14
+                ' Scrolling text scene
+                UDMD.DisplayScene01 """", """", ""Scrolling Text"", 5, 15, 14, 5000, 14
 
-    ' Scrolling credits scene
-    UDMD.ScrollingCredits """", ""Scrolling|Credits||Multiple|lines|of text"", 15, 14, 5000, 14
-End Sub
+                ' Scrolling credits scene
+                UDMD.ScrollingCredits """", ""Scrolling|Credits||Multiple|lines|of text"", 15, 14, 5000, 14
+            End Sub
 
-If FlexDMDMode And UltraDMDMode Then
-    CompareUltraFlex()
-ElseIf FlexDMDMode Then
-    FlexDemo()
-Else
-    UDMD.DisplayScene00 """", ""UltraDMD"", 15, ""."", 15, 14, 1000, 14
-End If
-";
+            If FlexDMDMode And UltraDMDMode Then
+                CompareUltraFlex()
+            ElseIf FlexDMDMode Then
+                FlexDemo()
+            Else
+                UDMD.DisplayScene00 """", ""UltraDMD"", 15, ""."", 15, 14, 1000, 14
+            End If
+            "; */
             var flexPath = GetComponentLocation(flexDMDclsid);
             if (flexPath != null)
             {
@@ -188,8 +192,7 @@ End If
 
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            OnFlexDMDUnselected(null, null);
-            OnUltraDMDUnselected(null, null);
+            CloseDMD();
             // Window Class: WindowsForms10.Window.8.app.0.21af1a5_r9_ad1 Name: Virtual DMD
             var ultraDMDwnd = WindowHandle.FindWindow(wnd => wnd.GetWindowText() == "Virtual DMD");
             ultraDMDwnd?.SendMessage(0x0010, 0, 0); // WM_CLOSE
@@ -275,17 +278,80 @@ End If
             return null;
         }
 
-        public void OnUltraDMDRenderMode(object sender, RoutedEventArgs e)
+        private void OnTabChanged(object sender, SelectionChangedEventArgs e)
+        {
+            CloseDMD();
+
+            if (tabPanel.SelectedIndex == udmdConfigTab)
+            {
+                _testScript = new ScriptThread("UltraDMD Script Thread");
+                _testScript.Post(@"
+                Dim FlexDMD
+                Set FlexDMD = CreateObject(""FlexDMD.FlexDMD"")
+                FlexDMD.GameName = ""Designer""
+                Dim UltraDMD
+                Set UltraDMD = FlexDMD.NewUltraDMD()
+                UltraDMD.Init
+                UltraDMD.LoadSetup
+                UltraDMD.DisplayScene00 ""FlexDMD.Resources.colors.png"", ""FlexDMD"", 15, ""UltraDMD API mode"", 15, 14, -1, 14
+                ");
+            }
+
+            if (tabPanel.SelectedIndex == udmdDesignTab)
+            {
+                _testScript = new ScriptThread("UltraDMD Script Thread");
+                _testScript.Post(@"
+                Dim FlexDMD
+                Set FlexDMD = CreateObject(""FlexDMD.FlexDMD"")
+                FlexDMD.GameName = ""Designer""
+                Dim UltraDMD
+                'Set UltraDMD = CreateObject(""UltraDMD.DMDObject"")
+                Set UltraDMD = FlexDMD.NewUltraDMD()
+                UltraDMD.Init
+                ");
+            }
+
+            if (tabPanel.SelectedIndex == fdmdDesignTab)
+            {
+                _testScript = new ScriptThread("FlexDMD Script Thread");
+                _testScript.Post(@"
+                Dim FlexDMD
+                Set FlexDMD = CreateObject(""FlexDMD.FlexDMD"")
+                FlexDMD.GameName = ""Designer""
+                FlexDMD.Run = True
+                ");
+            }
+        }
+
+        public void OnUltraDMDRenderModeChanged(object sender, RoutedEventArgs e)
         {
             if (ultraDMDFullColor.IsChecked == true)
                 Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("fullcolor", "True");
             else
                 Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("fullcolor", "False");
+            UpdateUltraDMDConfig();
         }
 
-        private void OnltraDMDColorChanged(object sender, SelectionChangedEventArgs e)
+        private void OnUltraDMDColorChanged(object sender, SelectionChangedEventArgs e)
         {
             Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("color", _allColors[ultraDMDColors.SelectedIndex].ToString());
+            UpdateUltraDMDConfig();
+        }
+
+        private void UpdateUltraDMDConfig()
+        {
+            if (_testScript != null)
+            {
+                _testScript.Post(@"
+                    If Not UltraDMD is Nothing Then
+                        UltraDMD.CancelRendering
+                        UltraDMD.Uninit
+                        UltraDMD.LoadSetup
+                        UltraDMD.Init
+                        UltraDMD.DisplayScene00 ""FlexDMD.Resources.colors.png"", ""FlexDMD"", 15, ""UltraDMD API mode"", 15, 14, -1, 14
+                    End If
+                    ");
+            }
         }
 
         public void OnSelectInstallFolder(object sender, RoutedEventArgs e)
@@ -303,94 +369,50 @@ End If
             }
         }
 
-        private void OnFlexDMDSelected(object sender, RoutedEventArgs args)
+        private void CloseDMD()
         {
-            _flexScript = new ScriptThread("FlexDMD Script Thread");
-            _flexScript.Post(@"
-                Dim DMD
-                Dim UDMD
-                Set DMD = CreateObject(""FlexDMD.FlexDMD"")
-                Set UDMD = DMD.NewUltraDMD()
-                DMD.Run = True
-                ");
-        }
-
-        private void OnFlexDMDUnselected(object sender, RoutedEventArgs args)
-        {
-            if (_flexScript != null)
+            if (_testScript != null)
             {
-                _flexScript.Interrupt();
-                _flexScript.Post(@"
-                    If Not DMD is Nothing Then
-                        DMD.Run = False
-                        DMD = NULL
+                _testScript.Interrupt();
+                _testScript.Post(@"
+                    If Not FlexDMD is Nothing Then
+                        FlexDMD.Show = False
+                        FlexDMD.Run = False
+                        FlexDMD = NULL
+                    ElseIf Not UltraDMD is Nothing Then
+                        UltraDMD.Uninit
+                        UltraDMD = NULL
                     End If
                     ");
-                _flexScript.Close(true, true);
-                _flexScript = null;
-            }
-        }
-
-        private void OnUltraDMDSelected(object sender, RoutedEventArgs args)
-        {
-            var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
-            if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("ULTRADMD.EXE"))
-            {
-                _ultraScript = new ScriptThread("UltraDMD Script Thread");
-                _ultraScript.Post(@"
-                Dim DMD
-                Dim UDMD
-                Set UDMD = CreateObject(""UltraDMD.DMDObject"")
-                UDMD.Init
-                ");
-            }
-            else
-            {
-                System.Windows.Forms.MessageBox.Show("To compare FlexDMD rendering to UltraDMD's rendering, you need to have the original UltraDMD registered.", "UltraDMD is not registered");
-            }
-        }
-
-        private void OnUltraDMDUnselected(object sender, RoutedEventArgs args)
-        {
-            if (_ultraScript != null)
-            {
-                _ultraScript.Interrupt();
-                _ultraScript.Post(@"
-                    If Not UDMD is Nothing Then
-                        UDMD.Uninit
-                        UDMD = NULL
-                    End If
-                    ");
-                _ultraScript.Close(true, true);
-                _ultraScript = null;
+                _testScript.Close(true, true);
+                _testScript = null;
             }
         }
 
         private void OnRunCmd(object sender, ExecutedRoutedEventArgs args)
         {
-            OnRunScript(sender, null);
-        }
-
-        public void OnRunScript(object sender, RoutedEventArgs e)
-        {
-            var script = string.Format(@"
-                FlexDMDMode = {0}
-                UltraDMDMode = {1}
-                {2}
-                ", (renderFlexDMDBtn.IsChecked == true ? "True" : "False"), (renderUltraDMDBtn.IsChecked == true ? "True" : "False"), scriptTextBox.Text);
-            if (_flexScript != null) _flexScript.Post(script);
-            if (_ultraScript != null) _ultraScript.Post(script);
+            if (tabPanel.SelectedIndex == udmdDesignTab) _testScript.Post(ultraDMDScriptTextBox.Text);
+            if (tabPanel.SelectedIndex == fdmdDesignTab) _testScript.Post(flexDMDScriptTextBox.Text);
         }
 
         private void OnStopCmd(object sender, ExecutedRoutedEventArgs args)
         {
-            OnStopScript(sender, null);
+            if (_testScript != null) _testScript.Interrupt();
         }
 
-        public void OnStopScript(object sender, RoutedEventArgs e)
+        public void OnRunFlexDMDScript(object sender, RoutedEventArgs e)
         {
-            if (_flexScript != null) _flexScript.Interrupt();
-            if (_ultraScript != null) _ultraScript.Interrupt();
+            if (_testScript != null) _testScript.Post(flexDMDScriptTextBox.Text);
+        }
+
+        public void OnRunUltraDMDScript(object sender, RoutedEventArgs e)
+        {
+            if (_testScript != null) _testScript.Post(ultraDMDScriptTextBox.Text);
+        }
+
+        public void OnStopDMDScript(object sender, RoutedEventArgs e)
+        {
+            if (_testScript != null) _testScript.Interrupt();
         }
 
         public void OnRegisterFlex(object sender, RoutedEventArgs e)

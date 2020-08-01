@@ -343,7 +343,7 @@ namespace FlexDMD
                         case FileType.Gif:
                             return new GIFImage(_assets.Load<Bitmap>(filename).Load());
                         case FileType.Video:
-                            return new Video(System.IO.Path.Combine(_assets.BasePath, filename), false);
+                            return new Video(Path.Combine(_assets.BasePath, filename), false);
                     }
                 }
                 else if (filename.Contains(","))

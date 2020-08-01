@@ -16,7 +16,7 @@
         <KeyBinding Key="F6" Command="main:Command.StopCmd" />
     </Window.InputBindings>
     <Grid>
-        <TabControl>
+        <TabControl x:Name="tabPanel" SelectionChanged="OnTabChanged">
             <TabItem Header="Install">
                 <StackPanel Background="#FFE5E5E5" Margin="0,0,0,0">
                     <RichTextBox Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
@@ -27,11 +27,7 @@
                                 </Bold>
                                 <LineBreak/>
                                 <LineBreak/>
-                                <Run Text="FlexDMD is a tool that lets pinball table render and animate DMD display like on a real pinball. This application will "/>
-                                <Run Text=" "/>
-                                <Run Text="help"/>
-                                <Run Text=" "/>
-                                <Run Text=" you install it and design DMD scenes."/>
+                                <Run Text="FlexDMD is a tool that lets pinball table render and animate DMD display like on a real pinball. This application will help you install it and design DMD scenes."/>
                                 <LineBreak/>
                                 <LineBreak/>
                                 <Run Text="To help you with the installation, three tools are provided below;"/>
@@ -116,27 +112,33 @@
                                 <LineBreak/>
                                 <LineBreak/>
                                 <Run Text="UltraDMD uses a single setup for all the tables that you can define using this interface. These settings have effects only on UltraDMD tables, not on FlexDMD ones where the DMD is directly configured from the script."/>
+                                <LineBreak/>
+                                <LineBreak/>
+                                <Run Text="If everything is correctly setup, your DMD should be displaying the result of the choosen options."/>
+                                <LineBreak/>
+                                <LineBreak/>
+                                <Run Text="Beside these options, you can set the position of the DMD by running a table, then right clicking the DMD and selecting to save its position."/>
+                                <LineBreak/>
                             </Paragraph>
                         </FlowDocument>
                     </RichTextBox>
                     <StackPanel Orientation="Horizontal">
                         <GroupBox Header="Render mode" Margin="10,0,10,10">
                             <StackPanel>
-                                <RadioButton x:Name="ultraDMDFullColor" Content="Full color" Margin="10" Click="OnUltraDMDRenderMode"/>
-                                <RadioButton x:Name="ultraDMDMonochrome" Content="Monochrome" Margin="10,0,10,10" Click="OnUltraDMDRenderMode"/>
+                                <RadioButton x:Name="ultraDMDFullColor" Content="Full color" Margin="10" Click="OnUltraDMDRenderModeChanged"/>
+                                <RadioButton x:Name="ultraDMDMonochrome" Content="Monochrome" Margin="10,0,10,10" Click="OnUltraDMDRenderModeChanged"/>
                             </StackPanel>
                         </GroupBox>
-                        <GroupBox Header="Base color" Margin="5,0,10,10" Height="230">
+                        <GroupBox Header="Base color" Margin="5,0,10,10" Height="280">
                             <StackPanel>
                                 <Label Content="The base color is used to render text in full color render mode, or as the DMD color in monochrome render mode." Margin="0,5,0,5"/>
-                                <ListView x:Name="ultraDMDColors" Height="160" SelectionChanged="OnltraDMDColorChanged" Margin="10,0,10,0"/>
+                                <ListView x:Name="ultraDMDColors" Height="210" SelectionChanged="OnUltraDMDColorChanged" Margin="10,0,10,0"/>
                             </StackPanel>
                         </GroupBox>
                     </StackPanel>
-                    <Image Name="ultraDMDImage" Height="128" Width="512" />
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Designer">
+            <TabItem Header="UltraDMD Designer">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
@@ -145,26 +147,75 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="60"/>
+                        <RowDefinition Height="70"/>
                         <RowDefinition Height="1*" />
+                        <RowDefinition Height="60"/>
                     </Grid.RowDefinitions>
-                    <CheckBox x:Name="renderFlexDMDBtn" Grid.Row="0" Grid.Column="0" Content="FlexDMD" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,0,0" Checked="OnFlexDMDSelected" Unchecked="OnFlexDMDUnselected"/>
-                    <CheckBox x:Name="renderUltraDMDBtn" Grid.Row="0" Grid.Column="1" Content="UltraDMD" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,0,0" Checked="OnUltraDMDSelected" Unchecked="OnUltraDMDUnselected"/>
-                    <Button x:Name="stopScriptBtn" Grid.Row="0" Grid.Column="2" Margin="10,10,10,10" Width="150" Click="OnStopScript" HorizontalAlignment="Right">
+                    <RichTextBox Grid.ColumnSpan="4" Grid.Row="0" Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
+                        <FlowDocument>
+                            <Paragraph>
+                                <Run FontWeight="Bold" Text="UltraDMD Scene Designer"/>
+                                <LineBreak/>
+                                <LineBreak/>
+                                <Run Text="UltraDMD's window should now be opened. You can use this tool to test your installation and design scenes."/>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                    <ScrollViewer Grid.ColumnSpan="4" Grid.Row="1" Margin="10,0,10,0">
+                        <TextBox x:Name="ultraDMDScriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" Text="UltraDMD.DisplayScene00 &quot;&quot;, &quot;Fade In / Out&quot;, 15, &quot;..&quot;, 15, 0, 1000, 1&#xA;"/>
+                    </ScrollViewer>
+                    <Button Grid.Row="2" Grid.Column="2" Margin="10,10,10,10" Width="150" Click="OnStopDMDScript" HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Image Source="Resources/stop.png" Width="16" Height="24"/>
                             <TextBlock Text="Stop  [F6]" VerticalAlignment="Center" Width="74" TextAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="runScriptBtn" Grid.Row="0" Grid.Column="3" Margin="10,10,10,10" Width="150" Click="OnRunScript" HorizontalAlignment="Right">
+                    <Button Grid.Row="2" Grid.Column="3" Margin="10,10,10,10" Width="150" Click="OnRunUltraDMDScript" HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Image Source="Resources/run.png" Width="16" Height="24"/>
                             <TextBlock Text="Run  [F5]" VerticalAlignment="Center" Width="74" TextAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <ScrollViewer Grid.ColumnSpan="4" Grid.Row="1">
-                        <TextBox x:Name="scriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="FlexDMD Designer">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="60"/>
+                    </Grid.RowDefinitions>
+                    <RichTextBox Grid.ColumnSpan="4" Grid.Row="0" Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
+                        <FlowDocument>
+                            <Paragraph>
+                                <Run FontWeight="Bold" Text="FlexDMD Scene Designer"/>
+                                <LineBreak/>
+                                <LineBreak/>
+                                <Run Text="FlexDMD's window should now be opened. You can use this tool to test your installation and design scenes."/>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                    <ScrollViewer Grid.ColumnSpan="4" Grid.Row="1" Margin="10,0,10,0">
+                        <TextBox x:Name="flexDMDScriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" Text="Dim UltraDMD&#xA;Set UltraDMD= FlexDMD.NewUltraDMD()&#xA;UltraDMD.DisplayScene00 &quot;&quot;, &quot;Fade In / Out&quot;, 15, &quot;..&quot;, 15, 0, 1000, 1&#xA;"/>
                     </ScrollViewer>
+                    <Button Grid.Row="2" Grid.Column="2" Margin="10,10,10,10" Width="150" Click="OnStopDMDScript" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Image Source="Resources/stop.png" Width="16" Height="24"/>
+                            <TextBlock Text="Stop  [F6]" VerticalAlignment="Center" Width="74" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="3" Margin="10,10,10,10" Width="150" Click="OnRunFlexDMDScript" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Image Source="Resources/run.png" Width="16" Height="24"/>
+                            <TextBlock Text="Run  [F5]" VerticalAlignment="Center" Width="74" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </Grid>
             </TabItem>
         </TabControl>

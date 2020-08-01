@@ -15,6 +15,7 @@
 using FlexDMD;
 using FlexDMD.Actors;
 using FlexDMD.Scenes;
+using Microsoft.Win32;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -137,6 +138,24 @@ namespace UltraDMD
                 log.Error(e, "Exception while resolving image: '{0}'", filename);
             }
             return useFrame ? new Frame() : new Actor();
+        }
+
+        public void LoadSetup()
+        {
+            var color = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("UltraDMD")?.GetValue("color");
+            if (color != null && color is string c)
+            {
+                var col = Color.FromName(c);
+                if (col.R != 0 || col.G != 0 || col.B != 0) _flexDMD.Color = col;
+            }
+            var fullcolor = Registry.CurrentUser.OpenSubKey("Software")?.OpenSubKey("UltraDMD")?.GetValue("fullcolor");
+            if (fullcolor != null && fullcolor is string fc)
+            {
+                if ("True".Equals(fc, StringComparison.InvariantCultureIgnoreCase))
+                    _flexDMD.RenderMode = RenderMode.RGB;
+                else
+                    _flexDMD.RenderMode = RenderMode.GRAY_4;
+            }
         }
 
         public void Init() => _flexDMD.Run = true;
