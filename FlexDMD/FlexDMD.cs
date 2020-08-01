@@ -34,7 +34,6 @@ namespace FlexDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly List<System.Action> _runnables = new List<System.Action>();
-        private readonly AssetManager _assets = new AssetManager();
         private readonly Group _stage = new Group() { Name = "Stage" };
         private readonly int _frameRate = 60;
         private readonly Mutex _renderMutex = new Mutex();
@@ -60,7 +59,7 @@ namespace FlexDMD
         public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
         public IVideoActor NewVideo(string name, string video) { var g = (IVideoActor)ResolveImage(video); g.Name = name; return g; }
         public IImageActor NewImage(string name, string image) { var g = (IImageActor)ResolveImage(image); g.Name = name; return g; }
-        public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => _assets.Load<Font>(new FontDef(font, tint, borderTint, borderSize)).Load();
+        public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => AssetManager.Load<Font>(new FontDef(font, tint, borderTint, borderSize)).Load();
         public IUltraDMD NewUltraDMD() => new UltraDMD.UltraDMD(this);
 
         public Graphics Graphics { get; private set; } = null;
@@ -233,21 +232,21 @@ namespace FlexDMD
 
         public string ProjectFolder
         {
-            get => _assets.BasePath;
+            get => AssetManager.BasePath;
             set
             {
                 log.Info("SetProjectFolder {0}", value);
-                _assets.BasePath = value;
+                AssetManager.BasePath = value;
             }
         }
 
         public string TableFile
         {
-            get => _assets.TableFile;
+            get => AssetManager.TableFile;
             set
             {
                 log.Info("Table File defined to {0}", value);
-                _assets.TableFile = value;
+                AssetManager.TableFile = value;
             }
         }
 
@@ -271,7 +270,7 @@ namespace FlexDMD
             }
         }
 
-        public AssetManager AssetManager { get => _assets; }
+        public AssetManager AssetManager { get; } = new AssetManager();
 
         public FlexDMD()
         {
@@ -285,6 +284,8 @@ namespace FlexDMD
                 LogManager.Configuration = new XmlLoggingConfiguration(logConfigPath, true);
                 LogManager.ReconfigExistingLoggers();
             }
+            
+            log.Info("FlexDMD version {0}", assembly.GetName().Version);
         }
 
         ~FlexDMD()
@@ -334,22 +335,22 @@ namespace FlexDMD
         {
             try
             {
-                if (_assets.FileExists(filename))
+                if (AssetManager.FileExists(filename))
                 {
-                    switch (_assets.GetFileType(filename))
+                    switch (AssetManager.GetFileType(filename))
                     {
                         case FileType.Image:
-                            return new Image(_assets.Load<Bitmap>(filename).Load());
+                            return new Image(AssetManager.Load<Bitmap>(filename).Load());
                         case FileType.Gif:
-                            return new GIFImage(_assets.Load<Bitmap>(filename).Load());
+                            return new GIFImage(AssetManager.Load<Bitmap>(filename).Load());
                         case FileType.Video:
-                            return new Video(Path.Combine(_assets.BasePath, filename), false);
+                            return new Video(Path.Combine(AssetManager.BasePath, filename), false);
                     }
                 }
                 else if (filename.Contains(","))
                 {
                     var def = new ImageSequenceDef(filename, 25, true);
-                    return _assets.Load<ImageSequence>(def).Load();
+                    return AssetManager.Load<ImageSequence>(def).Load();
                 }
             }
             catch (Exception e)

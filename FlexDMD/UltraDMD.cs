@@ -165,14 +165,14 @@ namespace UltraDMD
         {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-            return fvi.FileMajorPart;
+            return Math.Max(1, fvi.FileMajorPart);
         }
 
         public int GetMinorVersion()
         {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-            return fvi.FileMinorPart;
+            return Math.Max(4, fvi.FileMinorPart);
         }
 
         public int GetBuildNumber()
