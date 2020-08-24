@@ -40,7 +40,7 @@ namespace FlexDMD
 
         public Bitmap Filter(Bitmap src)
         {
-            var dst = new Bitmap(src.Width / _dotSize, src.Height / _dotSize, src.PixelFormat);
+            var dst = new Bitmap(src.Width / _dotSize, src.Height / _dotSize, PixelFormat.Format32bppArgb);
             for (int y = 0; y < dst.Height; y++)
             {
                 for (int x = 0; x < dst.Width; x++)
