@@ -1,3 +1,50 @@
+/*
+	Custom DMD screen script
+
+	- Check for PinballY updates and display if any on the main screen
+	- Shows informations on the selected game (more or less the same than PinballY) using custom medias (animated company logo, table title screen)
+	- Shows image/video from the 'titles' subfolder if they match the DOF rom name of the table
+	- Shows highscores
+	- Shows statistics
+
+	TODO:
+	- GameName can not be modified for some reason to be understood
+	- Missing Midway logo animation
+	- Missing animated logo for original tables
+	- Move to FlexDMD API instead of UltraDMD when PinballY will fully marshall COM objects
+*/
+
+
+// Check for a new version of PinballY on each launch (default is false to limit the load on PinballY's servers)
+let checkPinballYUpdate = false;
+
+
+
+
+
+
+
+// Check for new release of PinballY (taken from http://mjrnet.org/pinscape/downloads/PinballY/Help/UpdateCheckExample.html)
+if (checkPinballYUpdate) {
+	let request = new HttpRequest();
+	request.open("GET", "http://mjrnet.org/pinscape/downloads/PinballY/VersionHistory.txt", true);
+	request.send().then(reply =>
+	{
+		if (/^(\d\d)-(\d\d)-(\d\d\d\d) \(\d+\.\d+\.\d+ .+\)$/mi.test(reply))
+		{
+			let mm = +RegExp.$1 - 1, dd = +RegExp.$2, yyyy = +RegExp.$3;
+			let onlineDate = new Date(Date.UTC(yyyy, mm, dd));
+			if (onlineDate > systemInfo.version.buildDate)
+				mainWindow.statusLines.upper.add("A new version of PinballY is available!");
+		}
+	}).catch(error => {
+		logfile.log(
+			"The Javascript version update checker ran into a problem!\nJavascript error: %s\nStack:\n%s",
+			error.message, error.stack);
+	});
+}
+
+// For debugging purposes
 function getMethods(obj) {
   var result = [];
   for (var id in obj) {
@@ -33,32 +80,30 @@ Number.prototype.toDDHHMMSS = function () {
     return days+"d "+hours+':'+minutes+':'+seconds;
 }
 
-// TODO:
-// - If we use browser, there will  be a socket's port conflict since Freezy's DMD is not completely closed
-// - GameName can not be modified for some reason
-// - Missing Capcom logo
-// - Move to FlexDMD API instead of UltraDMD when PinballY will marshall COM objects
-
 let dmd = createAutomationObject("FlexDMD.FlexDMD");
 let udmd = dmd.NewUltraDMD();
+dmd.GameName = "";
 dmd.Width = 128;
 dmd.Height = 32;
+dmd.Show = true;
 dmd.Run = true;
 // logfile.log(getMethods(dmd).join("\n"));
 
+
+// Handle DMD updates
 var hiscores = {};
 let info = null;
 let shownInfo = null;
 let loopCount = 0;
+let fso = createAutomationObject("Scripting.FileSystemObject");
 function UpdateDMD() {
 	if (info == null || udmd.IsRendering()) return;
 
 	var i;
-	dmd.Show = info.tableType == "SS" && (info.highScoreStyle == "Auto" || info.highScoreStyle == "DMD");
-	let rom = info.resolveROM().vpmRom;
+	let rom = info.resolveROM();
 	if (shownInfo == null || shownInfo.id != info.id) {
 		logfile.log("> Update DMD for:");
-		logfile.log("> rom: '".concat(rom, "'"));
+		logfile.log("> rom: '".concat(rom.vpmRom, "'"));
 		logfile.log("> manufacturer:", info.manufacturer);
 		logfile.log("> title:", info.title);
 		logfile.log("> year:", info.year);
@@ -68,55 +113,81 @@ function UpdateDMD() {
 	} else {
 		loopCount++;
 	}
-	if (rom == null) {
+	if (rom.vpmRom == null) {
 		dmd.GameName = "";
 	} else {
-		dmd.GameName = rom.toString();
+		// dmd.GameName = rom.vpmRom.toString();
 	}
 	udmd.CancelRendering();
 	
 	// Manufacturer
 	let loopMargin = (20 * 1000) / 60;
 	if (info.manufacturer == "Williams") {
-		udmd.DisplayScene00("./Scripts/dmds/williams.gif", "", 15, "", 15, 10, 5633-loopMargin, 8);
+		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/williams.gif")
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 5633-loopMargin, 8);
 	} else if (info.manufacturer == "Premier") {
-		udmd.DisplayScene00("./Scripts/dmds/premier.gif", "", 15, "", 15, 10, 2660-loopMargin, 8);
+		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/premier.gif")
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2660-loopMargin, 8);
 	} else if (info.manufacturer == "Gottlieb") {
-		udmd.DisplayScene00("./Scripts/dmds/gottlieb.png", "", 15, "", 15, 10, 3000-loopMargin, 8);
+		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/gottlieb.gif")
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 3000-loopMargin, 8);
 	} else if (info.manufacturer == "Bally" || info.manufacturer == "Midway") {
 		// Missing: Midway
-		udmd.DisplayScene00("./Scripts/dmds/bally.gif", "", 15, "", 15, 10, 3199-loopMargin, 8);
+		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/bally.gif")
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 3199-loopMargin, 8);
 	} else if (info.manufacturer == "Data East") {
-		if (Math.random() < 0.5)
-			udmd.DisplayScene00("./Scripts/dmds/dataeast-1.gif", "", 15, "", 15, 10, 2766-loopMargin, 8);
-		else
-			udmd.DisplayScene00("./Scripts/dmds/dataeast-2.gif", "", 15, "", 15, 10, 2799-loopMargin, 8);
+		if (Math.random() < 0.5) {
+			let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/dataeast-1.gif")
+			udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2766-loopMargin, 8);
+		} else {
+			let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/dataeast-2.gif")
+			udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2799-loopMargin, 8);
+		}
 	} else if (info.manufacturer == "Sega") {
-		udmd.DisplayScene00("./Scripts/dmds/sega.gif", "", 15, "", 15, 10, 2733-loopMargin, 8);
+		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/sega.gif")
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2733-loopMargin, 8);
 	} else if (info.manufacturer == "Stern") {
-		udmd.DisplayScene00("./Scripts/dmds/stern.gif", "", 15, "", 15, 10, 2633-loopMargin, 8);
+		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/stern.gif")
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2633-loopMargin, 8);
+	} else if (info.manufacturer == "Capcom") {
+		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/capcom.gif")
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 1766-loopMargin, 8);
 	} else {
 		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000, 8);
 	}
 	
 	// Game name
-	var name = info.title.trim();
-	var subname = "";
-	if (name.indexOf('(') != -1) {
-		var sep = info.title.indexOf('(');
-		name = info.title.slice(0, sep - 1).trim();
-	}
-	if (name.length >= 16) {
-		var split = 16;
-		for (i = 15; i > 0; i--) {
-			if (name.charCodeAt(i) == 32) {
-				subname = name.slice(i).trim();
-				name = name.slice(0, i).trim();
+	var hasTitle = false;
+	if (rom.dofRom != null) {
+		var extensions = [".png", ".gif", ".avi"];
+		for (var i = 0; i < extensions.length; i++) {
+			if (fso.FileExists("./Scripts/titles/" + rom.dofRom + extensions[i])) {
+				let id = udmd.RegisterVideo(0, false, "./Scripts/titles/" + rom.dofRom + extensions[i])
+				udmd.DisplayScene00(id.toString(), "", 15, "", 15, 0, 5000, 8);
+				hasTitle = true;
 				break;
 			}
 		}
 	}
-	udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", name, 15, subname, 15, 0, 5000, 8);
+	if (!hasTitle) {
+		var name = info.title.trim();
+		var subname = "";
+		if (name.indexOf('(') != -1) {
+			var sep = info.title.indexOf('(');
+			name = info.title.slice(0, sep - 1).trim();
+		}
+		if (name.length >= 16) {
+			var split = 16;
+			for (i = 15; i > 0; i--) {
+				if (name.charCodeAt(i) == 32) {
+					subname = name.slice(i).trim();
+					name = name.slice(0, i).trim();
+					break;
+				}
+			}
+		}
+		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", name, 15, subname, 15, 0, 5000, 8);
+	}
 
 	// Stats
 	if (info.rating >= 0)
@@ -189,9 +260,6 @@ mainWindow.on("prelaunch", event => {
 	dmd.Run = false;
 	logfile.log("> launch", event.commandId);
 	logfile.log(getMethods(event).join("\n"));
-	if (event.command == command.CaptureGo || event.command == command.BatchCaptureGo) {
-		// TODO tells the DMD not to render during capture on 2 screen setup
-	}
 });
 
 mainWindow.on("postlaunch", event => {

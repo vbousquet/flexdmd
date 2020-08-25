@@ -22,4 +22,4 @@ copy FlexDMDUI\bin\Release\FlexDMDUI.exe Build\FlexDMDUI.exe
 copy FlexDMD\bin\Release\ILMerge\FlexDMD.dll Build\FlexDMD.dll
 copy FlexUDMD\bin\Release\FlexUDMD.dll Build\FlexUDMD.dll
 copy FlexDMD.log.config Build\FlexDMD.log.config
-powershell.exe -nologo -noprofile -command "Compress-Archive -CompressionLevel Optimal -Path Build\Flex*.* -DestinationPath Build\FlexDMD.zip"
+powershell.exe -nologo -noprofile -command "Compress-Archive -CompressionLevel Optimal -Path Build\Flex*.*, .\Scripts -DestinationPath Build\FlexDMD.zip"

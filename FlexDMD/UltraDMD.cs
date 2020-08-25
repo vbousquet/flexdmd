@@ -90,6 +90,13 @@ namespace UltraDMD
                             v.Alignment = vp.Alignment;
                             return v;
                         }
+                        else if (actor != null && actor is GIFImage gif)
+                        {
+                            gif.Loop = vp.Loop;
+                            gif.Scaling = vp.Scaling;
+                            gif.Alignment = vp.Alignment;
+                            return gif;
+                        }
                     }
                     else if (preload is ImageSequenceDef ai)
                     {
@@ -240,7 +247,6 @@ namespace UltraDMD
 
         public int RegisterVideo(int videoStretchMode, bool loop, string videoFilename)
         {
-            var id = _nextId;
             var v = new VideoDef { Loop = loop, VideoFilename = videoFilename };
             switch (videoStretchMode)
             {
@@ -261,6 +267,15 @@ namespace UltraDMD
                     v.Alignment = Alignment.Bottom;
                     break;
             }
+
+            foreach (KeyValuePair<int, object> pair in _preloads)
+            {
+                if (EqualityComparer<object>.Default.Equals(pair.Value, v))
+                {
+                    return pair.Key;
+                }
+            }
+            var id = _nextId;
             _preloads[id] = v;
             _nextId++;
             return id;
