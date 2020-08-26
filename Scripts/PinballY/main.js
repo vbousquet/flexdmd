@@ -1,17 +1,17 @@
 /*
-	Custom DMD screen script
-
-	- Check for PinballY updates and display if any on the main screen
-	- Shows informations on the selected game (more or less the same than PinballY) using custom medias (animated company logo, table title screen)
-	- Shows image/video from the 'titles' subfolder if they match the DOF rom name of the table
+	Custom DMD screen script that shows informations on the selected game (more or less the same than PinballY) using custom medias (animated company logo, table title screen):
+	
+	- Shows image/video from the 'dmds/manufacturers' subfolder (hardcoded in the script)
+	- Shows image/video from the 'dmds/titles' subfolder if they match the media name of the table
 	- Shows highscores
 	- Shows statistics
+	- Can check for PinballY updates and display if any on the main screen (disabled by default)
 
 	TODO:
 	- GameName can not be modified for some reason to be understood
-	- Missing Midway logo animation
+	- Missing Midway, Spooky Pinball, Jersey Jack Pinball logo animations
 	- Missing animated logo for original tables
-	- Move to FlexDMD API instead of UltraDMD when PinballY will fully marshall COM objects
+	- Move to FlexDMD API instead of UltraDMD when PinballY will fully marshall COM objects, and add more fancy animations
 */
 
 
@@ -80,6 +80,14 @@ Number.prototype.toDDHHMMSS = function () {
     return days+"d "+hours+':'+minutes+':'+seconds;
 }
 
+// Play a video, without looping, adapting to the actual length of the video
+function queueVideo(filename, transitionIn, transitionOut, transitionMargin) {
+	let video = dmd.NewVideo("", String(filename));
+	let id = udmd.RegisterVideo(2, false, filename);
+	udmd.DisplayScene00(id.toString(), "", 15, "", 15, transitionIn, video.Length * 1000 - transitionMargin, transitionOut);
+}
+
+// Handle DMD updates
 let dmd = createAutomationObject("FlexDMD.FlexDMD");
 let udmd = dmd.NewUltraDMD();
 dmd.GameName = "";
@@ -87,19 +95,26 @@ dmd.Width = 128;
 dmd.Height = 32;
 dmd.Show = true;
 dmd.Run = true;
-// logfile.log(getMethods(dmd).join("\n"));
-
-
-// Handle DMD updates
 var hiscores = {};
 let info = null;
 let shownInfo = null;
 let loopCount = 0;
 let fso = createAutomationObject("Scripting.FileSystemObject");
+var manufacturers = {
+	"Bally": ["./Scripts/dmds/manufacturers/bally.gif"],
+	"Capcom": ["./Scripts/dmds/manufacturers/capcom.gif"],
+	"Data East": ["./Scripts/dmds/manufacturers/dataeast-1.gif", "./Scripts/dmds/manufacturers/dataeast-2.gif"],
+	"Gottlieb": ["./Scripts/dmds/manufacturers/gottlieb.gif"],
+	"Midway": ["./Scripts/dmds/manufacturers/bally.gif"],
+	"Premier": ["./Scripts/dmds/manufacturers/premier.gif"],
+	"Sega": ["./Scripts/dmds/manufacturers/sega.gif"],
+	"Stern": ["./Scripts/dmds/manufacturers/stern.gif"],
+	"Williams": ["./Scripts/dmds/manufacturers/williams.gif"]
+}
+// logfile.log(getMethods(dmd).join("\n"));
 function UpdateDMD() {
-	if (info == null || udmd.IsRendering()) return;
+	if (info == null || (udmd.IsRendering() && info === shownInfo)) return;
 
-	var i;
 	let rom = info.resolveROM();
 	if (shownInfo == null || shownInfo.id != info.id) {
 		logfile.log("> Update DMD for:");
@@ -119,51 +134,24 @@ function UpdateDMD() {
 		// dmd.GameName = rom.vpmRom.toString();
 	}
 	udmd.CancelRendering();
-	
+
 	// Manufacturer
-	let loopMargin = (20 * 1000) / 60;
-	if (info.manufacturer == "Williams") {
-		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/williams.gif")
-		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 5633-loopMargin, 8);
-	} else if (info.manufacturer == "Premier") {
-		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/premier.gif")
-		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2660-loopMargin, 8);
-	} else if (info.manufacturer == "Gottlieb") {
-		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/gottlieb.gif")
-		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 3000-loopMargin, 8);
-	} else if (info.manufacturer == "Bally" || info.manufacturer == "Midway") {
-		// Missing: Midway
-		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/bally.gif")
-		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 3199-loopMargin, 8);
-	} else if (info.manufacturer == "Data East") {
-		if (Math.random() < 0.5) {
-			let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/dataeast-1.gif")
-			udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2766-loopMargin, 8);
-		} else {
-			let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/dataeast-2.gif")
-			udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2799-loopMargin, 8);
-		}
-	} else if (info.manufacturer == "Sega") {
-		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/sega.gif")
-		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2733-loopMargin, 8);
-	} else if (info.manufacturer == "Stern") {
-		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/stern.gif")
-		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 2633-loopMargin, 8);
-	} else if (info.manufacturer == "Capcom") {
-		let id = udmd.RegisterVideo(0, false, "./Scripts/dmds/capcom.gif")
-		udmd.DisplayScene00(id.toString(), "", 15, "", 15, 10, 1766-loopMargin, 8);
-	} else {
+	let transitionMargin = (20 * 1000) / 60;
+	if (info.manufacturer in manufacturers) {
+		var medias = manufacturers[info.manufacturer];
+		var media = medias[Math.floor(Math.random() * medias.length)];
+		queueVideo(media, 10, 8, transitionMargin);
+	} else if (info.manufacturer !== undefined) {
 		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000, 8);
 	}
 	
-	// Game name
+	// Title
 	var hasTitle = false;
-	if (rom.dofRom != null) {
-		var extensions = [".png", ".gif", ".avi"];
+	if (info.mediaName != null) {
+		var extensions = [".gif", ".avi", ".png"];
 		for (var i = 0; i < extensions.length; i++) {
-			if (fso.FileExists("./Scripts/titles/" + rom.dofRom + extensions[i])) {
-				let id = udmd.RegisterVideo(0, false, "./Scripts/titles/" + rom.dofRom + extensions[i])
-				udmd.DisplayScene00(id.toString(), "", 15, "", 15, 0, 5000, 8);
+			if (fso.FileExists("./Scripts/dmds/titles/" + info.mediaName + extensions[i])) {
+				queueVideo("./Scripts/dmds/titles/" + info.mediaName + extensions[i], 0, 8, transitionMargin);
 				hasTitle = true;
 				break;
 			}
@@ -178,7 +166,7 @@ function UpdateDMD() {
 		}
 		if (name.length >= 16) {
 			var split = 16;
-			for (i = 15; i > 0; i--) {
+			for (var i = 15; i > 0; i--) {
 				if (name.charCodeAt(i) == 32) {
 					subname = name.slice(i).trim();
 					name = name.slice(0, i).trim();
@@ -197,8 +185,9 @@ function UpdateDMD() {
 
 	// Insert Coin (every 4 loops)
 	if (((loopCount + 0) & 3) == 0) {
-		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 10, 1399, 14);
-		udmd.DisplayScene00("./Scripts/dmds/insertcoin.gif", "", 15, "", 15, 14, 1399, 14);
+		queueVideo("./Scripts/dmds/misc/insertcoin.gif", 10, 14, 0);
+		udmd.DisplayScene00("./Scripts/dmds/misc/insertcoin.gif", "", 15, "", 15, 10, 1399, 14);
+		udmd.DisplayScene00("./Scripts/dmds/misc/insertcoin.gif", "", 15, "", 15, 14, 1399, 14);
 	}
 
 	// Global stats (every 4 loops)
@@ -206,7 +195,7 @@ function UpdateDMD() {
 		var totalCount = 0;
 		var totalTime = 0;
 		var nGames = gameList.getGameCount();
-		for (i = 0; i < nGames; i++) {
+		for (var i = 0; i < nGames; i++) {
 			var inf = gameList.getGame(i);
 			totalCount += inf.playCount;
 			totalTime += inf.playTime;
@@ -217,11 +206,9 @@ function UpdateDMD() {
 	
 	// Drink'n drive (every 4 loops)
 	if (((loopCount + 2) & 3) == 0) {
-		udmd.DisplayScene00("./Scripts/dmds/drink'n drive.png", "", 15, "", 15, 10, 3000, 8);
+		udmd.DisplayScene00("./Scripts/dmds/misc/drink'n drive.png", "", 15, "", 15, 10, 3000, 8);
 	}
 	
-	// udmd.DisplayScene00("FlexDMD.Resources.dmds.bsmt2000.gif", "", 15, "", 15, 10, 2499, 8);
-
 	// Highscores
 	if (hiscores[info.id] != null) {
 		udmd.ScrollingCredits("", hiscores[info.id].join("|"), 15, 14, 2800 + hiscores[info.id].length * 400, 14);
@@ -231,20 +218,21 @@ function UpdateDMD() {
 	shownInfo = info;
 }
 
+UpdateDMD();
 let updater = setInterval(UpdateDMD, 1000);
 
 gameList.on("gameselect", event => {
 	clearInterval(updater);
 	info = event.game;
 	udmd.CancelRendering();
+	UpdateDMD();
 	updater = setInterval(UpdateDMD, 1000);
 });
 
 gameList.on("highscoresready", event => {
 	if (event.success && event.game != null) {
 		logfile.log("> scores received");
-		var i;
-		for (i = 0; i < event.scores.length; i++) {
+		for (var i = 0; i < event.scores.length; i++) {
 			event.scores[i] = event.scores[i].replace(/\u00FF/g, ',');
 		}
 		hiscores[event.game.id] = event.scores;
