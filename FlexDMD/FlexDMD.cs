@@ -57,8 +57,32 @@ namespace FlexDMD
         public IGroupActor NewGroup(string name) { var g = new Group() { Name = name }; return g; }
         public IFrameActor NewFrame(string name) { var g = new Frame() { Name = name }; return g; }
         public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
-        public IVideoActor NewVideo(string name, string video) { var g = (IVideoActor)ResolveImage(video); g.Name = name; return g; }
-        public IImageActor NewImage(string name, string image) { var g = (IImageActor)ResolveImage(image); g.Name = name; return g; }
+        public IVideoActor NewVideo(string name, string video)
+        {
+            var g = ResolveImage(video);
+            if (g == null || !(g is IVideoActor videoActor))
+            {
+                return null;
+            }
+            else
+            {
+                videoActor.Name = name;
+                return videoActor;
+            }
+        }
+        public IImageActor NewImage(string name, string image)
+        {
+            var g = (IImageActor)ResolveImage(image);
+            if (g == null || !(g is IImageActor imageActor))
+            {
+                return null;
+            }
+            else
+            {
+                imageActor.Name = name;
+                return imageActor;
+            }
+        }
         public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => AssetManager.Load<Font>(new FontDef(font, tint, borderTint, borderSize)).Load();
         public IUltraDMD NewUltraDMD() => new UltraDMD.UltraDMD(this);
 
@@ -284,7 +308,7 @@ namespace FlexDMD
                 LogManager.Configuration = new XmlLoggingConfiguration(logConfigPath, true);
                 LogManager.ReconfigExistingLoggers();
             }
-            
+
             log.Info("FlexDMD version {0}", assembly.GetName().Version);
         }
 

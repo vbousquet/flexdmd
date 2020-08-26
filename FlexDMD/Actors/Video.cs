@@ -102,6 +102,8 @@ namespace FlexDMD
 
         public Alignment Alignment { get; set; } = Alignment.Center;
 
+        public float Length { get => _length; }
+
         public override bool InStage
         {
             get => _inStage;

@@ -187,6 +187,7 @@ namespace FlexDMD
         // Video interface
         Scaling Scaling { get; set; }
         Alignment Alignment { get; set; }
+        float Length { get; }
     }
 
     [Guid("A8AAD77F-4F01-433B-B653-B6F14234F4F2"), ComVisible(true)]

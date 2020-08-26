@@ -20,7 +20,7 @@ using System.Drawing.Imaging;
 
 namespace FlexDMD
 {
-    class GIFImage : AnimatedActor
+    class GIFImage : AnimatedActor, IVideoActor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private int _pos = 0;
@@ -58,6 +58,8 @@ namespace FlexDMD
         public override float PrefWidth { get => _image.Width; }
 
         public override float PrefHeight { get => _image.Height; }
+
+        public float Length { get => _length; }
 
         protected override void Rewind()
         {
