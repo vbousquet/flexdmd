@@ -9,7 +9,7 @@
 
 	TODO:
 	- GameName can not be modified for some reason to be understood
-	- Missing Midway, Spooky Pinball, Jersey Jack Pinball logo animations
+	- Missing Midway, Spooky Pinball logo animation
 	- Missing animated logo for original tables
 	- Move to FlexDMD API instead of UltraDMD when PinballY will fully marshall COM objects, and add more fancy animations
 */
@@ -18,6 +18,8 @@
 // Check for a new version of PinballY on each launch (default is false to limit the load on PinballY's servers)
 let checkPinballYUpdate = false;
 
+// Delay in seconds before starting the DMD (useful for low end systems to avoid starting everything together)
+let delay = 0;
 
 
 
@@ -82,25 +84,21 @@ Number.prototype.toDDHHMMSS = function () {
 
 // Play a video, without looping, adapting to the actual length of the video
 function queueVideo(filename, transitionIn, transitionOut, transitionMargin) {
-	let video = dmd.NewVideo("", String(filename));
+	let video = dmd.NewVideo(String(filename), String(filename));
 	let id = udmd.RegisterVideo(2, false, filename);
 	udmd.DisplayScene00(id.toString(), "", 15, "", 15, transitionIn, video.Length * 1000 - transitionMargin, transitionOut);
 }
 
 // Handle DMD updates
-let dmd = createAutomationObject("FlexDMD.FlexDMD");
-let udmd = dmd.NewUltraDMD();
-dmd.GameName = "";
-dmd.Width = 128;
-dmd.Height = 32;
-dmd.Show = true;
-dmd.Run = true;
-var hiscores = {};
+let dmd = null;
+let udmd = null;
+let hiscores = {};
 let info = null;
 let shownInfo = null;
 let loopCount = 0;
 let fso = createAutomationObject("Scripting.FileSystemObject");
-var manufacturers = {
+let updater;
+let manufacturers = {
 	"Bally": ["./Scripts/dmds/manufacturers/bally.gif"],
 	"Capcom": ["./Scripts/dmds/manufacturers/capcom.gif"],
 	"Data East": ["./Scripts/dmds/manufacturers/dataeast-1.gif", "./Scripts/dmds/manufacturers/dataeast-2.gif"],
@@ -111,12 +109,55 @@ var manufacturers = {
 	"Stern": ["./Scripts/dmds/manufacturers/stern.gif"],
 	"Williams": ["./Scripts/dmds/manufacturers/williams.gif"]
 }
+if (delay > 0) setTimeout(function() { delay = 0; UpdateDMD(); }, delay * 1000);
 // logfile.log(getMethods(dmd).join("\n"));
+function TestMarshalling() {
+	dmd.LockRenderThread();
+	let video = dmd.NewVideo("Manufacturer", "./Scripts/dmds/manufacturers/bally.gif");
+	logfile.log(getMethods(video).join("\n"));
+	// This will fail due to a marshalling problem
+	dmd.Stage.AddActor(video);
+	dmd.UnlockRenderThread();
+}
 function UpdateDMD() {
-	if (info == null || (udmd.IsRendering() && info === shownInfo)) return;
+	if (updater !== undefined) clearTimeout(updater);
+	updater = undefined;
 
-	let rom = info.resolveROM();
-	if (shownInfo == null || shownInfo.id != info.id) {
+	if (delay > 0) return;
+
+	if (dmd == null) {
+		dmd = createAutomationObject("FlexDMD.FlexDMD");
+		dmd.GameName = "";
+		dmd.Width = 128;
+		dmd.Height = 32;
+		dmd.Show = true;
+		dmd.Run = true;
+		udmd = dmd.NewUltraDMD();
+	}
+	
+	if (dmd.Run == false) return;
+
+	if (info == null) return;
+
+	if (udmd.IsRendering() && shownInfo != null && info.id == shownInfo.id) {
+		// Add a timeout later for when the render queue will be finished
+		updater = setTimeout(UpdateDMD, 1000);
+		return;
+	}
+	
+	dmd.LockRenderThread();
+
+	if (shownInfo == null || info.id != shownInfo.id) {
+		loopCount = 0;
+		shownInfo = info;
+	} else {
+		loopCount++;
+	}			
+
+	udmd.CancelRendering();
+
+	if (loopCount == 0) {
+		/*let rom = info.resolveROM();
 		logfile.log("> Update DMD for:");
 		logfile.log("> rom: '".concat(rom.vpmRom, "'"));
 		logfile.log("> manufacturer:", info.manufacturer);
@@ -124,16 +165,12 @@ function UpdateDMD() {
 		logfile.log("> year:", info.year);
 		logfile.log("> Table type: ", info.tableType);
 		logfile.log("> Highscore style: ", info.highScoreStyle);
-		loopCount = 0;
-	} else {
-		loopCount++;
+		if (rom.vpmRom == null) {
+			dmd.GameName = "";
+		} else {
+			dmd.GameName = rom.vpmRom.toString();
+		}*/
 	}
-	if (rom.vpmRom == null) {
-		dmd.GameName = "";
-	} else {
-		// dmd.GameName = rom.vpmRom.toString();
-	}
-	udmd.CancelRendering();
 
 	// Manufacturer
 	let transitionMargin = (20 * 1000) / 60;
@@ -214,22 +251,21 @@ function UpdateDMD() {
 		udmd.ScrollingCredits("", hiscores[info.id].join("|"), 15, 14, 2800 + hiscores[info.id].length * 400, 14);
 	}
 	
+	dmd.UnlockRenderThread();
 	logfile.log("< Update DMD done");
-	shownInfo = info;
+
+	// Add a timeout for when the queue will be finished
+	updater = setTimeout(UpdateDMD, 10000);
 }
 
-UpdateDMD();
-let updater = setInterval(UpdateDMD, 1000);
-
 gameList.on("gameselect", event => {
-	clearInterval(updater);
+	logfile.log("> gameselect");
 	info = event.game;
-	udmd.CancelRendering();
 	UpdateDMD();
-	updater = setInterval(UpdateDMD, 1000);
 });
 
 gameList.on("highscoresready", event => {
+	logfile.log("> highscoresready");
 	if (event.success && event.game != null) {
 		logfile.log("> scores received");
 		for (var i = 0; i < event.scores.length; i++) {
@@ -243,14 +279,15 @@ gameList.on("highscoresready", event => {
 });
 
 mainWindow.on("prelaunch", event => {
-	clearInterval(updater);
-	udmd.CancelRendering();
-	dmd.Run = false;
-	logfile.log("> launch", event.commandId);
-	logfile.log(getMethods(event).join("\n"));
+	logfile.log("> launch");
+	if (dmd != null) {
+		udmd.CancelRendering();
+		dmd.Run = false;
+	}
 });
 
 mainWindow.on("postlaunch", event => {
-	dmd.Run = true;
-	updater = setInterval(UpdateDMD, 1000);
+	logfile.log("> postlaunch");
+	if (dmd != null) dmd.Run = true;
+	UpdateDMD();
 });
