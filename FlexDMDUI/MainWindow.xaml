@@ -65,7 +65,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Label x:Name="installLocationLabel" Grid.Column="0" Content="Install folder: C:\xx"/>
-                                <Button Content="Select Install Folder..." Grid.Column="1" HorizontalAlignment="Right" Click="OnSelectInstallFolder"/>
+                                <Button Content="Select Install Folder..." Grid.Column="1" Width ="145" HorizontalAlignment="Right" Click="OnSelectInstallFolder"/>
                             </Grid>
                             <StackPanel Orientation="Horizontal" >
                                 <Image x:Name="flexDMDDllInstallImage" Source="Resources/check.png" Width="16" Height="16" Margin="10,0,0,0"/>
@@ -83,10 +83,12 @@
                                 <ColumnDefinition Width="32"/>
                                 <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
                             <Image x:Name="flexDMDInstallImage" Grid.Column="0" Source="Resources/check.png" Width="16" Height="16" Margin="10,0,0,0" HorizontalAlignment="Left"/>
                             <Label x:Name="flexDMDInstallLabel" Grid.Column="1" Content="FlexDMD is registered and ready to run." HorizontalAlignment="Left"/>
-                            <Button x:Name="registerFlexDMDBtn" Grid.Column="2" Content="Unregister" HorizontalAlignment="Right" Click="OnRegisterFlex"/>
+                            <Button x:Name="unregisterFlexDMDBtn" Grid.Column="2" Content="Unregister" Width="65" HorizontalAlignment="Right" Click="OnUnregisterFlex"/>
+                            <Button x:Name="registerFlexDMDBtn" Grid.Column="3" Content="Register" Width="65" HorizontalAlignment="Right" Click="OnRegisterFlex"/>
                         </Grid>
                     </GroupBox>
                     <GroupBox Header="UltraDMD" Margin="10,0,10,10">
@@ -95,10 +97,12 @@
                                 <ColumnDefinition Width="32"/>
                                 <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
                             <Image x:Name="ultraDMDInstallImage" Grid.Column="0" Source="Resources/check.png" Width="16" Height="16" Margin="10,0,0,0" HorizontalAlignment="Left"/>
                             <Label x:Name="ultraDMDInstallLabel" Grid.Column="1" Content="FlexDMD is also registered as UltraDMD."/>
-                            <Button x:Name="registerUltraDMDBtn" Grid.Column="2" Content="Unregister" HorizontalAlignment="Right" Click="OnRegisterUltra"/>
+                            <Button x:Name="unregisterUltreDMDBtn" Grid.Column="2" Content="Unregister" Width="65" HorizontalAlignment="Right" Click="OnUnregisterUltra"/>
+                            <Button x:Name="registerUltraDMDBtn" Grid.Column="3" Content="Register" Width="65" HorizontalAlignment="Right" Click="OnRegisterUltra"/>
                         </Grid>
                     </GroupBox>
                 </StackPanel>
@@ -202,7 +206,7 @@
                         </FlowDocument>
                     </RichTextBox>
                     <ScrollViewer Grid.ColumnSpan="4" Grid.Row="1" Margin="10,0,10,0">
-                        <TextBox x:Name="flexDMDScriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" Text="Dim UltraDMD&#xA;Set UltraDMD= FlexDMD.NewUltraDMD()&#xA;UltraDMD.DisplayScene00 &quot;&quot;, &quot;Fade In / Out&quot;, 15, &quot;..&quot;, 15, 0, 1000, 1&#xA;"/>
+                        <TextBox x:Name="flexDMDScriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" Text="Dim font&#xD;&#xA;Set font = FlexDMD.NewFont(&quot;FlexDMD.Resources.teeny_tiny_pixls-5.fnt&quot;, vbWhite, vbWhite, 0)&#xD;&#xA;&#xD;&#xA;Dim scene1&#xD;&#xA;Set scene1 = FlexDMD.NewGroup(&quot;Scene 1&quot;)&#xD;&#xA;scene1.AddActor FlexDMD.NewImage(&quot;Back&quot;, &quot;FlexDMD.Resources.dmds.black.png&quot;)&#xD;&#xA;scene1.AddActor FlexDMD.NewLabel(&quot;Label&quot;, font, &quot;Welcome to FlexDMD&quot;)&#xD;&#xA;scene1.GetLabel(&quot;Label&quot;).SetAlignedPosition 64, 16, 4&#xD;&#xA;&#xD;&#xA;Dim scene2&#xD;&#xA;Set scene2 = FlexDMD.NewGroup(&quot;Scene 2&quot;)&#xD;&#xA;scene2.AddActor FlexDMD.NewImage(&quot;Back&quot;, &quot;FlexDMD.Resources.dmds.black.png&quot;)&#xD;&#xA;scene2.AddActor FlexDMD.NewLabel(&quot;Label&quot;, font, &quot;Enjoy!&quot;)&#xD;&#xA;scene2.GetLabel(&quot;Label&quot;).SetAlignedPosition 64, 16, 4&#xD;&#xA;&#xD;&#xA;Dim sequence&#xD;&#xA;Set sequence = FlexDMD.NewGroup(&quot;Sequence&quot;)&#xD;&#xA;sequence.SetSize 128, 32&#xD;&#xA;Set af = sequence.ActionFactory&#xD;&#xA;Set list = af.Sequence()&#xD;&#xA;list.Add af.AddChild(scene1)&#xD;&#xA;list.Add af.Wait(5)&#xD;&#xA;list.Add af.RemoveChild(scene1)&#xD;&#xA;list.Add af.AddChild(scene2)&#xD;&#xA;list.Add af.Wait(5)&#xD;&#xA;list.Add af.RemoveChild(scene2)&#xD;&#xA;sequence.AddAction af.Repeat(list, -1)&#xD;&#xA;&#xD;&#xA;FlexDMD.LockRenderThread&#xD;&#xA;FlexDMD.Stage.RemoveAll&#xD;&#xA;FlexDMD.Stage.AddActor sequence&#xD;&#xA;FlexDMD.UnlockRenderThread&#xD;&#xA;"/>
                     </ScrollViewer>
                     <Button Grid.Row="2" Grid.Column="2" Margin="10,10,10,10" Width="150" Click="OnStopDMDScript" HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Windows;
+using Trinet.Core.IO.Ntfs;
 
 namespace FlexDMDUI
 {
@@ -65,13 +66,24 @@ namespace FlexDMDUI
             switch (command)
             {
                 case "/register":
+                    UnblockDll(Path.Combine(path, @"FlexDMD.dll"));
+                    UnblockDll(Path.Combine(path, @"dmddevice.dll"));
+                    UnblockDll(Path.Combine(path, @"dmddevice64.dll"));
                     RegisterAssembly(path, "FlexDMD.dll", true);
                     break;
                 case "/register-udmd":
+                    UnblockDll(Path.Combine(path, @"FlexUDMD.dll"));
                     RegisterAssembly(path, "FlexUDMD.dll", true);
                     break;
             }
             Environment.Exit(0);
+        }
+
+        [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
+        private static void UnblockDll(string path)
+        {
+            FileInfo file = new FileInfo(path);
+            if (file.Exists) file.DeleteAlternateDataStream("Zone.Identifier");
         }
 
         [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Security.Permissions;
 using System.Threading;
 using System.Windows;
@@ -14,6 +15,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Trinet.Core.IO.Ntfs;
 
 namespace FlexDMDUI
 {
@@ -92,83 +94,6 @@ namespace FlexDMDUI
                 Registry.CurrentUser.CreateSubKey("Software")?.CreateSubKey("UltraDMD")?.SetValue("fullcolor", "True");
             }
 
-            /*            scriptTextBox.Text =
-            @"' Demo script
-
-            Public Sub FlexDemo()
-                ' Use DMD object for FlexDMD or UDMD object for UltraDMD
-                DMD.GameName = NULL
-                DMD.GameName = ""ft""
-
-                Set font = DMD.NewFont(""FlexDMD.Resources.teeny_tiny_pixls-5.fnt"", 1.0, -1.0)
-
-                Set scene1 = DMD.NewGroup(""Scene 1"")
-                scene1.AddActor DMD.NewImage(""Diablo"", ""Diablo.UltraDMD/black.jpg"")
-                scene1.AddActor DMD.NewLabel(""Label"", font, ""Test"")
-                scene1.GetLabel(""Label"").SetAlignedPosition 64, 16, 4
-
-                Set scene2 = DMD.NewGroup(""Scene 2"")
-                scene2.AddActor DMD.NewVideo(""Video"", ""Diablo.UltraDMD/act1.wmv"")
-
-                Set sequence = DMD.NewGroup(""Sequence"")
-                sequence.SetSize 128, 32
-                Set af = sequence.ActionFactory
-                Set list = af.Sequence()
-                list.Add af.AddChild(scene1)
-                list.Add af.Wait(5)
-                list.Add af.RemoveChild(scene1)
-                list.Add scene2.GetVideo(""Video"").ActionFactory.Seek(0)
-                list.Add af.AddChild(scene2)
-                list.Add af.Wait(5)
-                list.Add af.RemoveChild(scene2)
-                sequence.AddAction af.Repeat(list, -1)
-
-                DMD.LockRenderThread
-                DMD.Stage.RemoveAll
-                DMD.Stage.AddActor sequence
-                DMD.UnlockRenderThread
-            End Sub
-
-            ' Check that FlexDMD renders the same as UltraDMD
-            Public Sub CompareUltraFlex()
-                ' Animations :
-                '  FadeIn = 0, // Fade from black to scene
-                '  FadeOut = 1, // Fade from scene to black
-                '  ZoomIn = 2, // zoom from a centered small dmd to full size [Not supported yet]
-                '  ZoomOut = 3, // zoom from a full sized dmd to an oversize one [Not supported yet]
-                '  ScrollOffLeft = 4,
-                '  ScrollOffRight = 5,
-                '  ScrollOnLeft = 6,
-                '  ScrollOnRight = 7,
-                '  ScrollOffUp = 8,
-                '  ScrollOffDown = 9,
-                '  ScrollOnUp = 10,
-                '  ScrollOnDown = 11,
-                '  FillFadeIn = 12, // fade from black to white (the scene won't be seen)
-                '  FillFadeOut = 13, // fade from white to black (the scene won't be seen)
-                '  None = 14
-                UDMD.DisplayScene00 """", ""Fade In / Out"", 15, "".."", 15, 0, 1000, 1
-                UDMD.DisplayScene00 """", ""Scroll On/Off Right"", 15, ""..."", 15, 7, 1000, 5
-                UDMD.DisplayScene00 """", ""Scroll On/Off Left"", 15, ""..."", 15, 6, 1000, 4
-                UDMD.DisplayScene00 """", ""Scroll On/Off Down"", 15, ""..."", 15, 11, 1000, 9
-                UDMD.DisplayScene00 """", ""Scroll On/Off Up"", 15, ""..."", 15, 10, 1000, 8
-                UDMD.DisplayScene00 """", ""Fill Fade In / Out"", 15, "".."", 15, 12, 1000, 13
-
-                ' Scrolling text scene
-                UDMD.DisplayScene01 """", """", ""Scrolling Text"", 5, 15, 14, 5000, 14
-
-                ' Scrolling credits scene
-                UDMD.ScrollingCredits """", ""Scrolling|Credits||Multiple|lines|of text"", 15, 14, 5000, 14
-            End Sub
-
-            If FlexDMDMode And UltraDMDMode Then
-                CompareUltraFlex()
-            ElseIf FlexDMDMode Then
-                FlexDemo()
-            Else
-                UDMD.DisplayScene00 """", ""UltraDMD"", 15, ""."", 15, 14, 1000, 14
-            End If
-            "; */
             var flexPath = GetComponentLocation(flexDMDclsid);
             if (flexPath != null)
             {
@@ -212,59 +137,130 @@ namespace FlexDMDUI
         public void UpdateInstallPane()
         {
             installLocationLabel.Content = "Install location: " + _installPath;
-            if (File.Exists(Path.Combine(_installPath, @"FlexDMD.dll")))
-            {
-                flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
-                flexDMDDllInstallLabel.Content = "FlexDMD.dll was found in the provided location.";
-            }
-            else
+            var flexDmdPath = Path.Combine(_installPath, @"FlexDMD.dll");
+            var flexUDmdPath = Path.Combine(_installPath, @"FlexUDMD.dll");
+            var dmdDevicePath = Path.Combine(_installPath, @"dmddevice.dll");
+            var dmdDevice64Path = Path.Combine(_installPath, @"dmddevice64.dll");
+            var uiVersion = (Assembly.GetExecutingAssembly().GetName().Version.Major << 16) | (Assembly.GetExecutingAssembly().GetName().Version.Minor);
+
+            // FlexDMD & FlexUDMD dlls (must exist at the given location, with matching versions, and up to date with regards to this installer)
+            if (!File.Exists(flexDmdPath))
             {
                 flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 flexDMDDllInstallLabel.Content = "FlexDMD.dll was not found. Check that you have entered the folder where you have placed this file.";
             }
-            if (File.Exists(Path.Combine(_installPath, @"dmddevice.dll")))
+            else if (!File.Exists(flexUDmdPath))
             {
-                dmdDeviceInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
-                dmdDeviceInstallLabel.Content = "DmdDevice.dll was found alongside FlexDMD.dll.";
+                flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDDllInstallLabel.Content = "FlexUDMD.dll was not found. Check that you have entered the folder where you have placed this file.";
+            }
+            else if (GetFileVersion(flexDmdPath) != GetFileVersion(flexUDmdPath))
+            {
+                flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDDllInstallLabel.Content = string.Format("FlexDMD.dll and FlexUDMD.dll have different versions: {0} vs {1}. Please reinstall matching files.", GetFileVersion(flexDmdPath), GetFileVersion(flexUDmdPath));
+            }
+            else if (GetFileMainVersion(flexDmdPath) < uiVersion)
+            {
+                flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDDllInstallLabel.Content = string.Format("FlexDMD.dll and FlexUDMD.dll are outdated version {0} instead of {1}. Please download updated files.", GetFileVersion(flexDmdPath), Assembly.GetExecutingAssembly().GetName().Version);
             }
             else
+            {
+                flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
+                flexDMDDllInstallLabel.Content = string.Format("FlexDMD.dll & FlexUDMD.dll {0} were found in the provided location.", GetFileVersion(flexDmdPath));
+            }
+
+            // DmdDevice & DmdDevice64 dlls (must exist at the given location, with matching 1.8+ version)
+            if (!File.Exists(dmdDevicePath))
             {
                 dmdDeviceInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 dmdDeviceInstallLabel.Content = "DmdDevice.dll was not found alongside FlexDMD.dll. No rendering will happen.";
             }
+            else if (!File.Exists(dmdDevice64Path))
+            {
+                dmdDeviceInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                dmdDeviceInstallLabel.Content = "DmdDevice64.dll was not found alongside FlexDMD.dll. 64 bit support will be missing (PinballY integration,...).";
+            }
+            else if (GetFileVersion(dmdDevicePath) != GetFileVersion(dmdDevice64Path))
+            {
+                flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDDllInstallLabel.Content = string.Format("DmdDevice.dll and DmdDevice64.dll have different versions: {0} vs {1}. Please reinstall matching files.", GetFileVersion(dmdDevicePath), GetFileVersion(dmdDevice64Path));
+            }
+            else if (GetFileMainVersion(dmdDevicePath) < 0x010008)
+            {
+                flexDMDDllInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDDllInstallLabel.Content = string.Format("DmdDevice.dll and DmdDevice64.dll are outdated (version {0}). Please download updated files.", GetFileVersion(dmdDevicePath));
+            }
+            else
+            {
+                dmdDeviceInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
+                dmdDeviceInstallLabel.Content = string.Format("DmdDevice.dll & DmdDevice64.dll {0} were found alongside FlexDMD.", GetFileVersion(dmdDevicePath));
+            }
 
+            // Install state: must have unblocked DLL, at the right install position, with a matching version between file and registry.
             var flexDMDinstall = GetComponentLocation(flexDMDclsid);
-            if (flexDMDinstall != null)
+            if (flexDMDinstall == null)
+            {
+                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDInstallLabel.Content = "FlexDMD is not registered and may not be used on your system. Click 'Register' to register it.";
+            }
+            else if (!flexDMDinstall.Equals(flexDmdPath, StringComparison.InvariantCultureIgnoreCase))
+            {
+                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDInstallLabel.Content = "Registered FlexDMD does not match your install path. Click 'Register' to fix it.";
+            }
+            else if (File.Exists(flexDmdPath) && IsDLLBlocked(flexDmdPath))
+            {
+                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDInstallLabel.Content = "FlexDMD dll is blocked. Click 'Register' to unblock it.";
+            }
+            else if (File.Exists(dmdDevicePath) && IsDLLBlocked(dmdDevicePath))
+            {
+                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDInstallLabel.Content = "DmdDevice.dll is blocked. Click 'Register' to unblock it.";
+            }
+            else if (File.Exists(dmdDevice64Path) && IsDLLBlocked(dmdDevice64Path))
+            {
+                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDInstallLabel.Content = "DmdDevice64.dll is blocked. Click 'Register' to unblock it.";
+            }
+            else if (!CheckRegisteredVersion(flexDMDclsid, GetFileVersion(flexDmdPath)))
+            {
+                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDInstallLabel.Content = "Invalid registered version of FlexDMD detected. Click 'Register' to fix it.";
+            }
+            else
             {
                 flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
                 flexDMDInstallLabel.Content = "FlexDMD is registered and ready to run.";
-                registerFlexDMDBtn.Content = "Unregister";
-            }
-            else
-            {
-                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
-                flexDMDInstallLabel.Content = "FlexDMD is not registered and may not be used on your system.";
-                registerFlexDMDBtn.Content = "Register";
             }
 
+            // Either deprecated UltraDMD.exe is registered or FlexUDMD with an unblocked DLL and a macthing version between registry and file
             var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
-            if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("FLEXUDMD.DLL"))
-            {
-                ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
-                ultraDMDInstallLabel.Content = "FlexDMD is registered to be used instead of UltraDMD.";
-                registerUltraDMDBtn.Content = "Unregister";
-            }
-            else if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("ULTRADMD.EXE"))
+            if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("ULTRADMD.EXE"))
             {
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexDMD is not registered to be used instead of UltraDMD (UltraDMD is registered though).";
-                registerUltraDMDBtn.Content = "Register";
             }
-            else
+            else if (ultraDMDinstall == null || !ultraDMDinstall.Equals(flexUDmdPath, StringComparison.InvariantCultureIgnoreCase))
             {
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexDMD is not registered to be used instead of UltraDMD.";
-                registerUltraDMDBtn.Content = "Register";
+            }
+            else if (File.Exists(flexUDmdPath) && IsDLLBlocked(flexUDmdPath))
+            {
+                ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                ultraDMDInstallLabel.Content = "FlexUDMD dll is blocked. Click 'Register' to unblock it.";
+            }
+            else if (!CheckRegisteredVersion(ultraDMDclsid, GetFileVersion(flexUDmdPath)))
+            {
+                ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                ultraDMDInstallLabel.Content = "Invalid registered version of FlexDMD's UltraDMD replacement detected. Click 'Register' to fix it.";
+            }
+            else
+            {
+                ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
+                ultraDMDInstallLabel.Content = "FlexDMD is registered to be used as an UltraDMD replacement.";
             }
         }
 
@@ -276,6 +272,99 @@ namespace FlexDMDUI
                         Registry.GetValue(@"HKEY_CLASSES_ROOT\CLSID\" + clsid + @"\LocalServer32", null, null);
             if (path != null) return new Uri(path.ToString()).LocalPath;
             return null;
+        }
+
+        private bool CheckRegisteredVersion(string clsid, string version)
+        {
+            //Assembly key has the following syntax:
+            //FlexDMD, Version=1.5.0.0, Culture=neutral, PublicKeyToken=7144ae60aec212e0
+            var asm32 = Registry.GetValue(@"HKEY_CLASSES_ROOT\CLSID\" + clsid + @"\InprocServer32", "Assembly", null);
+            var asm64 = Registry.GetValue(@"HKEY_CLASSES_ROOT\Wow6432Node\CLSID\" + clsid + @"\InprocServer32", "Assembly", null);
+            var asm32v = Registry.GetValue(@"HKEY_CLASSES_ROOT\CLSID\" + clsid + @"\InprocServer32\" + version, "Assembly", null);
+            var asm64v = Registry.GetValue(@"HKEY_CLASSES_ROOT\Wow6432Node\CLSID\" + clsid + @"\InprocServer32\" + version, "Assembly", null);
+            if (asm32 == null || asm64 == null || asm32v == null || asm64v == null) return false;
+            var asm = asm32.ToString();
+            if (!asm.Equals(asm64.ToString()) || !asm.Equals(asm32v.ToString()) || !asm.Equals(asm64v.ToString())) return false;
+            if (!asm.Contains("Version=" + version)) return false;
+            return true;
+        }
+
+        private bool IsDLLBlocked(string path)
+        {
+            FileInfo file = new FileInfo(path);
+            if (file.AlternateDataStreamExists("Zone.Identifier"))
+            {
+                AlternateDataStreamInfo s = file.GetAlternateDataStream("Zone.Identifier", FileMode.Open);
+                using (TextReader reader = s.OpenText())
+                {
+                    var zoneId = reader.ReadToEnd().ToUpperInvariant();
+                    return zoneId.Contains("ZONEID=3") || zoneId.Contains("ZONEID=4");
+                }
+            }
+            return false;
+        }
+
+        private string GetFileVersion(string path)
+        {
+            return FileVersionInfo.GetVersionInfo(path).FileVersion;
+        }
+
+        private int GetFileMainVersion(string path)
+        {
+            return (FileVersionInfo.GetVersionInfo(path).FileMajorPart << 16) | (FileVersionInfo.GetVersionInfo(path).FileMinorPart);
+        }
+
+        public void OnRegisterFlex(object sender, RoutedEventArgs e)
+        {
+            Register("/register \"" + _installPath + "\"");
+            UpdateInstallPane();
+        }
+
+        public void OnUnregisterFlex(object sender, RoutedEventArgs e)
+        {
+            Register("/unregister \"" + _installPath + "\"");
+            UpdateInstallPane();
+        }
+
+        public void OnRegisterUltra(object sender, RoutedEventArgs e)
+        {
+            Register("/register-udmd \"" + _installPath + "\"");
+            UpdateInstallPane();
+        }
+
+        public void OnUnregisterUltra(object sender, RoutedEventArgs e)
+        {
+            Register("/unregister-udmd \"" + _installPath + "\"");
+            UpdateInstallPane();
+        }
+
+        [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
+        private static Process Register(string command)
+        {
+            Process source = Process.GetCurrentProcess();
+            // Create a new process
+            Process target = new Process();
+            target.StartInfo = source.StartInfo;
+            target.StartInfo.FileName = source.MainModule.FileName;
+            target.StartInfo.WorkingDirectory = Path.GetDirectoryName(source.MainModule.FileName);
+            // Required for UAC to work
+            target.StartInfo.UseShellExecute = true;
+            target.StartInfo.Verb = "runas";
+            // Pass command
+            target.StartInfo.Arguments = command;
+            try
+            {
+                if (!target.Start())
+                    return null;
+            }
+            catch (Win32Exception e)
+            {
+                // Cancelled by user
+                if (e.NativeErrorCode == 1223)
+                    return null;
+                throw;
+            };
+            return target;
         }
 
         private void OnTabChanged(object sender, SelectionChangedEventArgs e)
@@ -413,54 +502,6 @@ namespace FlexDMDUI
         public void OnStopDMDScript(object sender, RoutedEventArgs e)
         {
             if (_testScript != null) _testScript.Interrupt();
-        }
-
-        public void OnRegisterFlex(object sender, RoutedEventArgs e)
-        {
-            if (GetComponentLocation(flexDMDclsid) != null)
-                Register("/unregister \"" + _installPath + "\"");
-            else
-                Register("/register \"" + _installPath + "\"");
-            UpdateInstallPane();
-        }
-
-        public void OnRegisterUltra(object sender, RoutedEventArgs e)
-        {
-            var ultraDMDinstall = GetComponentLocation(ultraDMDclsid);
-            if (ultraDMDinstall != null && ultraDMDinstall.ToUpperInvariant().EndsWith("FLEXUDMD.DLL"))
-                Register("/unregister-udmd \"" + _installPath + "\"");
-            else
-                Register("/register-udmd \"" + _installPath + "\"");
-            UpdateInstallPane();
-        }
-
-        [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
-        private static Process Register(string command)
-        {
-            Process source = Process.GetCurrentProcess();
-            // Create a new process
-            Process target = new Process();
-            target.StartInfo = source.StartInfo;
-            target.StartInfo.FileName = source.MainModule.FileName;
-            target.StartInfo.WorkingDirectory = Path.GetDirectoryName(source.MainModule.FileName);
-            // Required for UAC to work
-            target.StartInfo.UseShellExecute = true;
-            target.StartInfo.Verb = "runas";
-            // Pass command
-            target.StartInfo.Arguments = command;
-            try
-            {
-                if (!target.Start())
-                    return null;
-            }
-            catch (Win32Exception e)
-            {
-                // Cancelled by user
-                if (e.NativeErrorCode == 1223)
-                    return null;
-                throw;
-            };
-            return target;
         }
     }
 }
