@@ -12,13 +12,14 @@ namespace FlexDMDTest
             // dmd.DmdHeight = 128;
             dmd.Color = Color.Aqua;
             dmd.RenderMode = RenderMode.RGB;
+            dmd.Show = true;
             dmd.Run = true;
             var udmd = dmd.NewUltraDMD();
             // udmd.DisplayScene00("Diablo.UltraDMD/act1.wmv", " ", 15, "FREE PLAY", 15, 14, 5000, 14);
-            // dmd.DisplayScene00("Diablo.UltraDMD/act2.wmv", "SCENE", 0, "2", 0, 0, 1000, 0);
+            // udmd.DisplayScene00("Diablo.UltraDMD/act2.wmv", "SCENE", 0, "2", 0, 0, 1000, 0);
             // dmd.DisplayScene00("Diablo.UltraDMD/black.jpg", "SCENE", 0, "2", 0, 0, 1000, 0);
-            // dmd.DisplayScene00("Metal Slug.UltraDMD/Explosion.gif", "SCENE", 0, "2", 0, 0, 1000, 0);
-            // dmd.DisplayScene00("KISS.UltraDMD/scene16CROP.gif", "SCENE", 0, "2", 0, 0, 1000, 0);
+            // udmd.DisplayScene00("Metal Slug.UltraDMD/Explosion.gif", "SCENE", 0, "2", 0, 0, 1000, 0);
+            // udmd.DisplayScene00("dmds/bally.avi", "SCENE", 0, "2", 0, 0, 1000, 0);
             // udmd.DisplayScoreboard(4, 0, 1000, 2000, 3000, 4000, "LEFT", "RIGHT");
             // dmd.DisplayScene00("Metal Slug.UltraDMD/IntroMS.wmv", "SCENE", 0, "2", 0, 0, 5000, 0);
             // dmd.DisplayScene00Ex("Diablo.UltraDMD/act1.wmv", "SCENE", 5, 15, "Test n 2", 5, 15, 14, 5000, 14);
