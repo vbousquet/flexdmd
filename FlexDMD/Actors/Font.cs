@@ -203,7 +203,7 @@ namespace FlexDMD
                     }
                     else if ('a' <= character && character <= 'z' && BitmapFont.Characters.ContainsKey(char.ToUpper(character)))
                     {
-                        log.Error("Missing character '{0}' replaced by '{1}' for font {2}", character, char.ToUpper(character), FontDef.Path);
+                        // log.Error("Missing character '{0}' replaced by '{1}' for font {2}", character, char.ToUpper(character), FontDef.Path);
                         BitmapFont.Characters[character] = BitmapFont[char.ToUpper(character)];
                         DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
                     }
