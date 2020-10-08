@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:main="clr-namespace:FlexDMDUI"
         mc:Ignorable="d"
-        Title="FlexDMD Helper Application" Height="520" Width="800"
+        Title="FlexDMD Helper Application" Height="536" Width="800"
         Closing="OnWindowClosing">
     <Window.CommandBindings>
         <CommandBinding Command="main:Command.RunCmd" Executed="OnRunCmd" />
@@ -105,6 +105,49 @@
                             <Button x:Name="registerUltraDMDBtn" Grid.Column="3" Content="Register" Width="65" HorizontalAlignment="Right" Click="OnRegisterUltra"/>
                         </Grid>
                     </GroupBox>
+                    <Grid Background="#FFE5E5E5" x:Name="missingNetFrameworkInfo" HorizontalAlignment="Center" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="32"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Source="Resources/cross.png" Width="16" Height="16" Margin="10,0,0,0" HorizontalAlignment="Left">
+                            <Image.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <EventTrigger RoutedEvent="Image.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Image.Opacity)" BeginTime="0:0:0" Duration="0:0:0.5" From="1.0" To="0.0" RepeatBehavior="Forever" AutoReverse="True"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                        <TextBlock Grid.Column="1" HorizontalAlignment="Center">
+                            FlexDMD requires .Net Framework version 4.8 which was not found on your system. 
+                            <Hyperlink NavigateUri="https://dotnet.microsoft.com/download/dotnet-framework/net48" RequestNavigate="Hyperlink_RequestNavigate">
+                            Click here to install it from Microsoft...
+                            </Hyperlink>
+                        </TextBlock>
+                        <Image Grid.Column="2" Source="Resources/cross.png" Width="16" Height="16" Margin="10,0,0,0" HorizontalAlignment="Left">
+                            <Image.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <EventTrigger RoutedEvent="Image.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Image.Opacity)" BeginTime="0:0:0" Duration="0:0:0.5" From="1.0" To="0.0" RepeatBehavior="Forever" AutoReverse="True"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                    </Grid>
                 </StackPanel>
             </TabItem>
             <TabItem Header="UltraDMD Setup">

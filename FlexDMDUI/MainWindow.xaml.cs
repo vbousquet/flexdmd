@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using Trinet.Core.IO.Ntfs;
 
 namespace FlexDMDUI
@@ -143,6 +144,14 @@ namespace FlexDMDUI
             var dmdDevice64Path = Path.Combine(_installPath, @"dmddevice64.dll");
             var uiVersion = (Assembly.GetExecutingAssembly().GetName().Version.Major << 16) | (Assembly.GetExecutingAssembly().GetName().Version.Minor);
 
+            // See https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed?redirectedfrom=MSDN
+            const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
+            using (var ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(subkey))
+            {
+                bool upToDate = ndpKey != null && ndpKey.GetValue("Release") != null && ((int)ndpKey.GetValue("Release") >= 528040);
+                missingNetFrameworkInfo.Visibility = upToDate ? Visibility.Collapsed : Visibility.Visible;
+            }
+
             // FlexDMD & FlexUDMD dlls (must exist at the given location, with matching versions, and up to date with regards to this installer)
             if (!File.Exists(flexDmdPath))
             {
@@ -262,6 +271,13 @@ namespace FlexDMDUI
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/check.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexDMD is registered to be used as an UltraDMD replacement.";
             }
+        }
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            // for .NET Core you need to add UseShellExecute = true
+            // see https://docs.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.useshellexecute#property-value
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
         }
 
         private string GetComponentLocation(string clsid)
