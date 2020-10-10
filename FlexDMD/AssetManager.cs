@@ -73,13 +73,13 @@ namespace FlexDMD
             return dst;
         }
     }
-	
-	public class VideoDef
-	{
-		public string VideoFilename { get; set; } = "";
+
+    public class VideoDef
+    {
+        public string VideoFilename { get; set; } = "";
         public Scaling Scaling { get; set; } = Scaling.Stretch;
         public Alignment Alignment { get; set; } = Alignment.Center;
-		public bool Loop { get; set; } = false;
+        public bool Loop { get; set; } = false;
 
         public override bool Equals(object obj)
         {
@@ -154,17 +154,29 @@ namespace FlexDMD
         public override bool Equals(object obj)
         {
             return obj is FontDef def &&
-                   Tint == def.Tint &&
-                   BorderTint == def.BorderTint &&
+                   Tint.R == def.Tint.R &&
+                   Tint.G == def.Tint.G &&
+                   Tint.B == def.Tint.B &&
+                   Tint.A == def.Tint.A &&
+                   BorderTint.R == def.BorderTint.R &&
+                   BorderTint.G == def.BorderTint.G &&
+                   BorderTint.B == def.BorderTint.B &&
+                   BorderTint.A == def.BorderTint.A &&
                    BorderSize == def.BorderSize &&
-                   Path == def.Path;
+                   Path.Equals(def.Path);
         }
 
         public override int GetHashCode()
         {
             var hashCode = -1876634251;
-            hashCode = hashCode * -1521134295 + Tint.GetHashCode();
-            hashCode = hashCode * -1521134295 + BorderTint.GetHashCode();
+            hashCode = hashCode * -1521134295 + Tint.R;
+            hashCode = hashCode * -1521134295 + Tint.G;
+            hashCode = hashCode * -1521134295 + Tint.B;
+            hashCode = hashCode * -1521134295 + Tint.A;
+            hashCode = hashCode * -1521134295 + BorderTint.R;
+            hashCode = hashCode * -1521134295 + BorderTint.G;
+            hashCode = hashCode * -1521134295 + BorderTint.B;
+            hashCode = hashCode * -1521134295 + BorderTint.A;
             hashCode = hashCode * -1521134295 + BorderSize;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
             return hashCode;
@@ -396,7 +408,8 @@ namespace FlexDMD
 
         private FileType GetTypeFromExt(string file)
         {
-            string extension = Path.GetExtension(file).ToLowerInvariant();
+            if (file.Length < 4) return FileType.Unknow;
+            string extension = file.Substring(file.Length - 4).ToLowerInvariant();
             if (extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".bmp"))
             {
                 return FileType.Image;
