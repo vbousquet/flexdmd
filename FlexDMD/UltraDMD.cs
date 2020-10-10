@@ -44,6 +44,7 @@ namespace UltraDMD
         private bool _visible = true;
         private int _stretchMode = 0;
         private int _nextId = 1;
+        private const bool LOG_DEBUG = true;
 
         public UltraDMD(FlexDMD.FlexDMD flexDMD)
         {
@@ -206,26 +207,32 @@ namespace UltraDMD
 
         public bool IsRendering()
         {
-            _flexDMD.LockRenderThread();
-            var finished = _queue.IsFinished();
-            _flexDMD.UnlockRenderThread();
-            return !finished;
+            return !_queue.IsFinished();
         }
 
         public void CancelRendering()
         {
-            _flexDMD.Post(() => _queue.RemoveAllScenes());
+            _flexDMD.Post(() =>
+            {
+                if (LOG_DEBUG) log.Debug("CancelRendering");
+                _queue.RemoveAllScenes();
+            });
         }
 
         public void CancelRenderingWithId(string sceneId)
         {
-            _flexDMD.Post(() => _queue.RemoveScene(sceneId));
+            _flexDMD.Post(() =>
+            {
+                if (LOG_DEBUG) log.Debug("CancelRenderingWithId");
+                _queue.RemoveScene(sceneId);
+            });
         }
 
         public void Clear()
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("Clear");
                 _flexDMD.Graphics.Clear(Color.Black);
                 _scoreBoard.Visible = false;
                 if (_queue.IsFinished()) _queue.Visible = false;
@@ -315,6 +322,7 @@ namespace UltraDMD
             // No version info in FlexDMD (this is an implementation choice to avoid delaying game startup and displaying again and again the same scene)
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("DisplayVersionInfo");
                 _scoreBoard.Visible = false;
                 _queue.Visible = false;
             });
@@ -334,6 +342,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("DisplayScene00ExWithId '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}' {12}", sceneId, cancelPrevious, background, toptext, topBrightness, topOutlineBrightness, bottomtext, bottomBrightness, bottomOutlineBrightness, animateIn, pauseTime, animateOut, DateTimeOffset.Now.ToUnixTimeMilliseconds());
                 if (cancelPrevious && sceneId != null && sceneId.Length > 0)
                 {
                     var s = _queue.ActiveScene;
@@ -372,6 +381,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("ModifyScene00");
                 var scene = _queue.ActiveScene;
                 if (scene != null && id != null && id.Length > 0 && scene.Name == id)
                 {
@@ -385,6 +395,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("ModifyScene00Ex");
                 var scene = _queue.ActiveScene;
                 if (scene != null && id != null && id.Length > 0 && scene.Name == id)
                 {
@@ -399,6 +410,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("DisplayScene01");
                 var font = GetFont(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f);
                 var scene = new SingleLineScene(ResolveImage(background, false), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
                 _scoreBoard.Visible = false;
@@ -411,6 +423,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("SetScoreboardBackgroundImage");
                 _scoreBoard.SetBackground(ResolveImage(filename, false));
                 _scoreBoard.SetFonts(
                     GetFont(_scoreFontNormal.Path, unselectedBrightness / 15f, -1),
@@ -423,6 +436,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("DisplayScoreboard");
                 // Direct rendering: render only if the scene queue is empty, and no direct rendering has happened (managed by scoreboard visibility instead of direct rendering to allow animated scoreboard)
                 _scoreBoard.SetNPlayers(cPlayers);
                 _scoreBoard.SetHighlightedPlayer(highlightedPlayer);
@@ -464,6 +478,7 @@ namespace UltraDMD
         {
             _flexDMD.Post(() =>
             {
+                if (LOG_DEBUG) log.Debug("ScrollingCredits '{0}', '{1}', '{2}', '{3}', '{4}', '{5}'", background, text, textBrightness, animateIn, pauseTime, animateOut);
                 _scoreBoard.Visible = false;
                 string[] lines = text.Split(new char[] { '\n', '|' });
                 var font12 = GetFont(_scoreFontText.Path, textBrightness / 15f, -1);

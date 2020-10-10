@@ -22,12 +22,14 @@ namespace FlexDMD.Actors
     class Sequence : Group
     {
         private readonly List<Scene> _pendingScenes = new List<Scene>();
+        private bool _finished = true;
 
         public Scene ActiveScene { get; private set; } = null;
 
         public void Enqueue(Scene scene)
         {
             _pendingScenes.Add(scene);
+            _finished = false;
         }
 
         public void RemoveAllScenes()
@@ -35,6 +37,7 @@ namespace FlexDMD.Actors
             ActiveScene?.Remove();
             ActiveScene = null;
             _pendingScenes.Clear();
+            _finished = true;
         }
 
         public void RemoveScene(string name)
@@ -45,11 +48,12 @@ namespace FlexDMD.Actors
                 ActiveScene = null;
             }
             _pendingScenes.RemoveAll(s => s.Name.Equals(name));
+            _finished = ActiveScene == null && _pendingScenes.Count == 0;
         }
 
         public bool IsFinished()
         {
-            return ActiveScene == null && _pendingScenes.Count == 0;
+            return _finished;
         }
 
         public override void Update(float delta)
@@ -67,6 +71,7 @@ namespace FlexDMD.Actors
                 AddActor(ActiveScene);
                 ActiveScene.Update(0);
             }
+            _finished = ActiveScene == null && _pendingScenes.Count == 0;
         }
 
         public override void Draw(Graphics graphics)
