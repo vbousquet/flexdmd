@@ -60,6 +60,7 @@ namespace FlexDMD
             _dllhandle = NativeLibrary.LoadLibrary(fullPath);
             if (_dllhandle != IntPtr.Zero)
             {
+                LogManager.GetCurrentClassLogger().Info("Loaded {0} from {1} to create a virtual DMD", libraryName, fullPath);
                 var openHandle = NativeLibrary.GetProcAddress(_dllhandle, "Open");
                 if (openHandle != IntPtr.Zero) _open = (OpenCloseDelegate)Marshal.GetDelegateForFunctionPointer(openHandle, typeof(OpenCloseDelegate));
                 var closeHandle = NativeLibrary.GetProcAddress(_dllhandle, "Close");
@@ -81,7 +82,11 @@ namespace FlexDMD
 
         public void Dispose()
         {
-            if (_dllhandle != IntPtr.Zero) NativeLibrary.FreeLibrary(_dllhandle);
+            if (_dllhandle != IntPtr.Zero)
+            {
+                LogManager.GetCurrentClassLogger().Error("Disposing DmdDevice.dll");
+                NativeLibrary.FreeLibrary(_dllhandle);
+            }
             _dllhandle = IntPtr.Zero;
         }
 
