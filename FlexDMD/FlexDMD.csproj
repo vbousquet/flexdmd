@@ -110,7 +110,6 @@
     <Compile Include="BMFonts\Page.cs" />
     <Compile Include="DMDDevice.cs" />
     <Compile Include="IFlexDMD.cs" />
-    <Compile Include="IDisposable.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
