@@ -18,9 +18,6 @@
 // Check for a new version of PinballY on each launch (default is false to limit the load on PinballY's servers)
 let checkPinballYUpdate = false;
 
-// Delay in seconds before starting the DMD (useful for low end systems to avoid starting everything together)
-let delay = 0;
-
 
 
 
@@ -84,9 +81,13 @@ Number.prototype.toDDHHMMSS = function () {
 
 // Play a video, without looping, adapting to the actual length of the video
 function queueVideo(filename, transitionIn, transitionOut, transitionMargin) {
-	let video = dmd.NewVideo(String(filename), String(filename));
-	let id = udmd.RegisterVideo(2, false, filename);
-	udmd.DisplayScene00(id.toString(), "", 15, "", 15, transitionIn, video.Length * 1000 - transitionMargin, transitionOut);
+	if (filename.endsWith(".gif")) {
+		let video = dmd.NewVideo(String(filename), String(filename));
+		let id = udmd.RegisterVideo(2, false, filename);
+		udmd.DisplayScene00(id.toString(), "", 15, "", 15, transitionIn, video.Length * 1000 - transitionMargin, transitionOut);
+	} else {
+		udmd.DisplayScene00(filename, "", 15, "", 15, transitionIn, 5000 - transitionMargin, transitionOut);
+	}
 }
 
 // Handle DMD updates
@@ -102,14 +103,13 @@ let manufacturers = {
 	"Bally": ["./Scripts/dmds/manufacturers/bally.gif"],
 	"Capcom": ["./Scripts/dmds/manufacturers/capcom.gif"],
 	"Data East": ["./Scripts/dmds/manufacturers/dataeast-1.gif", "./Scripts/dmds/manufacturers/dataeast-2.gif"],
-	"Gottlieb": ["./Scripts/dmds/manufacturers/gottlieb.gif"],
+	"Gottlieb": ["./Scripts/dmds/manufacturers/gottlieb.png"],
 	"Midway": ["./Scripts/dmds/manufacturers/bally.gif"],
 	"Premier": ["./Scripts/dmds/manufacturers/premier.gif"],
 	"Sega": ["./Scripts/dmds/manufacturers/sega.gif"],
 	"Stern": ["./Scripts/dmds/manufacturers/stern.gif"],
 	"Williams": ["./Scripts/dmds/manufacturers/williams.gif"]
 }
-if (delay > 0) setTimeout(function() { delay = 0; UpdateDMD(); }, delay * 1000);
 // logfile.log(getMethods(dmd).join("\n"));
 function TestMarshalling() {
 	dmd.LockRenderThread();
@@ -122,8 +122,6 @@ function TestMarshalling() {
 function UpdateDMD() {
 	if (updater !== undefined) clearTimeout(updater);
 	updater = undefined;
-
-	if (delay > 0) return;
 
 	if (dmd == null) {
 		dmd = createAutomationObject("FlexDMD.FlexDMD");
