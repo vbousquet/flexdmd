@@ -110,6 +110,7 @@ namespace FlexDMD
                     _processThread = null;
                     ShowDMD(false);
                     MediaFoundationApi.Shutdown();
+                    AssetManager.ClearCache();
                 }
             }
         }

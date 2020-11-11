@@ -189,7 +189,7 @@ namespace FlexDMD
 
     }
 
-    public class Asset<T>
+    public class Asset<T> : IDisposable
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly AssetManager _assets;
@@ -203,6 +203,12 @@ namespace FlexDMD
             _id = id;
             _assets = assets;
             _refCount = 1;
+        }
+
+        public void Dispose()
+        {
+            _refCount = 0;
+            Unload();
         }
 
         public T Value
@@ -277,7 +283,21 @@ namespace FlexDMD
 
         public void Dispose()
         {
+            ClearCache();
+        }
 
+        public void ClearCache()
+        {
+            if (_vpxFile != null)
+            {
+                foreach (KeyValuePair<object, object> entry in _cache)
+                {
+                    ((IDisposable)entry.Value).Dispose();
+                }
+                _cache.Clear();
+                _vpxFile.Dispose();
+                _vpxFile = null;
+            }
         }
 
         /// <summary>
