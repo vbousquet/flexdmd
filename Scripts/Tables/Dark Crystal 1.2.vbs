@@ -1685,10 +1685,10 @@ Sub DMD_Init() 'default/startup values
 		Set DMDScene = FlexDMD.NewGroup("Scene")
 		DMDScene.AddActor FlexDMD.NewImage("Back", "VPX.bkempty")
 		DMDScene.GetImage("Back").SetSize FlexDMD.Width, FlexDMD.Height
-		'DigitsBack(0).Visible = False
+		DigitsBack(0).Visible = False
 		For i = 0 to 35
 			DMDScene.AddActor FlexDMD.NewImage("Dig" & i, "VPX.dempty&dmd=3")
-			'Digits(i).Visible = False
+			Digits(i).Visible = False
 		Next
 		For i = 0 to 19 ' Bottom
 			DMDScene.GetImage("Dig" & i).SetBounds 4 + i * 6, 3 + 16 + 2, 8, 8
