@@ -97,6 +97,7 @@ namespace FlexDMD
                 _run = value;
                 if (_run)
                 {
+                    MediaFoundationApi.Startup();
                     ShowDMD(_show);
                     log.Info("Starting render thread for game '{0}'", _gameName);
                     _processThread = new Thread(new ThreadStart(RenderLoop)) { IsBackground = true };
@@ -108,6 +109,7 @@ namespace FlexDMD
                     if (Thread.CurrentThread != _processThread) _processThread?.Join();
                     _processThread = null;
                     ShowDMD(false);
+                    MediaFoundationApi.Shutdown();
                 }
             }
         }
@@ -298,8 +300,6 @@ namespace FlexDMD
 
         public FlexDMD()
         {
-            MediaFoundationApi.Startup();
-
             var assembly = Assembly.GetCallingAssembly();
             var assemblyPath = Path.GetDirectoryName(new Uri(assembly.CodeBase).LocalPath);
             var logConfigPath = Path.Combine(assemblyPath, "FlexDMD.log.config");
@@ -308,7 +308,6 @@ namespace FlexDMD
                 LogManager.Configuration = new XmlLoggingConfiguration(logConfigPath, true);
                 LogManager.ReconfigExistingLoggers();
             }
-
             log.Info("FlexDMD version {0}", assembly.GetName().Version);
         }
 
@@ -317,9 +316,8 @@ namespace FlexDMD
             if (_run)
             {
                 log.Error("Destructor called before Uninit");
-                Show = false;
+                Run = false;
             }
-            MediaFoundationApi.Shutdown();
         }
 
         public void LockRenderThread()
@@ -357,6 +355,7 @@ namespace FlexDMD
         /// </list>
         public Actor ResolveImage(string filename)
         {
+            if (filename == "") return null;
             try
             {
                 if (AssetManager.FileExists(filename))
@@ -549,9 +548,13 @@ namespace FlexDMD
                 double renderingDuration = stopWatch.Elapsed.TotalMilliseconds;
 
                 int sleepMs = (1000 / _frameRate) - (int)renderingDuration;
-                if (sleepMs > 0) Thread.Sleep(sleepMs);
+                if (sleepMs > 1) Thread.Sleep(sleepMs);
                 elapsedMs = stopWatch.Elapsed.TotalMilliseconds;
-                // log.Info("Elapsed: {0}ms", elapsedMs);
+                if (elapsedMs > 4000 / _frameRate)
+                {
+                    log.Warn("Abnormally long elapsed time between frames of {0}s (rendering lasted {1}ms, sleeping was {2}ms), limiting to {3}ms", elapsedMs / 1000.0, renderingDuration, Math.Max(0, sleepMs), 4000 / _frameRate);
+                    elapsedMs = 4000 / _frameRate;
+                }
             }
             _stage.InStage = false;
             if (_bpFrame != IntPtr.Zero) Marshal.FreeHGlobal(_bpFrame);
