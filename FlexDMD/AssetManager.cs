@@ -45,7 +45,21 @@ namespace FlexDMD
             {
                 for (int x = 0; x < dst.Width; x++)
                 {
-                    dst.SetPixel(x, y, src.GetPixel(x * _dotSize + (_dotSize - 1) - _offset, y * _dotSize + (_dotSize - 1)));
+                    int r = 0, g = 0, b = 0, a = 0;
+                    for (int i = 0; i < _dotSize; i++)
+                    {
+                        for (int j = 0; j < _dotSize; j++)
+                        {
+                            Color c = src.GetPixel(x * _dotSize + i, y * _dotSize + j);
+                            r += c.R;
+                            g += c.G;
+                            b += c.B;
+                            a += c.A;
+                        }
+                    }
+                    float bright = 1f + _dotSize * _dotSize / 1.8f;
+                    dst.SetPixel(x, y, Color.FromArgb((int) Math.Min(a / bright, 255), (int)Math.Min(r / bright, 255), (int)Math.Min(g / bright, 255), (int)Math.Min(b / bright, 255)));
+                    // dst.SetPixel(x, y, src.GetPixel(x * _dotSize + (_dotSize - 1) - _offset, y * _dotSize + (_dotSize - 1)));
                 }
             }
             return dst;
