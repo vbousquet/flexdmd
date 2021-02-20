@@ -218,7 +218,12 @@ namespace FlexDMDUI
                 flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 flexDMDInstallLabel.Content = "Registered FlexDMD does not match your install path. Click 'Register' to fix it.";
             }
-            else if (File.Exists(flexDmdPath) && IsDLLBlocked(flexDmdPath))
+            else if (!File.Exists(flexDmdPath))
+            {
+                flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                flexDMDInstallLabel.Content = "There seems to be a problem with FlexDMD registration (missing file). Click 'Register' to unblock it.";
+            }
+            else if (IsDLLBlocked(flexDmdPath))
             {
                 flexDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 flexDMDInstallLabel.Content = "FlexDMD dll is blocked. Click 'Register' to unblock it.";
@@ -256,7 +261,12 @@ namespace FlexDMDUI
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexDMD is not registered to be used instead of UltraDMD.";
             }
-            else if (File.Exists(flexUDmdPath) && IsDLLBlocked(flexUDmdPath))
+            else if (!File.Exists(flexUDmdPath))
+            {
+                ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
+                ultraDMDInstallLabel.Content = "There seems to be a problem with UltraDMD registration (missing file). Click 'Register' to unblock it.";
+            }
+            else if (IsDLLBlocked(flexUDmdPath))
             {
                 ultraDMDInstallImage.Source = new BitmapImage(new Uri(@"Resources/cross.png", UriKind.RelativeOrAbsolute));
                 ultraDMDInstallLabel.Content = "FlexUDMD dll is blocked. Click 'Register' to unblock it.";
