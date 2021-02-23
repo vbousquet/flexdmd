@@ -82,8 +82,14 @@ namespace FlexDMDUI
         [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
         private static void UnblockDll(string path)
         {
-            FileInfo file = new FileInfo(path);
-            if (file.Exists) file.DeleteAlternateDataStream("Zone.Identifier");
+            try
+            {
+                FileInfo file = new FileInfo(path);
+                if (file.Exists) file.DeleteAlternateDataStream("Zone.Identifier");
+            } catch (Exception)
+            {
+                // FIXME this is an horrible exception swallowing when DLL unblocking fails. This should be properly reported (at leats in a log file)
+            }
         }
 
         [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
