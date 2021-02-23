@@ -317,15 +317,21 @@ namespace FlexDMDUI
 
         private bool IsDLLBlocked(string path)
         {
-            FileInfo file = new FileInfo(path);
-            if (file.AlternateDataStreamExists("Zone.Identifier"))
+            try
             {
-                AlternateDataStreamInfo s = file.GetAlternateDataStream("Zone.Identifier", FileMode.Open);
-                using (TextReader reader = s.OpenText())
+                FileInfo file = new FileInfo(path);
+                if (file.AlternateDataStreamExists("Zone.Identifier"))
                 {
-                    var zoneId = reader.ReadToEnd().ToUpperInvariant();
-                    return zoneId.Contains("ZONEID=3") || zoneId.Contains("ZONEID=4");
+                    AlternateDataStreamInfo s = file.GetAlternateDataStream("Zone.Identifier", FileMode.Open);
+                    using (TextReader reader = s.OpenText())
+                    {
+                        var zoneId = reader.ReadToEnd().ToUpperInvariant();
+                        return zoneId.Contains("ZONEID=3") || zoneId.Contains("ZONEID=4");
+                    }
                 }
+            } catch (Exception)
+            {
+                // FIXME this is an horrible exception swallowing when DLL blocking check fails. This should be properly reported (at leats in a log file)
             }
             return false;
         }
