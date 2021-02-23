@@ -42,6 +42,9 @@ namespace FlexDMD
         delegate void RenderDelegate(ushort width, ushort height, IntPtr currbuffer);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate void RenderAlphaNumericDelegate(NumericalLayout numericalLayout, IntPtr seg_data, IntPtr seg_data2);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate void GameSettingsDelegate(string gameName, ulong hardwareGeneration, IntPtr options);
 
         private IntPtr _dllhandle = IntPtr.Zero;
@@ -50,6 +53,7 @@ namespace FlexDMD
         private readonly RenderDelegate _renderRgb24 = null;
         private readonly RenderDelegate _renderGray4 = null;
         private readonly RenderDelegate _renderGray2 = null;
+        private readonly RenderAlphaNumericDelegate _renderAlphaNumeric = null;
         private readonly GameSettingsDelegate _gameSettings = null;
 
         public DMDDevice()
@@ -71,6 +75,8 @@ namespace FlexDMD
                 if (renderGray4Handle != IntPtr.Zero) _renderGray4 = (RenderDelegate)Marshal.GetDelegateForFunctionPointer(renderGray4Handle, typeof(RenderDelegate));
                 var renderRgb24Handle = NativeLibrary.GetProcAddress(_dllhandle, "Render_RGB24");
                 if (renderRgb24Handle != IntPtr.Zero) _renderRgb24 = (RenderDelegate)Marshal.GetDelegateForFunctionPointer(renderRgb24Handle, typeof(RenderDelegate));
+                var renderAlphaNumeric = NativeLibrary.GetProcAddress(_dllhandle, "Render_PM_Alphanumeric_Frame");
+                if (renderAlphaNumeric != IntPtr.Zero) _renderAlphaNumeric = (RenderAlphaNumericDelegate)Marshal.GetDelegateForFunctionPointer(renderAlphaNumeric, typeof(RenderAlphaNumericDelegate));
                 var gameSettingsHandle = NativeLibrary.GetProcAddress(_dllhandle, "PM_GameSettings");
                 if (gameSettingsHandle != IntPtr.Zero) _gameSettings = (GameSettingsDelegate)Marshal.GetDelegateForFunctionPointer(gameSettingsHandle, typeof(GameSettingsDelegate));
             }
@@ -84,7 +90,7 @@ namespace FlexDMD
         {
             if (_dllhandle != IntPtr.Zero)
             {
-                LogManager.GetCurrentClassLogger().Error("Disposing DmdDevice.dll");
+                LogManager.GetCurrentClassLogger().Info("Disposing DmdDevice.dll");
                 NativeLibrary.FreeLibrary(_dllhandle);
             }
             _dllhandle = IntPtr.Zero;
@@ -92,6 +98,8 @@ namespace FlexDMD
 
         ~DMDDevice()
         {
+            if (_dllhandle != IntPtr.Zero)
+                LogManager.GetCurrentClassLogger().Error("DmdDevice was not disposed before destructor call");
             Dispose();
         }
 
@@ -120,6 +128,11 @@ namespace FlexDMD
         public void RenderGray2(ushort width, ushort height, IntPtr currbuffer)
         {
             _renderGray2?.Invoke(width, height, currbuffer);
+        }
+
+        public void RenderlphaNumeric(NumericalLayout numericalLayout, IntPtr seg_data, IntPtr seg_data2)
+        {
+            _renderAlphaNumeric?.Invoke(numericalLayout, seg_data, seg_data2);
         }
 
         public void GameSettings(string gameName, ulong hardwareGeneration, PMoptions options)

@@ -217,7 +217,23 @@ namespace FlexDMD
     [Guid("77FB8996-E143-42A4-B695-14E0314D92FC"), ComVisible(true)]
     public enum RenderMode
     {
-        GRAY_2, GRAY_4, RGB
+        DMD_GRAY_2,
+        DMD_GRAY_4,
+        DMD_RGB,
+        SEG_2x16Alpha,
+        SEG_2x20Alpha,
+        SEG_2x7Alpha_2x7Num,
+        SEG_2x7Alpha_2x7Num_4x1Num,
+        SEG_2x7Num_2x7Num_4x1Num,
+        SEG_2x7Num_2x7Num_10x1Num,
+        SEG_2x7Num_2x7Num_4x1Num_gen7,
+        SEG_2x7Num10_2x7Num10_4x1Num,
+        SEG_2x6Num_2x6Num_4x1Num,
+        SEG_2x6Num10_2x6Num10_4x1Num,
+        SEG_4x7Num10,
+        SEG_6x4Num_4x1Num,
+        SEG_2x7Num_4x1Num_1x16Alpha,
+        SEG_1x16Alpha_1x16Num_1x7Num
     }
 
     [Guid("B592E61D-9553-4D91-A0F5-FDF111E28F5E"), ComVisible(true)]
@@ -293,6 +309,11 @@ namespace FlexDMD
         /// Returns the DMD content as an array of byte pixels (0 => black, 255 => full light) for rendering inside VPX's embedded DMD
         /// </summary>
         object DmdPixels { [return: MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] get; }
+
+        /// <summary>
+        /// Set the segments for Alpha/Num display
+        /// </summary>
+        object Segments { [param: In, MarshalAs(UnmanagedType.Struct, SafeArraySubType = VarEnum.VT_ARRAY)] set; }
 
         /// <summary>
         /// Returns the main rendering surface. Note that you need to synchronize the modification using Lock/Unlock to avoid concurrent modification with the render thread.

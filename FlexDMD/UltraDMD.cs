@@ -160,9 +160,9 @@ namespace UltraDMD
             if (fullcolor != null && fullcolor is string fc)
             {
                 if ("True".Equals(fc, StringComparison.InvariantCultureIgnoreCase))
-                    _flexDMD.RenderMode = RenderMode.RGB;
+                    _flexDMD.RenderMode = RenderMode.DMD_RGB;
                 else
-                    _flexDMD.RenderMode = RenderMode.GRAY_4;
+                    _flexDMD.RenderMode = RenderMode.DMD_GRAY_4;
             }
         }
 
@@ -292,7 +292,7 @@ namespace UltraDMD
         {
             brightness = brightness > 1f ? 1f : brightness;
             outlineBrightness = outlineBrightness > 1f ? 1f : outlineBrightness;
-            var baseColor = _flexDMD.RenderMode == RenderMode.RGB ? _flexDMD.Color : Color.White;
+            var baseColor = _flexDMD.RenderMode == RenderMode.DMD_RGB ? _flexDMD.Color : Color.White;
             var tint = brightness >= 0f ? Color.FromArgb((int)(baseColor.R * brightness), (int)(baseColor.G * brightness), (int)(baseColor.B * brightness)) : Color.FromArgb(0, 0, 0, 0);
             if (outlineBrightness >= 0f)
             {

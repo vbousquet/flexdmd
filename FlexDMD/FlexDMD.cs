@@ -47,8 +47,10 @@ namespace FlexDMD
         private Bitmap _frame = null;
         private object[] _pixels = null;
         private object[] _coloredPixels = null;
-        private RenderMode _renderMode = RenderMode.GRAY_4;
+        private RenderMode _renderMode = RenderMode.DMD_GRAY_4;
         private Color _dmdColor = Color.FromArgb(0xFF, 0x58, 0x20);
+        private IntPtr _segData1 = Marshal.AllocHGlobal(128);
+        private IntPtr _segData2 = Marshal.AllocHGlobal(128);
 
         public event OnDMDChangedDelegate OnDMDChanged;
         public delegate void OnDMDChangedDelegate();
@@ -99,9 +101,12 @@ namespace FlexDMD
                 {
                     MediaFoundationApi.Startup();
                     ShowDMD(_show);
-                    log.Info("Starting render thread for game '{0}'", _gameName);
-                    _processThread = new Thread(new ThreadStart(RenderLoop)) { IsBackground = true };
-                    _processThread.Start();
+                    log.Info("Starting render thread for game '{0}' using render mode {1}", _gameName, _renderMode);
+                    if (_renderMode == RenderMode.DMD_GRAY_2 || _renderMode == RenderMode.DMD_GRAY_4 || _renderMode == RenderMode.DMD_RGB)
+                    {
+                        _processThread = new Thread(new ThreadStart(RenderLoop)) { IsBackground = true };
+                        _processThread.Start();
+                    }
                 }
                 else
                 {
@@ -249,11 +254,11 @@ namespace FlexDMD
             set
             {
                 if (_renderMode == value) return;
-                bool wasVisible = Run;
+                bool wasRunning = Run;
                 Run = false;
                 log.Info("Render mode set to {0}", value);
                 _renderMode = value;
-                Run = wasVisible;
+                Run = wasRunning;
             }
         }
 
@@ -297,6 +302,76 @@ namespace FlexDMD
             }
         }
 
+        public object Segments
+        {
+            set
+            {
+                if (!Run || !Show)
+                    return;
+                int Size1 = 0, Size2 = 0;
+                switch (_renderMode)
+                {
+                    case RenderMode.SEG_2x16Alpha:
+                        Size1 = 2 * 16;
+                        break;
+                    case RenderMode.SEG_2x20Alpha:
+                        Size1 = 2 * 20;
+                        break;
+                    case RenderMode.SEG_2x7Alpha_2x7Num:
+                        Size1 = 2 * 7 + 2 * 7;
+                        break;
+                    case RenderMode.SEG_2x7Alpha_2x7Num_4x1Num:
+                        Size1 = 2 * 7 + 2 * 7 + 4;
+                        break;
+                    case RenderMode.SEG_2x7Num_2x7Num_4x1Num:
+                        Size1 = 2 * 7 + 2 * 7 + 4;
+                        break;
+                    case RenderMode.SEG_2x7Num_2x7Num_10x1Num:
+                        Size1 = 2 * 7 + 2 * 7 + 4;
+                        Size2 = 6;
+                        break;
+                    case RenderMode.SEG_2x7Num_2x7Num_4x1Num_gen7:
+                        Size1 = 2 * 7 + 2 * 7 + 4;
+                        break;
+                    case RenderMode.SEG_2x7Num10_2x7Num10_4x1Num:
+                        Size1 = 2 * 7 + 2 * 7 + 4;
+                        break;
+                    case RenderMode.SEG_2x6Num_2x6Num_4x1Num:
+                        Size1 = 2 * 6 + 2 * 6 + 4;
+                        break;
+                    case RenderMode.SEG_2x6Num10_2x6Num10_4x1Num:
+                        Size1 = 2 * 6 + 2 * 6 + 4;
+                        break;
+                    case RenderMode.SEG_4x7Num10:
+                        Size1 = 4 * 7;
+                        break;
+                    case RenderMode.SEG_6x4Num_4x1Num:
+                        Size1 = 6 * 4 + 4;
+                        break;
+                    case RenderMode.SEG_2x7Num_4x1Num_1x16Alpha:
+                        Size1 = 2 * 7 + 4 + 1;
+                        break;
+                    case RenderMode.SEG_1x16Alpha_1x16Num_1x7Num:
+                        Size1 = 1 + 1 + 7;
+                        break;
+                }
+                unsafe
+                {
+                    short* seg1 = (short*)_segData1.ToPointer();
+                    for (int i = 0; i < Size1; i++)
+                    {
+                        seg1[i] = (short)((object[])value)[i];
+                    }
+                    short* seg2 = (short*)_segData2.ToPointer();
+                    for (int i = 0; i < Size2; i++)
+                    {
+                        seg2[i] = (short)((object[])value)[Size1 + i];
+                    }
+                }
+                _dmd.RenderlphaNumeric(NumericalLayout.__2x16Alpha, _segData1, _segData2);
+            }
+        }
+
         public AssetManager AssetManager { get; } = new AssetManager();
 
         public FlexDMD()
@@ -319,6 +394,10 @@ namespace FlexDMD
                 log.Error("Destructor called before Uninit");
                 Run = false;
             }
+            if (_segData1 != IntPtr.Zero) Marshal.FreeHGlobal(_segData1);
+            if (_segData2 != IntPtr.Zero) Marshal.FreeHGlobal(_segData2);
+            _segData1 = IntPtr.Zero;
+            _segData2 = IntPtr.Zero;
         }
 
         public void LockRenderThread()
@@ -394,7 +473,7 @@ namespace FlexDMD
             _stage.InStage = true;
             Stopwatch stopWatch = new Stopwatch();
             WindowHandle visualPinball = null;
-            IntPtr _bpFrame = _renderMode != RenderMode.RGB ? _bpFrame = Marshal.AllocHGlobal(_width * _height) : IntPtr.Zero;
+            IntPtr _bpFrame = _renderMode != RenderMode.DMD_RGB ? Marshal.AllocHGlobal(_width * _height) : IntPtr.Zero;
             double elapsedMs = 0.0;
             while (Run)
             {
@@ -425,7 +504,7 @@ namespace FlexDMD
                 BitmapData data = _frame.LockBits(rect, ImageLockMode.ReadWrite, _frame.PixelFormat);
                 switch (_renderMode)
                 {
-                    case RenderMode.GRAY_2:
+                    case RenderMode.DMD_GRAY_2:
                         unsafe
                         {
                             byte* dst = (byte*)_bpFrame.ToPointer();
@@ -457,7 +536,7 @@ namespace FlexDMD
                         catch (Exception) { }
                         break;
 
-                    case RenderMode.GRAY_4:
+                    case RenderMode.DMD_GRAY_4:
                         unsafe
                         {
                             byte* dst = (byte*)_bpFrame.ToPointer();
@@ -489,7 +568,7 @@ namespace FlexDMD
                         catch (Exception) { }
                         break;
 
-                    case RenderMode.RGB:
+                    case RenderMode.DMD_RGB:
                         if (_pixels != null)
                         {
                             unsafe
