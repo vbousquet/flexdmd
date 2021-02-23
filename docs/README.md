@@ -58,3 +58,11 @@ When using FlexDMD as an UltraDMD replacement, you may want to edit UltraDMD opt
 ## Architecture
 The following diagram shows the overall architecture of Visual Pinball and where FlexDMD sits.
 <br></br>![Overall Architecture](./media/architecture.svg)
+
+# Installing from the command line
+Whilst it is not the preferred way of using it, FlexDMDUI.exe can also be used from the command line with the given commands:
+* ```FlexDMDUI.exe /register path``` will unblock the FlexDMD's DLL (FlexDMD.dll) at the given path and register it. If needed, it will also unblock Freezy's DMD at the given path (dmddevice.dll and dmddevice64.dll).
+* ```FlexDMDUI.exe /register-udmd path``` will unblock the FlexDMD's UltraDMD bridge DLL (FlexUDMD.dll) at the given path and register it.
+* ```FlexDMDUI.exe /unregister``` will unregister FlexDMD.
+* ```FlexDMDUI.exe /unregister-udmd``` will unregister FlexDMD's UltraDMD bridge.
+
