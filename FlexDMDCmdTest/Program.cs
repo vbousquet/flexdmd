@@ -11,7 +11,7 @@ namespace FlexDMDTest
             // dmd.DmdWidth = 512;
             // dmd.DmdHeight = 128;
             dmd.Color = Color.Aqua;
-            dmd.RenderMode = RenderMode.RGB;
+            dmd.RenderMode = RenderMode.DMD_RGB;
             dmd.Show = true;
             dmd.Run = true;
             var udmd = dmd.NewUltraDMD();

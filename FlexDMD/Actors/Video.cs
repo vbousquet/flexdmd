@@ -73,7 +73,7 @@ namespace FlexDMD
 
         private float GetLength(IMFSourceReader reader)
         {
-            var variantPtr = Marshal.AllocHGlobal(MarshalHelpers.SizeOf<PropVariant>());
+            var variantPtr = Marshal.AllocHGlobal(Marshal.SizeOf<PropVariant>());
             try
             {
                 // http://msdn.microsoft.com/en-gb/library/windows/desktop/dd389281%28v=vs.85%29.aspx#getting_file_duration
@@ -88,7 +88,7 @@ namespace FlexDMD
                 {
                     Marshal.ThrowExceptionForHR(hResult);
                 }
-                var variant = MarshalHelpers.PtrToStructure<PropVariant>(variantPtr);
+                var variant = Marshal.PtrToStructure<PropVariant>(variantPtr);
                 return ((long)variant.Value) / 10000000f;
             }
             finally

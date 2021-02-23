@@ -381,7 +381,8 @@ namespace FlexDMD
             var logConfigPath = Path.Combine(assemblyPath, "FlexDMD.log.config");
             if (File.Exists(logConfigPath))
             {
-                LogManager.Configuration = new XmlLoggingConfiguration(logConfigPath, true);
+                LogManager.ThrowConfigExceptions = false;
+                LogManager.Configuration = new XmlLoggingConfiguration(logConfigPath);
                 LogManager.ReconfigExistingLoggers();
             }
             log.Info("FlexDMD version {0}", assembly.GetName().Version);
