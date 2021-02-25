@@ -1,8 +1,9 @@
 ﻿using Microsoft.Win32;
+using NLog;
+using NLog.Config;
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Windows;
 using Trinet.Core.IO.Ntfs;
@@ -14,12 +15,27 @@ namespace FlexDMDUI
     /// </summary>
     public partial class App : Application
     {
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            if (e.Args.Length == 2)
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyPath = Path.GetDirectoryName(new Uri(assembly.CodeBase).LocalPath);
+            var logConfigPath = Path.Combine(assemblyPath, "FlexDMD.log.config");
+            if (File.Exists(logConfigPath))
+            {
+                LogManager.ThrowConfigExceptions = false;
+                LogManager.Configuration = new XmlLoggingConfiguration(logConfigPath);
+                LogManager.ReconfigExistingLoggers();
+            }
+            log.Info("FlexDMDUI version {0}", assembly.GetName().Version);
+            if (e.Args.Length == 1)
+                Register("", e.Args[0].ToLowerInvariant());
+            else if (e.Args.Length > 1)
                 Register(e.Args[1], e.Args[0].ToLowerInvariant());
-            StartupUri = new Uri("MainWindow.xaml", UriKind.Relative);
+            else
+                StartupUri = new Uri("MainWindow.xaml", UriKind.Relative);
         }
 
         private static string GetRegAsmPath()
@@ -48,6 +64,8 @@ namespace FlexDMDUI
         [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
         private static void Register(string path, string command)
         {
+            path = path.TrimEnd(new[] { '/', '\\', '"' });
+            log.Info("Performing action '{0}' on path '{1}'", command, path);
             switch (command)
             {
                 case "/register":
@@ -86,9 +104,9 @@ namespace FlexDMDUI
             {
                 FileInfo file = new FileInfo(path);
                 if (file.Exists) file.DeleteAlternateDataStream("Zone.Identifier");
-            } catch (Exception)
+            } catch (Exception ex)
             {
-                // FIXME this is an horrible exception swallowing when DLL unblocking fails. This should be properly reported (at leats in a log file)
+                log.Error(ex, "Exception while unblocking dll");
             }
         }
 

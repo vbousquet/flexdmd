@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using System;
 using System.ComponentModel;
+using System.Deployment.Application;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -45,6 +46,7 @@ namespace FlexDMDUI
         public MainWindow()
         {
             InitializeComponent();
+            AppWindow.Title = AppWindow.Title + " " + getRunningVersion();
             Array colorsArray = Enum.GetValues(typeof(KnownColor));
             _allColors = new KnownColor[colorsArray.Length - 28 - 7]; // Create a list of user color, skipping system ones
             Array.Copy(colorsArray, 28, _allColors, 0, _allColors.Length);
@@ -331,9 +333,21 @@ namespace FlexDMDUI
                 }
             } catch (Exception)
             {
-                // FIXME this is an horrible exception swallowing when DLL blocking check fails. This should be properly reported (at leats in a log file)
+                // FIXME This is an horrible exception swallowing when DLL blocking check fails. This should be properly reported (at leats in a log file). Not done since this action is performed periodically
             }
             return false;
+        }
+
+        private Version getRunningVersion()
+        {
+            try
+            {
+                return ApplicationDeployment.CurrentDeployment.CurrentVersion;
+            }
+            catch (Exception)
+            {
+                return Assembly.GetExecutingAssembly().GetName().Version;
+            }
         }
 
         private string GetFileVersion(string path)
