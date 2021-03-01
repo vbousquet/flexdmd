@@ -191,13 +191,19 @@ namespace FlexDMD
 
         private void SetupVideoDecoder(IMFSourceReader reader)
         {
-            IMFMediaType outputType = MediaFoundationApi.CreateMediaType();
-            outputType.SetGUID(MediaFoundationAttributes.MF_MT_MAJOR_TYPE, MediaTypes.MFMediaType_Video);
-            outputType.SetGUID(MediaFoundationAttributes.MF_MT_SUBTYPE, MFVideoFormat_RGB24);
-            reader.SetCurrentMediaType(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, IntPtr.Zero, outputType);
-            reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
-            reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
-            Marshal.ReleaseComObject(outputType);
+            try
+            {
+                IMFMediaType outputType = MediaFoundationApi.CreateMediaType();
+                outputType.SetGUID(MediaFoundationAttributes.MF_MT_MAJOR_TYPE, MediaTypes.MFMediaType_Video);
+                outputType.SetGUID(MediaFoundationAttributes.MF_MT_SUBTYPE, MFVideoFormat_RGB24);
+                reader.SetCurrentMediaType(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, IntPtr.Zero, outputType);
+                reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
+                reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
+                Marshal.ReleaseComObject(outputType);
+            } catch (Exception e)
+            {
+                log.Error(e, "Failed to setup video decoder for file '{0}'", _path);
+            }
         }
 
         protected override void ReadNextFrame()
