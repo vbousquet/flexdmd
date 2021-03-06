@@ -149,11 +149,20 @@ namespace FlexDMD
                     _audioDevice?.Dispose();
                     _audioDevice = null;
                 }
-                MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out _videoReader);
-                SetupVideoDecoder(_videoReader);
-                ReadNextFrame();
-                nOpenedVideos++;
-                log.Info("Video opened: {0} size={1}x{2} length={3}s ({4} videos are currently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
+                try
+                {
+                    MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out _videoReader);
+                    SetupVideoDecoder(_videoReader);
+                    ReadNextFrame();
+                    nOpenedVideos++;
+                    log.Info("Video opened: {0} size={1}x{2} length={3}s ({4} videos are currently opened)", _path, _videoWidth, _videoHeight, _length, nOpenedVideos);
+                }
+                catch
+                {
+                    if (_videoReader != null) Marshal.ReleaseComObject(_videoReader);
+                    _videoReader = null;
+                    log.Info("Failed to open video: {0} ({1} videos are currently opened)", _path, nOpenedVideos);
+                }
             }
             else if (!shouldBeOpened && _opened)
             {
