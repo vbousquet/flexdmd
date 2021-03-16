@@ -7,16 +7,14 @@ on:
   pull_request:
     branches: [ master ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Allows to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  # This workflow contains a single job called "build"
   build:
     runs-on: windows-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
       - name: Add msbuild to PATH
@@ -40,11 +38,16 @@ jobs:
       - name: Build
         run: MSBuild.exe $Env:GITHUB_WORKSPACE/FlexDMD.sln /p:Configuration="Release"
 
+      - name: Package
+        run: |
+          mkdir tmp 
+          cp FlexDMDUI\bin\Release\FlexDMDUI.exe tmp
+          cp FlexDMD\bin\Release\ILMerge\FlexDMD.dll tmp
+          cp FlexUDMD\bin\Release\FlexUDMD.dll tmp
+          cp FlexDMD.log.config tmp
+          cp -r Scripts tmp/Scripts
+
       - uses: actions/upload-artifact@v2
         with: 
           name: FlexDMD
-          path: |
-            FlexDMDUI\bin\Release\FlexDMDUI.exe
-            FlexDMD\bin\Release\ILMerge\FlexDMD.dll
-            FlexUDMD\bin\Release\FlexUDMD.dll
-            FlexDMD.log.config
+          path: tmp
