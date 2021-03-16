@@ -22,6 +22,21 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1
 
+      - uses: nuget/setup-nuget@v1
+        with:
+          nuget-version: '5.x'
+          
+      - uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      
+      - name: NuGet Restore
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: nuget restore FlexDMD.sln
+  
       - name: Build
         run: MSBuild.exe $Env:GITHUB_WORKSPACE/FlexDMD.sln /p:Configuration="Release"
 
