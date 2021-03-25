@@ -78,6 +78,9 @@ namespace FlexDMD
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
+        float PrefWidth { get; }
+        float PrefHeight { get; }
+        void Pack();
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
@@ -98,6 +101,9 @@ namespace FlexDMD
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
+        float PrefWidth { get; }
+        float PrefHeight { get; }
+        void Pack();
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
@@ -128,6 +134,9 @@ namespace FlexDMD
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
+        float PrefWidth { get; }
+        float PrefHeight { get; }
+        void Pack();
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
@@ -154,6 +163,9 @@ namespace FlexDMD
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
+        float PrefWidth { get; }
+        float PrefHeight { get; }
+        void Pack();
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
@@ -179,6 +191,9 @@ namespace FlexDMD
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
+        float PrefWidth { get; }
+        float PrefHeight { get; }
+        void Pack();
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
@@ -204,6 +219,9 @@ namespace FlexDMD
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
         void SetSize(float width, float height);
+        float PrefWidth { get; }
+        float PrefHeight { get; }
+        void Pack();
         void Remove();
         IActionFactory ActionFactory { get; }
         void AddAction([MarshalAs(UnmanagedType.Struct)]Action action);
