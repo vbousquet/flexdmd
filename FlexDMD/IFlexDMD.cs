@@ -110,6 +110,7 @@ namespace FlexDMD
         void ClearActions();
 
         // Group interface
+        bool Clip { get; set; }
         IGroupActor GetGroup(string name);
         IFrameActor GetFrame(string name);
         ILabelActor GetLabel(string name);
