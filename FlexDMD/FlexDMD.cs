@@ -199,11 +199,11 @@ namespace FlexDMD
                     return;
                 }
                 if (_gameName == value) return;
-                bool wasVisible = Run;
-                Run = false;
+                bool wasVisible = Show;
+                Show = false;
                 log.Info("Game name set to {0}", value);
                 _gameName = value;
-                Run = wasVisible;
+                Show = wasVisible;
             }
         }
 
@@ -214,10 +214,10 @@ namespace FlexDMD
             {
                 if (_width < 1) return;
                 if (_width == value) return;
-                bool wasVisible = Run;
-                Run = false;
+                bool wasVisible = Show;
+                Show = false;
                 _width = value;
-                Run = wasVisible;
+                Show = wasVisible;
             }
         }
 
@@ -228,10 +228,10 @@ namespace FlexDMD
             {
                 if (_height < 1) return;
                 if (_height == value) return;
-                bool wasVisible = Run;
-                Run = false;
+                bool wasVisible = Show;
+                Show = false;
                 _height = value;
-                Run = wasVisible;
+                Show = wasVisible;
             }
         }
 
@@ -241,10 +241,10 @@ namespace FlexDMD
             set
             {
                 if (_dmdColor == value) return;
-                bool wasVisible = Run;
-                Run = false;
+                bool wasVisible = Show;
+                Show = false;
                 _dmdColor = value;
-                Run = wasVisible;
+                Show = wasVisible;
             }
         }
 
@@ -254,11 +254,11 @@ namespace FlexDMD
             set
             {
                 if (_renderMode == value) return;
-                bool wasRunning = Run;
-                Run = false;
+                bool wasRunning = Show;
+                Show = false;
                 log.Info("Render mode set to {0}", value);
                 _renderMode = value;
-                Run = wasRunning;
+                Show = wasRunning;
             }
         }
 
