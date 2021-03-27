@@ -43,6 +43,8 @@ namespace FlexDMD
 
         public override float PrefHeight { get => _textHeight; }
 
+        public bool AutoPack { get; set; } = true;
+
         public string Text
         {
             get => _text;
@@ -85,6 +87,7 @@ namespace FlexDMD
             var size = _font.MeasureFont(_text);
             _textWidth = size.Width;
             _textHeight = size.Height;
+            if (AutoPack) Pack();
         }
 
         public override void Draw(Graphics graphics)
