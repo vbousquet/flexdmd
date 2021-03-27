@@ -42,6 +42,13 @@ namespace FlexDMD
             }
         }
 
+        uint ARGBToABGR(uint argbColor)
+        {
+            uint r = (argbColor >> 16) & 0xFF;
+            uint b = argbColor & 0xFF;
+            return (argbColor & 0xFF00FF00) | (b << 16) | r;
+        }
+
         private void PrepareTextures()
         {
             if (_textures != null) return;
@@ -54,8 +61,7 @@ namespace FlexDMD
             // Render outlines font (note that the outline is created in the glyph padding area, so the font must have a padding of 1 pixel per char on all sides)
             if (FontDef.BorderSize > 0)
             {
-				uint outline = (uint) FontDef.BorderTint.ToArgb();
-				uint fill = (uint)FontDef.Tint.ToArgb();
+				uint outline = ARGBToABGR((uint) FontDef.BorderTint.ToArgb());
                 // TODO do not process the complete bitmap but only the glyph areas
                 for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
