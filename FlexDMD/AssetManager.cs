@@ -33,6 +33,24 @@ namespace FlexDMD
         Bitmap Filter(Bitmap src);
     }
 
+    public class RegionFilter : IBitmapFilter
+    {
+        public Rectangle _region = new Rectangle(0, 0, 0, 0);
+
+        public Bitmap Filter(Bitmap src)
+        {
+            var dst = new Bitmap(_region.Width, _region.Height);
+            for (int y = 0; y < _region.Height; y++)
+            {
+                for (int x = 0; x < _region.Width; x++)
+                {
+                    dst.SetPixel(x, y, src.GetPixel(_region.X + x, _region.Y + y));
+                }
+            }
+            return dst;
+        }
+    }
+
     public class DotFilter : IBitmapFilter
     {
         public int _dotSize = 2;
@@ -252,7 +270,13 @@ namespace FlexDMD
                         GraphicUtils.BGRtoRGB(image);
                     }
                     // Ensure that we own the data, and close the stream (ugly hack, see: https://github.com/fo-dicom/fo-dicom/issues/634#issuecomment-365265745)
-                    if (originalImage == image) image = (Bitmap)((Bitmap)(object)image).Clone();
+                    if (originalImage == image)
+                    {
+                        var cloner = new RegionFilter();
+                        cloner._region = new Rectangle(0, 0, image.Width, image.Height);
+                        image = cloner.Filter(image);
+                        // image = (Bitmap)((Bitmap)(object)image).Clone();
+                    }
                     _assets.CloseStream(stream, (string)_id);
                     _value = (T)Convert.ChangeType(image, typeof(T));
                     _loaded = true;
@@ -289,6 +313,7 @@ namespace FlexDMD
 
     public class AssetManager : IDisposable
     {
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly Dictionary<object, object> _cache = new Dictionary<object, object>();
         private VPXFile _vpxFile = null;
 
@@ -478,23 +503,40 @@ namespace FlexDMD
             var filters = new List<object>();
             foreach (string definition in path.Split('&'))
             {
-                if (definition.StartsWith("dmd=") && int.TryParse(definition.Substring(4), out int dotSize))
+                try
                 {
-                    var filter = new DotFilter();
-                    filter._dotSize = dotSize;
-                    filters.Add(filter);
-                }
-                else if (definition.StartsWith("dmd2=") && int.TryParse(definition.Substring(4), out int dotSize2))
+                    if (definition.StartsWith("dmd=") && int.TryParse(definition.Substring(4), out int dotSize))
+                    {
+                        var filter = new DotFilter();
+                        filter._dotSize = dotSize;
+                        filters.Add(filter);
+                    }
+                    else if (definition.StartsWith("dmd2=") && int.TryParse(definition.Substring(4), out int dotSize2))
+                    {
+                        var filter = new DotFilter();
+                        filter._dotSize = dotSize2;
+                        filter._offset = 1;
+                        filters.Add(filter);
+                    }
+                    else if (definition.StartsWith("add"))
+                    {
+                        var filter = new AdditiveFilter();
+                        filters.Add(filter);
+                    }
+                    else if (definition.StartsWith("region"))
+                    {
+                        var filter = new RegionFilter();
+                        var rect = definition.Split(',');
+                        filter._region.X = int.Parse(rect[0]);
+                        filter._region.Y = int.Parse(rect[1]);
+                        filter._region.Width = int.Parse(rect[2]);
+                        filter._region.Height = int.Parse(rect[3]);
+                        filters.Add(filter);
+                    }
+                } 
+                catch (Exception e)
                 {
-                    var filter = new DotFilter();
-                    filter._dotSize = dotSize2;
-                    filter._offset = 1;
-                    filters.Add(filter);
-                }
-                else if (definition.StartsWith("add"))
-                {
-                    var filter = new AdditiveFilter();
-                    filters.Add(filter);
+                    log.Error(e, "Failed to create filter for: ", definition);
                 }
             }
             return filters;
