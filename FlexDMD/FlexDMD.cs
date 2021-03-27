@@ -37,7 +37,7 @@ namespace FlexDMD
         private readonly Group _stage = new Group() { Name = "Stage" };
         private readonly int _frameRate = 60;
         private readonly Mutex _renderMutex = new Mutex();
-        private DMDDevice _dmd = null;
+        private DMDDevice _dmdDevice = null, _dmdScreen = null;
         private Thread _processThread = null;
         private bool _run = false;
         private bool _show = true;
@@ -134,11 +134,9 @@ namespace FlexDMD
         private void ShowDMD(bool show)
         {
             LockRenderThread();
-            if (show && _dmd == null)
+            if (show && _dmdDevice == null)
             {
                 log.Info("Show DMD");
-                _dmd = new DMDDevice();
-                _dmd.Open();
                 var options = new PMoptions
                 {
                     Red = _dmdColor.R,
@@ -176,14 +174,22 @@ namespace FlexDMD
                         log.Info("GameName was not set, using file name instead: '" + _gameName + "'");
                     }
                 }
-                _dmd.GameSettings(_gameName, 0, options);
+                _dmdDevice = new DMDDevice("dmddevice");
+                _dmdDevice.Open();
+                _dmdDevice.GameSettings(_gameName, 0, options);
+                _dmdScreen = new DMDDevice("dmdscreen");
+                _dmdScreen.Open();
+                _dmdScreen.GameSettings(_gameName, 0, options);
             }
-            else if (!show && _dmd != null)
+            else if (!show && _dmdDevice != null)
             {
                 log.Info("Hide DMD");
-                _dmd.Close();
-                _dmd.Dispose();
-                _dmd = null;
+                _dmdDevice.Close();
+                _dmdDevice.Dispose();
+                _dmdDevice = null;
+                _dmdScreen.Close();
+                _dmdScreen.Dispose();
+                _dmdScreen = null;
             }
             UnlockRenderThread();
         }
@@ -368,7 +374,8 @@ namespace FlexDMD
                         seg2[i] = (short)((object[])value)[Size1 + i];
                     }
                 }
-                _dmd.RenderlphaNumeric(NumericalLayout.__2x16Alpha, _segData1, _segData2);
+                _dmdDevice.RenderAlphaNumeric(NumericalLayout.__2x16Alpha, _segData1, _segData2);
+                _dmdScreen.RenderAlphaNumeric(NumericalLayout.__2x16Alpha, _segData1, _segData2);
             }
         }
 
@@ -532,7 +539,8 @@ namespace FlexDMD
                         }
                         try
                         {
-                            _dmd?.RenderGray2(_width, _height, _bpFrame);
+                            _dmdDevice?.RenderGray2(_width, _height, _bpFrame);
+                            _dmdScreen?.RenderGray2(_width, _height, _bpFrame);
                         }
                         catch (Exception) { }
                         break;
@@ -564,7 +572,8 @@ namespace FlexDMD
                         }
                         try
                         {
-                            _dmd?.RenderGray4(_width, _height, _bpFrame);
+                            _dmdDevice?.RenderGray4(_width, _height, _bpFrame);
+                            _dmdScreen?.RenderGray4(_width, _height, _bpFrame);
                         }
                         catch (Exception) { }
                         break;
@@ -596,7 +605,8 @@ namespace FlexDMD
                         }
                         try
                         {
-                            _dmd?.RenderRgb24(_width, _height, data.Scan0);
+                            _dmdDevice?.RenderRgb24(_width, _height, data.Scan0);
+                            _dmdScreen?.RenderRgb24(_width, _height, data.Scan0);
                         }
                         catch (Exception) { }
                         break;

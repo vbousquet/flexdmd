@@ -32,6 +32,20 @@ namespace FlexDMD
         public static extern bool FreeLibrary(IntPtr hModule);
     }
 
+    /* Unimplemented methods:
+    [DllImport("dmddevice", EntryPoint = "Console_Data", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void ConsoleData(byte data);
+
+    [DllImport("dmddevice", EntryPoint = "Render_PM_Alphanumeric_Frame", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void RenderAlphaNum(NumericalLayout numericalLayout, IntPtr seg_data, IntPtr seg_data2);
+
+    [DllImport("dmddevice", EntryPoint = "Set_4_Colors_Palette", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void SetGray2Palette(Rgb24 color0, Rgb24 color33, Rgb24 color66, Rgb24 color100);
+
+    [DllImport("dmddevice", EntryPoint = "Set_16_Colors_Palette", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void SetGray4Palette(IntPtr palette);
+    */
+
     public class DMDDevice : IDisposable
     {
         // see https://github.com/Studiofreya/code-samples/blob/master/samples/dynamic-loading-of-native-dlls/NativeConsumer/Program.cs
@@ -80,10 +94,10 @@ namespace FlexDMD
         private readonly GameSettingsDeviceDelegate _gameSettingsDevice = null;
         private int _id = -1;
 
-        public DMDDevice()
+        public DMDDevice(string basename = "dmddevice")
         {
-            string libraryName = "dmddevice.dll";
-            if (Environment.Is64BitProcess) libraryName = "dmddevice64.dll";
+            string libraryName = basename + ".dll";
+            if (Environment.Is64BitProcess) libraryName = basename + "64.dll";
             var fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), libraryName);
             _dllhandle = NativeLibrary.LoadLibrary(fullPath);
             if (_dllhandle != IntPtr.Zero)
@@ -130,7 +144,7 @@ namespace FlexDMD
         {
             if (_dllhandle != IntPtr.Zero)
             {
-                LogManager.GetCurrentClassLogger().Info("Disposing DmdDevice.dll");
+                LogManager.GetCurrentClassLogger().Info("Disposing DMD dynamic link library");
                 NativeLibrary.FreeLibrary(_dllhandle);
             }
             _dllhandle = IntPtr.Zero;
@@ -139,7 +153,7 @@ namespace FlexDMD
         ~DMDDevice()
         {
             if (_dllhandle != IntPtr.Zero)
-                LogManager.GetCurrentClassLogger().Error("DmdDevice was not disposed before destructor call");
+                LogManager.GetCurrentClassLogger().Error("DMD dynamic link library was not disposed before destructor call");
             Dispose();
         }
 
@@ -176,7 +190,7 @@ namespace FlexDMD
             if (_id >= 0) _renderGray2Device?.Invoke(_id, width, height, currbuffer); else _renderGray2?.Invoke(width, height, currbuffer);
         }
 
-        public void RenderlphaNumeric(NumericalLayout numericalLayout, IntPtr seg_data, IntPtr seg_data2)
+        public void RenderAlphaNumeric(NumericalLayout numericalLayout, IntPtr seg_data, IntPtr seg_data2)
         {
             if (_id >= 0) _renderAlphaNumericDevice?.Invoke(_id, numericalLayout, seg_data, seg_data2); else _renderAlphaNumeric?.Invoke(numericalLayout, seg_data, seg_data2);
         }
@@ -188,37 +202,6 @@ namespace FlexDMD
             if (_id >= 0) _gameSettingsDevice?.Invoke(_id, gameName, hardwareGeneration, ptr); else _gameSettings?.Invoke(gameName, hardwareGeneration, ptr);
             Marshal.FreeHGlobal(ptr);
         }
-
-        /*
-        [DllImport("dmddevice", EntryPoint = "Open", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Open();
-
-        [DllImport("dmddevice", EntryPoint = "Close", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Close();
-
-        [DllImport("dmddevice", EntryPoint = "PM_GameSettings", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void GameSettings(string gameName, ulong hardwareGeneration, IntPtr options);
-
-        [DllImport("dmddevice", EntryPoint = "Console_Data", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void ConsoleData(byte data);
-
-        [DllImport("dmddevice", EntryPoint = "Render_RGB24", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void RenderRgb24(ushort width, ushort height, IntPtr currbuffer);
-
-        [DllImport("dmddevice", EntryPoint = "Render_16_Shades", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void RenderGray4(ushort width, ushort height, IntPtr currbuffer);
-
-        [DllImport("dmddevice", EntryPoint = "Render_4_Shades", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void RenderGray2(ushort width, ushort height, IntPtr currbuffer);
-
-        [DllImport("dmddevice", EntryPoint = "Render_PM_Alphanumeric_Frame", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void RenderAlphaNum(NumericalLayout numericalLayout, IntPtr seg_data, IntPtr seg_data2);
-
-        [DllImport("dmddevice", EntryPoint = "Set_4_Colors_Palette", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetGray2Palette(Rgb24 color0, Rgb24 color33, Rgb24 color66, Rgb24 color100);
-
-        [DllImport("dmddevice", EntryPoint = "Set_16_Colors_Palette", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetGray4Palette(IntPtr palette);*/
 
         public enum NumericalLayout
         {
@@ -258,5 +241,6 @@ namespace FlexDMD
             public char Green;
             public char Blue;
         }
+
     }
 }
