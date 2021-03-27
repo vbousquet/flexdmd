@@ -269,14 +269,6 @@ namespace FlexDMD
                         // Only convert for still image; animated ones are converted when played
                         GraphicUtils.BGRtoRGB(image);
                     }
-                    // Ensure that we own the data, and close the stream (ugly hack, see: https://github.com/fo-dicom/fo-dicom/issues/634#issuecomment-365265745)
-                    if (originalImage == image)
-                    {
-                        var cloner = new RegionFilter();
-                        cloner._region = new Rectangle(0, 0, image.Width, image.Height);
-                        image = cloner.Filter(image);
-                        // image = (Bitmap)((Bitmap)(object)image).Clone();
-                    }
                     _assets.CloseStream(stream, (string)_id);
                     _value = (T)Convert.ChangeType(image, typeof(T));
                     _loaded = true;
@@ -399,7 +391,7 @@ namespace FlexDMD
 
         public void CloseStream(Stream stream, string path, string siblingPath = null)
         {
-            // TODO implement stream closing
+            stream.Close();
         }
 
         public bool FileExists(string path, string siblingPath = null)
@@ -511,7 +503,7 @@ namespace FlexDMD
                         filter._dotSize = dotSize;
                         filters.Add(filter);
                     }
-                    else if (definition.StartsWith("dmd2=") && int.TryParse(definition.Substring(4), out int dotSize2))
+                    else if (definition.StartsWith("dmd2=") && int.TryParse(definition.Substring(5), out int dotSize2))
                     {
                         var filter = new DotFilter();
                         filter._dotSize = dotSize2;
@@ -523,10 +515,10 @@ namespace FlexDMD
                         var filter = new AdditiveFilter();
                         filters.Add(filter);
                     }
-                    else if (definition.StartsWith("region"))
+                    else if (definition.StartsWith("region="))
                     {
                         var filter = new RegionFilter();
-                        var rect = definition.Split(',');
+                        var rect = definition.Substring(7).Split(',');
                         filter._region.X = int.Parse(rect[0]);
                         filter._region.Y = int.Parse(rect[1]);
                         filter._region.Width = int.Parse(rect[2]);
