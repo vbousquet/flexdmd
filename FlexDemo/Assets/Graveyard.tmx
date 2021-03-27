@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="left-down" compressionlevel="-1" width="48" height="4" tilewidth="8" tileheight="8" infinite="0" nextlayerid="4" nextobjectid="1">
+ <tileset firstgid="1" name="Tiles" tilewidth="29" tileheight="24" tilecount="30" columns="0">
+  <grid orientation="orthogonal" width="1" height="1"/>
+  <tile id="0">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Bones (1).png"/>
+  </tile>
+  <tile id="1">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Bones (2).png"/>
+  </tile>
+  <tile id="2">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Bones (3).png"/>
+  </tile>
+  <tile id="3">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Bones (4).png"/>
+  </tile>
+  <tile id="4">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (1).png"/>
+  </tile>
+  <tile id="5">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (2).png"/>
+  </tile>
+  <tile id="6">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (3).png"/>
+  </tile>
+  <tile id="7">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (4).png"/>
+  </tile>
+  <tile id="8">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (5).png"/>
+  </tile>
+  <tile id="9">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (6).png"/>
+  </tile>
+  <tile id="10">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (7).png"/>
+  </tile>
+  <tile id="11">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (8).png"/>
+  </tile>
+  <tile id="12">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (9).png"/>
+  </tile>
+  <tile id="13">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (10).png"/>
+  </tile>
+  <tile id="14">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (11).png"/>
+  </tile>
+  <tile id="15">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (12).png"/>
+  </tile>
+  <tile id="16">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (13).png"/>
+  </tile>
+  <tile id="17">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (14).png"/>
+  </tile>
+  <tile id="18">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (15).png"/>
+  </tile>
+  <tile id="19">
+   <image width="8" height="8" source="GraveyardTileset/png/Tiles/Scaled/Tile (16).png"/>
+  </tile>
+  <tile id="40">
+   <image width="9" height="9" source="GraveyardTileset/png/Objects/Scaled/ArrowSign.png"/>
+  </tile>
+  <tile id="41">
+   <image width="18" height="9" source="GraveyardTileset/png/Objects/Scaled/Bush (1).png"/>
+  </tile>
+  <tile id="42">
+   <image width="10" height="6" source="GraveyardTileset/png/Objects/Scaled/Bush (2).png"/>
+  </tile>
+  <tile id="43">
+   <image width="11" height="11" source="GraveyardTileset/png/Objects/Scaled/Crate.png"/>
+  </tile>
+  <tile id="44">
+   <image width="13" height="7" source="GraveyardTileset/png/Objects/Scaled/DeadBush.png"/>
+  </tile>
+  <tile id="45">
+   <image width="9" height="9" source="GraveyardTileset/png/Objects/Scaled/Sign.png"/>
+  </tile>
+  <tile id="46">
+   <image width="10" height="5" source="GraveyardTileset/png/Objects/Scaled/Skeleton.png"/>
+  </tile>
+  <tile id="47">
+   <image width="5" height="6" source="GraveyardTileset/png/Objects/Scaled/TombStone (1).png"/>
+  </tile>
+  <tile id="48">
+   <image width="5" height="8" source="GraveyardTileset/png/Objects/Scaled/TombStone (2).png"/>
+  </tile>
+  <tile id="49">
+   <image width="29" height="24" source="GraveyardTileset/png/Objects/Scaled/Tree.png"/>
+  </tile>
+ </tileset>
+ <layer id="3" name="Calque 3" width="48" height="4">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFQx1oIbG1B8wVQxMAAGnoAFY=
+  </data>
+ </layer>
+ <layer id="1" name="Calque 1" width="48" height="4">
+  <data encoding="base64" compression="zlib">
+   eJxjYBh4wAHEnEDMNdAOIRPA3M9Hhl4jLGKaROo1JCCvj0dOG4ktAMS8QCwIxAZQMS0keWQ2OmAFYjYsmB1NHp2PDevgkSNGPykYZh4AuV4DAQ==
+  </data>
+ </layer>
+ <layer id="2" name="Calque 2" width="48" height="4">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFIxVoIbF1CciDgDYRZjLiEGdGYjNhkWchYC42Pch26WCxhwGLPDoAALb4ARU=
+  </data>
+ </layer>
+</map>
