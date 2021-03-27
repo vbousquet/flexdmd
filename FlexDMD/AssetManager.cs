@@ -268,8 +268,9 @@ namespace FlexDMD
                     {
                         // Only convert for still image; animated ones are converted when played
                         GraphicUtils.BGRtoRGB(image);
+                        // FIXME we only release for still images, since animated GIF are streamed
+                        _assets.CloseStream(stream, (string)_id);
                     }
-                    _assets.CloseStream(stream, (string)_id);
                     _value = (T)Convert.ChangeType(image, typeof(T));
                     _loaded = true;
                 }
