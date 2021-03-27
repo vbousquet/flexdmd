@@ -241,15 +241,19 @@ namespace FlexDMD
                 if (typeof(T) == typeof(Bitmap) && _id.GetType() == typeof(string))
                 {
                     log.Info("New bitmap added to asset manager: {0}", _id);
-                    // TODO stream should closed on unload (but kept open for the lifetime of the Bitmap)
-                    Bitmap image = new Bitmap(_assets.OpenStream((string)_id));
+                    var stream = _assets.OpenStream((string)_id);
+                    Bitmap image = new Bitmap(stream);
+                    var originalImage = image;
                     foreach (IBitmapFilter filter in _assets.GetFilters((string)_id))
                         image = filter.Filter(image);
                     if (!Array.Exists(image.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
                     {
-                        // Only convert for still image; animate ones are converted when played
+                        // Only convert for still image; animated ones are converted when played
                         GraphicUtils.BGRtoRGB(image);
                     }
+                    // Ensure that we own the data, and close the stream (ugly hack, see: https://github.com/fo-dicom/fo-dicom/issues/634#issuecomment-365265745)
+                    if (originalImage == image) image = (Bitmap)((Bitmap)(object)image).Clone();
+                    _assets.CloseStream(stream, (string)_id);
                     _value = (T)Convert.ChangeType(image, typeof(T));
                     _loaded = true;
                 }
@@ -366,6 +370,11 @@ namespace FlexDMD
                 var fullPath = Path.Combine(BasePath, path);
                 return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
             }
+        }
+
+        public void CloseStream(Stream stream, string path, string siblingPath = null)
+        {
+            // TODO implement stream closing
         }
 
         public bool FileExists(string path, string siblingPath = null)
