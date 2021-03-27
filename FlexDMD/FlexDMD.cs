@@ -127,7 +127,7 @@ namespace FlexDMD
             {
                 if (_show == value) return;
                 _show = value;
-                ShowDMD(_show);
+                if (_run) ShowDMD(_show);
             }
         }
 
