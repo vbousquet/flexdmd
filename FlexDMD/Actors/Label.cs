@@ -23,6 +23,7 @@ namespace FlexDMD
     {
         private Font _font;
         private string _text;
+        private string[] _lines;
         private float _textWidth, _textHeight;
 
         public Label()
@@ -59,6 +60,7 @@ namespace FlexDMD
                 if (_text == null || !_text.Equals(newText))
                 {
                     _text = newText;
+                    _lines = _text.Split('\n');
                     UpdateBounds();
                 }
             }
@@ -90,8 +92,22 @@ namespace FlexDMD
             base.Draw(graphics);
             if (Visible && _font != null && _text != null)
             {
-                Layout.Align(Alignment, PrefWidth, PrefHeight, Width, Height, out float x, out float y);
-                _font.DrawText(graphics, (int)(X + x), (int)(Y + y), _text);
+                if (_lines.Length > 1 && Alignment != Alignment.Left && Alignment != Alignment.BottomLeft && Alignment != Alignment.TopLeft)
+                {
+                    // For multiple lines with cneter or right aligne, we must perform the alignment line by line
+                    Layout.Align(Alignment, PrefWidth, PrefHeight, Width, Height, out float x, out float y);
+                    foreach (string line in _lines)
+                    {
+                        Layout.Align(Alignment, _font.MeasureFont(line).Width, PrefHeight, Width, Height, out float lx, out float ly);
+                        _font.DrawText(graphics, (int)(X + lx), (int)(Y + y), line);
+                        y += _font.BitmapFont.LineHeight;
+                    }
+                }
+                else
+                {
+                    Layout.Align(Alignment, PrefWidth, PrefHeight, Width, Height, out float x, out float y);
+                    _font.DrawText(graphics, (int)(X + x), (int)(Y + y), _text);
+                }
             }
         }
     }
