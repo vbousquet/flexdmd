@@ -8,17 +8,17 @@
 	- Can check for PinballY updates and display if any on the main screen (disabled by default)
 
 	TODO:
-	- GameName can not be modified for some reason to be understood
-	- Missing Midway, Spooky Pinball logo animation
 	- Missing animated logo for original tables
 	- Move to FlexDMD API instead of UltraDMD when PinballY will fully marshall COM objects, and add more fancy animations
-*/
 
+	CREDITS:
+	- original script by vbousquet
+	- images by: fr33styler: https://www.dietle.de/projekt-vpin-virtueller-flipper/
+	- slight adjustments by GSadventure
+*/
 
 // Check for a new version of PinballY on each launch (default is false to limit the load on PinballY's servers)
 let checkPinballYUpdate = false;
-
-
 
 
 
@@ -100,15 +100,31 @@ let loopCount = 0;
 let fso = createAutomationObject("Scripting.FileSystemObject");
 let updater;
 let manufacturers = {
+	"Aliens vs Pinball": ["./Scripts/dmds/manufacturers/Aliens vs Pinball.gif"],
 	"Bally": ["./Scripts/dmds/manufacturers/bally.gif"],
+	"Bethesda Pinball": ["./Scripts/dmds/manufacturers/Bethesda Pinball.gif"],
 	"Capcom": ["./Scripts/dmds/manufacturers/capcom.gif"],
 	"Data East": ["./Scripts/dmds/manufacturers/dataeast-1.gif", "./Scripts/dmds/manufacturers/dataeast-2.gif"],
-	"Gottlieb": ["./Scripts/dmds/manufacturers/gottlieb.png"],
+	"Foxnext Games": ["./Scripts/dmds/manufacturers/Foxnext Games.gif"],
+	"Gottlieb": ["./Scripts/dmds/manufacturers/gottlieb.gif"],
+	"Jurassic Pinball": ["./Scripts/dmds/manufacturers/Jurassic Pinball.gif"],
+	"Marvel": ["./Scripts/dmds/manufacturers/Marvel.gif"],
 	"Midway": ["./Scripts/dmds/manufacturers/bally.gif"],
 	"Premier": ["./Scripts/dmds/manufacturers/premier.gif"],
+	"Rowamet": ["./Scripts/dmds/manufacturers/Rowamet.gif"],	
 	"Sega": ["./Scripts/dmds/manufacturers/sega.gif"],
+	"Spooky": ["./Scripts/dmds/manufacturers/Spooky.gif"],
+	"Star Wars Pinball": ["./Scripts/dmds/manufacturers/Star Wars Pinball.gif"],
 	"Stern": ["./Scripts/dmds/manufacturers/stern.gif"],
-	"Williams": ["./Scripts/dmds/manufacturers/williams.gif"]
+	"Taito": ["./Scripts/dmds/manufacturers/Taito.gif"],
+	"The Walking Dead": ["./Scripts/dmds/manufacturers/The Walking Dead.gif"],
+	"Universal Pinball": ["./Scripts/dmds/manufacturers/Universal Pinball.gif"],
+	"Williams": ["./Scripts/dmds/manufacturers/williams.gif"],
+	"WilliamsFX3Pinball": ["./Scripts/dmds/manufacturers/williams.gif"],
+	"VPX": ["./Scripts/dmds/manufacturers/VPX.gif"],
+	"VALVe": ["./Scripts/dmds/manufacturers/VALVe.gif"],
+	"Zaccaria": ["./Scripts/dmds/manufacturers/Zaccaria.gif"],
+	"Zen Studios": ["./Scripts/dmds/manufacturers/Zen Studios.gif"]
 }
 // logfile.log(getMethods(dmd).join("\n"));
 function TestMarshalling() {
@@ -128,6 +144,7 @@ function UpdateDMD() {
 		dmd.GameName = "";
 		dmd.Width = 128;
 		dmd.Height = 32;
+		//dmd.Color = 0xFFFFFFFF;
 		dmd.Show = true;
 		dmd.Run = true;
 		udmd = dmd.NewUltraDMD();
@@ -154,8 +171,9 @@ function UpdateDMD() {
 
 	udmd.CancelRendering();
 
+	// This will reopen the DMD with the right ROM name, allowing for ROM customization in dmddevice.ini
 	if (loopCount == 0) {
-		/*let rom = info.resolveROM();
+		let rom = info.resolveROM();
 		logfile.log("> Update DMD for:");
 		logfile.log("> rom: '".concat(rom.vpmRom, "'"));
 		logfile.log("> manufacturer:", info.manufacturer);
@@ -167,18 +185,24 @@ function UpdateDMD() {
 			dmd.GameName = "";
 		} else {
 			dmd.GameName = rom.vpmRom.toString();
-		}*/
+		}
 	}
-
+	
 	// Manufacturer
-	let transitionMargin = (20 * 1000) / 60;
-	if (info.manufacturer in manufacturers) {
-		var medias = manufacturers[info.manufacturer];
-		var media = medias[Math.floor(Math.random() * medias.length)];
-		queueVideo(media, 10, 8, transitionMargin);
-	} else if (info.manufacturer !== undefined) {
-		udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000, 8);
-	}
+    let transitionMargin = (20 * 1000) / 60;
+    //little workaround for special character in Williams "TM" Pinball Problem from FX3
+    let manufacturer_temp = info.manufacturer;
+    // If its Williams and it has more than 8 chars
+    if (manufacturer_temp != null && (manufacturer_temp.substr(0,8) == "Williams") && (manufacturer_temp.length > 8)){
+        manufacturer_temp = "WilliamsFX3Pinball";
+    }
+    if (manufacturer_temp in manufacturers) {
+        var medias = manufacturers[manufacturer_temp];
+        var media = medias[Math.floor(Math.random() * medias.length)];
+        queueVideo(media, 10, 8, transitionMargin);
+    } else if (info.manufacturer !== undefined) {
+        udmd.DisplayScene00("FlexDMD.Resources.dmds.black.png", info.manufacturer, 15, "", 15, 10, 3000, 8);
+    }
 	
 	// Title
 	var hasTitle = false;
@@ -259,7 +283,10 @@ function UpdateDMD() {
 gameList.on("gameselect", event => {
 	logfile.log("> gameselect");
 	info = event.game;
-	UpdateDMD();
+	// Delay update since we have to reset the DMD to take in account the ROM settings which can cause stutters
+	if (updater !== undefined) clearTimeout(updater);
+	updater = setTimeout(UpdateDMD, 200);
+	// UpdateDMD();
 });
 
 gameList.on("highscoresready", event => {
