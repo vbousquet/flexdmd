@@ -20,7 +20,10 @@
 // Check for a new version of PinballY on each launch (default is false to limit the load on PinballY's servers)
 let checkPinballYUpdate = false;
 
-
+// If true, use the table rom as the game name, like VPinMame does. This allow to have the same styling of the DMD
+// as in game but it also needs to release/create DMD after each table change which may lead to delay or stuttering.
+// This is the reason why this option is false by default.
+let useTableRom = false
 
 
 // Check for new release of PinballY (taken from http://mjrnet.org/pinscape/downloads/PinballY/Help/UpdateCheckExample.html)
@@ -141,10 +144,10 @@ function UpdateDMD() {
 
 	if (dmd == null) {
 		dmd = createAutomationObject("FlexDMD.FlexDMD");
-		dmd.GameName = "";
+		dmd.GameName = "PinballY";
+		dmd.RenderMode = 1; // 0 = Gray 4 shades, 1 = Gray 16 shades, 2 = Full color
 		dmd.Width = 128;
 		dmd.Height = 32;
-		//dmd.Color = 0xFFFFFFFF;
 		dmd.Show = true;
 		dmd.Run = true;
 		udmd = dmd.NewUltraDMD();
@@ -172,7 +175,7 @@ function UpdateDMD() {
 	udmd.CancelRendering();
 
 	// This will reopen the DMD with the right ROM name, allowing for ROM customization in dmddevice.ini
-	if (loopCount == 0) {
+	if (useTableRom && loopCount == 0) {
 		let rom = info.resolveROM();
 		logfile.log("> Update DMD for:");
 		logfile.log("> rom: '".concat(rom.vpmRom, "'"));
@@ -284,9 +287,12 @@ gameList.on("gameselect", event => {
 	logfile.log("> gameselect");
 	info = event.game;
 	// Delay update since we have to reset the DMD to take in account the ROM settings which can cause stutters
-	if (updater !== undefined) clearTimeout(updater);
-	updater = setTimeout(UpdateDMD, 200);
-	// UpdateDMD();
+	if (useTableRom) {
+		if (updater !== undefined) clearTimeout(updater);
+		updater = setTimeout(UpdateDMD, 200);
+	} else {
+		UpdateDMD();
+	}
 });
 
 gameList.on("highscoresready", event => {
