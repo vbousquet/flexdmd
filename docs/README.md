@@ -21,7 +21,13 @@ The main features are summarized below:
 * Drop-in replacement for UltraDMD (strictly compatible API with nearly identical rendering).
 
 ## Installation
-[Download the latest release](https://github.com/vbousquet/flexdmd/releases). It comes with the following files ;
+
+Download the latest release or snapshot build: 
+| Release | Snapshot |
+| ------- | -------- |
+| [GitHub Releases](https://github.com/vbousquet/flexdmd/releases) | [GitHub Actions](https://github.com/vbousquet/flexdmd/actions?query=workflow%3A%22CI%22) |
+
+It comes with the following files ;
 - FlexDMDUI.exe, an application to install and test it,
 - FlexDMD.dll, the FlexDMD library itself,
 - FlexUDMD.dll, the UltraDMD replacement,
@@ -37,18 +43,17 @@ To check that everything is fine, switch from the 'Installer' tab to one of the 
 
 Finally, you should head to the [Scripts folder](./Scripts/) where you will find a few prepared scripts;
 * to add DMD for some popular tables: download and place them in your 'Table' directory alongside the .vpx table file and VPX 10.6+ will detect and use them,
-* for PinballY front-end: download and place in the PinballY's "Scripts" folder,
+* for PinballY front-end: download and place in the PinballY's "Scripts" folder (there are a few options at the beginning of the script),
 * to show some of the features offered by FlexDMD for more advanced users.
 
 ## Configuration
 FlexDMD does not have any configuration file:
-* The DMD is entirely defined in the table script,
-* The output is configured using the DmdDevice configuration file.
+* The DMD is entirely defined in the table script (monochrome/colors, number of dots,...),
+* The output is configured using the DmdDevice configuration file (target output, position on screen, size of dots,...).
 
 Therefore to position the DMD, if you are using Freezy's DMD, simply run the table, right click on the DMD and select the option to save its position.
 
 When using FlexDMD as an UltraDMD replacement, you may want to edit UltraDMD options regarding DMD's coloring. This is easily done using the FlexDMD companion application (FlexDMDUI.exe) in the configuration tab.
-
 
 ## Build Instructions
 1. Download and install [Visual Studio 2019](https://visualstudio.microsoft.com/fr/downloads/)
@@ -65,4 +70,3 @@ Whilst it is not the preferred way of using it, FlexDMDUI.exe can also be used f
 * ```FlexDMDUI.exe /register-udmd path``` will unblock the FlexDMD's UltraDMD bridge DLL (FlexUDMD.dll) at the given path and register it.
 * ```FlexDMDUI.exe /unregister``` will unregister FlexDMD.
 * ```FlexDMDUI.exe /unregister-udmd``` will unregister FlexDMD's UltraDMD bridge.
-
