@@ -27,13 +27,13 @@ Download the latest release or snapshot build:
 | ------- | -------- |
 | [GitHub Releases](https://github.com/vbousquet/flexdmd/releases) | [GitHub Actions](https://github.com/vbousquet/flexdmd/actions?query=workflow%3A%22CI%22) |
 
-It comes with the following files ;
+It comes with the following files;
 - FlexDMDUI.exe, an application to install and test it,
 - FlexDMD.dll, the FlexDMD library itself,
 - FlexUDMD.dll, the UltraDMD replacement,
 - FlexDMD.log.config, a file that instruct FlexDMD to produce a log file.
 
-Beside these files, you will need ```DmdDevice.dll``` for 32 bits rendering, and ```DmdDevice64.dll``` for 64 bits rendering. There can be different flavors of these. The ones used for developping FlexDMD are [Freezy's DMD Extensions](https://github.com/freezy/dmd-extensions), where you can find the needed files in the "Release" section. Just place them alongside the FlexDMD files (the 64bits version need to be renamed to DmdDevice64.dll).
+Beside these files, you will need ```DmdDevice.dll``` for 32 bits rendering, and ```DmdDevice64.dll``` for 64 bits rendering. There can be different flavors of these. The ones used for developping FlexDMD are [Freezy's DMD Extensions](https://github.com/freezy/dmd-extensions), where you can find the needed files in the [Release](https://github.com/freezy/dmd-extensions/releases) section. Just place them alongside the FlexDMD files (the 64bits version need to be renamed to DmdDevice64.dll).
 
 You can place these 6 files where you want. It happens that [VPinMame](https://sourceforge.net/projects/pinmame/) also uses DMDDevice.dll and requires it to be placed alongside itself. Therefore a good place to place FlexDMD and DMDDevice files would be in your VPinMame folder (usually C:\Visual Pinball\VPinMAME).
 
@@ -41,7 +41,9 @@ The FlexDMDUI.exe application allows you to install the different parts and test
 
 To check that everything is fine, switch from the 'Installer' tab to one of the 'Designer' tab and press 'Run'.
 
-Finally, you should head to the [Scripts folder](./Scripts/) where you will find a few prepared scripts;
+A [VPX table](https://github.com/vbousquet/flexdmd/tree/master/FlexDemo) which demonstrates some of the capabilities of FlexDMD is provided with each release; just open & run it with [Visual Pinball X](https://github.com/vpinball/vpinball) version 10.6+ to see examples of what can be done.
+
+Finally, you will also find a [Scripts folder](https://github.com/vbousquet/flexdmd/tree/master/Scripts/) with a few prepared scripts;
 * to add DMD for some popular tables: download and place them in your 'Table' directory alongside the .vpx table file and VPX 10.6+ will detect and use them,
 * for PinballY front-end: download and place in the PinballY's "Scripts" folder (there are a few options at the beginning of the script),
 * to show some of the features offered by FlexDMD for more advanced users.
