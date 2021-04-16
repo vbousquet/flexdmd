@@ -39,6 +39,7 @@ namespace FlexDMD
         private bool _visible = true;
         private bool _opened = false;
         private float _seek = -1f;
+        private int format = -1;
 
         public static readonly Guid MF_MT_FRAME_SIZE = new Guid(0x1652c33d, 0xd6b2, 0x4012, 0xb8, 0x34, 0x72, 0x03, 0x08, 0x49, 0xa3, 0x7d);
         public static readonly Guid MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING = new Guid(0xfb394f3d,0xccf1,0x42ee,0xbb,0xb3,0xf9,0xb8,0x45,0xd5,0x68,0x1d);
@@ -218,9 +219,11 @@ namespace FlexDMD
                 reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
                 reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
                 Marshal.ReleaseComObject(outputType);
+                format = 3;
             } 
             catch (Exception)
             {
+                log.Info("Default RGB24 is not supported, trying RGB32 for file '{0}'", _path);
                 try
                 {
                     IMFMediaType outputType = MediaFoundationApi.CreateMediaType();
@@ -230,10 +233,12 @@ namespace FlexDMD
                     reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
                     reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
                     Marshal.ReleaseComObject(outputType);
+                    format = 4;
                 }
                 catch (Exception e)
                 {
                     log.Error(e, "Failed to setup video decoder for file '{0}'", _path);
+                    format = -1;
                 }
             }
         }
@@ -289,16 +294,38 @@ namespace FlexDMD
                     if (buffer is IMF2DBuffer frame)
                     {
                         frame.Lock2D(out IntPtr scanLine0, out int pitch);
-                        GraphicUtils.BGRtoRGB(scanLine0, pitch, _videoWidth, _videoHeight);
-                        _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format24bppRgb, scanLine0);
+                        if (format == 3)
+                        {
+                            GraphicUtils.BGRtoRGB(scanLine0, pitch, _videoWidth, _videoHeight);
+                            _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format24bppRgb, scanLine0);
+                        }
+                        else if (format == 4)
+                        {
+                            GraphicUtils.ABGRtoARGB(scanLine0, pitch, _videoWidth, _videoHeight);
+                            _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format32bppRgb, scanLine0);
+                        }
                         frame.Unlock2D();
                     }
                     else
                     {
                         buffer.Lock(out IntPtr ppbBuffer, out int pcbMaxLength, out int pcbCurrentLength);
-                        var pitch = _videoWidth * 4;
-                        GraphicUtils.ABGRtoARGB(ppbBuffer, pitch, _videoWidth, _videoHeight);
-                        _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format32bppRgb, ppbBuffer);
+                        var pitch = _videoWidth * format;
+                        if (pcbCurrentLength != _videoHeight * pitch)
+                        {
+                            log.Error("Invalid amount of data returned for {0}x{1} video: {2}");
+                        }
+                        else if (format == 3)
+                        {
+                            GraphicUtils.BGRtoRGB(ppbBuffer, pitch, _videoWidth, _videoHeight);
+                            var f = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format24bppRgb, ppbBuffer);
+                            _frame = new Bitmap(f); // Unlink from the temporary data buffer
+                        }
+                        else if (format == 4)
+                        {
+                            GraphicUtils.ABGRtoARGB(ppbBuffer, pitch, _videoWidth, _videoHeight);
+                            var f = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format32bppRgb, ppbBuffer);
+                            _frame = new Bitmap(f); // Unlink from the temporary data buffer
+                        }
                         buffer.Unlock();
                     }
 
