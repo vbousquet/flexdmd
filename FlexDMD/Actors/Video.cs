@@ -41,7 +41,10 @@ namespace FlexDMD
         private float _seek = -1f;
 
         public static readonly Guid MF_MT_FRAME_SIZE = new Guid(0x1652c33d, 0xd6b2, 0x4012, 0xb8, 0x34, 0x72, 0x03, 0x08, 0x49, 0xa3, 0x7d);
+        public static readonly Guid MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING = new Guid(0xfb394f3d,0xccf1,0x42ee,0xbb,0xb3,0xf9,0xb8,0x45,0xd5,0x68,0x1d);
         public static readonly Guid MFVideoFormat_RGB24 = new Guid(20, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+        public static readonly Guid MFVideoFormat_ARGB32 = new Guid(21, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+        public static readonly Guid MFVideoFormat_RGB32 = new Guid(22, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
 
         [ComImport, InterfaceType(ComInterfaceType.InterfaceIsIUnknown), Guid("7DC9D5F9-9ED9-44EC-9BBF-0600BB589FBB")]
         public interface IMF2DBuffer
@@ -151,7 +154,11 @@ namespace FlexDMD
                 }
                 try
                 {
-                    MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out _videoReader);
+                    var attributes = MediaFoundationApi.CreateAttributes(1);
+                    attributes.SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, 1);
+                    // attributes.SetUINT32(MediaFoundationAttributes.MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, 1);
+                    // attributes.SetUINT32(MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, 1);
+                    MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, attributes, out _videoReader);
                     SetupVideoDecoder(_videoReader);
                     ReadNextFrame();
                     nOpenedVideos++;
@@ -200,6 +207,8 @@ namespace FlexDMD
 
         private void SetupVideoDecoder(IMFSourceReader reader)
         {
+            // We first try to read the video as RGB24 frames since they support IMF2DBuffer which is better than the
+            // default IMFMediaBuffer interface which does not provide the stride and may cause frame copy on access.
             try
             {
                 IMFMediaType outputType = MediaFoundationApi.CreateMediaType();
@@ -209,9 +218,23 @@ namespace FlexDMD
                 reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
                 reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
                 Marshal.ReleaseComObject(outputType);
-            } catch (Exception e)
+            } 
+            catch (Exception)
             {
-                log.Error(e, "Failed to setup video decoder for file '{0}'", _path);
+                try
+                {
+                    IMFMediaType outputType = MediaFoundationApi.CreateMediaType();
+                    outputType.SetGUID(MediaFoundationAttributes.MF_MT_MAJOR_TYPE, MediaTypes.MFMediaType_Video);
+                    outputType.SetGUID(MediaFoundationAttributes.MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+                    reader.SetCurrentMediaType(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, IntPtr.Zero, outputType);
+                    reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_ALL_STREAMS, false);
+                    reader.SetStreamSelection(MediaFoundationInterop.MF_SOURCE_READER_FIRST_VIDEO_STREAM, true);
+                    Marshal.ReleaseComObject(outputType);
+                }
+                catch (Exception e)
+                {
+                    log.Error(e, "Failed to setup video decoder for file '{0}'", _path);
+                }
             }
         }
 
@@ -260,12 +283,25 @@ namespace FlexDMD
                     sample.GetSampleTime(out long frameTime);
                     sample.GetSampleDuration(out long frameDuration);
                     sample.GetBufferByIndex(0, out IMFMediaBuffer buffer);
-                    IMF2DBuffer frame = (IMF2DBuffer)buffer;
-                    frame.Lock2D(out IntPtr scanLine0, out int pitch);
+
                     // log.Info("Frame read, next frame at {0} + {1} = {2}", _frameTime, _frameDuration, _frameTime + _frameDuration);
-                    GraphicUtils.BGRtoRGB(scanLine0, pitch, _videoWidth, _videoHeight);
-                    _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format24bppRgb, scanLine0);
-                    frame.Unlock2D();
+
+                    if (buffer is IMF2DBuffer frame)
+                    {
+                        frame.Lock2D(out IntPtr scanLine0, out int pitch);
+                        GraphicUtils.BGRtoRGB(scanLine0, pitch, _videoWidth, _videoHeight);
+                        _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format24bppRgb, scanLine0);
+                        frame.Unlock2D();
+                    }
+                    else
+                    {
+                        buffer.Lock(out IntPtr ppbBuffer, out int pcbMaxLength, out int pcbCurrentLength);
+                        var pitch = _videoWidth * 4;
+                        GraphicUtils.ABGRtoARGB(ppbBuffer, pitch, _videoWidth, _videoHeight);
+                        _frame = new Bitmap(_videoWidth, _videoHeight, pitch, PixelFormat.Format32bppRgb, ppbBuffer);
+                        buffer.Unlock();
+                    }
+
                     _frameTime = frameTime / 10000000.0f;
                     _frameDuration = frameDuration / 10000000.0f;
                     Marshal.ReleaseComObject(sample);
