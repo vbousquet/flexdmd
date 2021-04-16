@@ -41,9 +41,9 @@ jobs:
       - name: Package
         run: |
           mkdir tmp 
-          cp FlexDMDUI\bin\Release\FlexDMDUI.exe tmp
-          cp FlexDMD\bin\Release\ILMerge\FlexDMD.dll tmp
-          cp FlexUDMD\bin\Release\FlexUDMD.dll tmp
+          cp FlexDMDUI\bin\ReleaseCI\FlexDMDUI.exe tmp
+          cp FlexDMD\bin\ReleaseCI\ILMerge\FlexDMD.dll tmp
+          cp FlexUDMD\bin\ReleaseCI\FlexUDMD.dll tmp
           cp FlexDMD.log.config tmp
           cp FlexDemo\FlexDemo.vpx tmp
           cp -r Scripts tmp/Scripts
