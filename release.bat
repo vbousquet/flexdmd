@@ -1,7 +1,7 @@
 @echo Off
 set config=%1
 if "%config%" == "" (
-   set config=Release
+   set config=ReleaseCI
 )
 
 set version=

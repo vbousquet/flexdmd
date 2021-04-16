@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Platforms>AnyCPU</Platforms>
     <StartupObject>FlexDMDTest.FlexDMDTest</StartupObject>
+    <Configurations>Debug;Release;ReleaseCI</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

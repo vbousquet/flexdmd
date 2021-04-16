@@ -36,7 +36,7 @@ jobs:
         run: nuget restore FlexDMD.sln
   
       - name: Build
-        run: MSBuild.exe $Env:GITHUB_WORKSPACE/FlexDMD.sln /p:Configuration="Release"
+        run: MSBuild.exe $Env:GITHUB_WORKSPACE/FlexDMD.sln /p:Configuration="ReleaseCI"
 
       - name: Package
         run: |
