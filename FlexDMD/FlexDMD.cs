@@ -177,7 +177,7 @@ namespace FlexDMD
                 _dmdDevice = new DMDDevice("dmddevice");
                 _dmdDevice.Open();
                 _dmdDevice.GameSettings(_gameName, 0, options);
-                _dmdScreen = new DMDDevice("dmdscreen");
+                _dmdScreen = new DMDDevice("dmdscreen", false);
                 _dmdScreen.Open();
                 _dmdScreen.GameSettings(_gameName, 0, options);
             }

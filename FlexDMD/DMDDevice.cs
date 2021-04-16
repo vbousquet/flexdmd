@@ -94,7 +94,7 @@ namespace FlexDMD
         private readonly GameSettingsDeviceDelegate _gameSettingsDevice = null;
         private int _id = -1;
 
-        public DMDDevice(string basename = "dmddevice")
+        public DMDDevice(string basename = "dmddevice", bool errorOnMissing = true)
         {
             string libraryName = basename + ".dll";
             if (Environment.Is64BitProcess) libraryName = basename + "64.dll";
@@ -136,7 +136,14 @@ namespace FlexDMD
             }
             else
             {
-                LogManager.GetCurrentClassLogger().Error("Failed to load {0} in {1}", libraryName, fullPath);
+                if (errorOnMissing)
+                {
+                    LogManager.GetCurrentClassLogger().Error("Failed to load {0} from {1}", libraryName, fullPath);
+                }
+                else
+                {
+                    LogManager.GetCurrentClassLogger().Info("{0} was not loaded since it is not available from {1}", libraryName, fullPath);
+                }
             }
         }
 
