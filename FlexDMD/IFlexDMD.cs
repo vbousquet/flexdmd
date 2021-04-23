@@ -52,12 +52,13 @@ namespace FlexDMD
     public interface IActionFactory
     {
         [return: MarshalAs(UnmanagedType.Struct)] Action Wait(float secondsToWait);
+        [return: MarshalAs(UnmanagedType.Struct)] Action Delayed(float secondsToWait, [MarshalAs(UnmanagedType.Struct)] Action action);
         ICompositeAction Parallel();
         ICompositeAction Sequence();
         [return: MarshalAs(UnmanagedType.Struct)] Action Repeat([MarshalAs(UnmanagedType.Struct)]Action action, int count);
         [return: MarshalAs(UnmanagedType.Struct)] Action Show(bool visible);
         [return: MarshalAs(UnmanagedType.Struct)] Action AddTo(IGroupActor parent);
-        [return: MarshalAs(UnmanagedType.Struct)] Action RemoveFrom(IGroupActor parent);
+        [return: MarshalAs(UnmanagedType.Struct)] Action RemoveFromParent();
         [return: MarshalAs(UnmanagedType.Struct)] Action AddChild([MarshalAs(UnmanagedType.Struct)] Actor child);
         [return: MarshalAs(UnmanagedType.Struct)] Action RemoveChild([MarshalAs(UnmanagedType.Struct)] Actor child);
         [return: MarshalAs(UnmanagedType.Struct)] Action Seek(float pos);
@@ -74,6 +75,8 @@ namespace FlexDMD
         float Width { get; set; }
         float Height { get; set; }
         bool Visible { get; set; }
+        bool FillParent { get; set; }
+        bool ClearBackground { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
@@ -97,6 +100,8 @@ namespace FlexDMD
         float Width { get; set; }
         float Height { get; set; }
         bool Visible { get; set; }
+        bool FillParent { get; set; }
+        bool ClearBackground { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
@@ -131,6 +136,8 @@ namespace FlexDMD
         float Width { get; set; }
         float Height { get; set; }
         bool Visible { get; set; }
+        bool FillParent { get; set; }
+        bool ClearBackground { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
@@ -160,6 +167,8 @@ namespace FlexDMD
         float Width { get; set; }
         float Height { get; set; }
         bool Visible { get; set; }
+        bool FillParent { get; set; }
+        bool ClearBackground { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
@@ -188,6 +197,8 @@ namespace FlexDMD
         float Width { get; set; }
         float Height { get; set; }
         bool Visible { get; set; }
+        bool FillParent { get; set; }
+        bool ClearBackground { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);
@@ -216,6 +227,8 @@ namespace FlexDMD
         float Width { get; set; }
         float Height { get; set; }
         bool Visible { get; set; }
+        bool FillParent { get; set; }
+        bool ClearBackground { get; set; }
         void SetBounds(float x, float y, float width, float height);
         void SetPosition(float x, float y);
         void SetAlignedPosition(float x, float y, Alignment alignment);

@@ -12,7 +12,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
-using Glide;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -21,6 +20,7 @@ namespace FlexDMD
     public class Actor
     {
         private List<Action> _actions = new List<Action>();
+        private SolidBrush _fillBrush = null;
 
         public string Name { get; set; } = "";
         public float X { get; set; } = 0;
@@ -29,6 +29,7 @@ namespace FlexDMD
         public float Height { get; set; } = 0;
         public Group Parent { get; set; } = null;
         public bool FillParent { get; set; } = false;
+        public bool ClearBackground { get; set; } = false;
         public virtual float PrefWidth { get; } = 0;
         public virtual float PrefHeight { get; } = 0;
         public virtual bool InStage { get; set; } = false;
@@ -128,13 +129,18 @@ namespace FlexDMD
 
         public virtual void Update(float secondsElapsed)
         {
-            if (FillParent && Parent != null) SetSize(Parent.Width, Parent.Height);
+            if (FillParent && Parent != null) SetBounds(0, 0, Parent.Width, Parent.Height);
             for (int i = 0; i < _actions.Count; i++)
                 if (_actions[i].Update(secondsElapsed)) _actions.RemoveAt(i);
         }
 
         public virtual void Draw(Graphics graphics)
         {
+            if (ClearBackground)
+            {
+                if (_fillBrush == null) _fillBrush = new SolidBrush(Color.Black);
+                graphics.FillRectangle(_fillBrush, X, Y, Width, Height);
+            }
         }
     }
 }

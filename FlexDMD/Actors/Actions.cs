@@ -1,4 +1,5 @@
 ﻿using Glide;
+using NLog;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -156,6 +157,22 @@ namespace FlexDMD
         }
     }
 
+    public class RemoveFromParentAction : Action
+    {
+        public Actor Target { get; }
+
+        public RemoveFromParentAction(Actor target)
+        {
+            Target = target;
+        }
+
+        public override bool Update(float secondsElapsed)
+        {
+            Target.Parent?.RemoveActor(Target);
+            return true;
+        }
+    }
+
     public class AddChildAction : Action
     {
         public Group Target { get; }
@@ -208,6 +225,30 @@ namespace FlexDMD
             _time += secondsElapsed;
             if (_time >= SecondsToWait)
             {
+                // Prepare for restart
+                _time = 0f;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public class DelayedAction : Action
+    {
+        public float SecondsToWait { get; set; } = 0f;
+        public Action Action;
+
+        private float _time;
+        public DelayedAction(float secondsToWait, Action action)
+        {
+            SecondsToWait = secondsToWait;
+            Action = action;
+        }
+
+        public override bool Update(float secondsElapsed)
+        {
+            _time += secondsElapsed;
+            if (_time >= SecondsToWait && Action.Update(secondsElapsed)) {
                 // Prepare for restart
                 _time = 0f;
                 return true;
@@ -364,12 +405,13 @@ namespace FlexDMD
         public ActionFactory(Actor target) { _target = target; }
 
         [return: MarshalAs(UnmanagedType.Struct)] public Action Wait(float secondsToWait) => new WaitAction(secondsToWait);
+        Action IActionFactory.Delayed(float secondsToWait, Action action) => new DelayedAction(secondsToWait, action);
         public ICompositeAction Parallel() => new ParallelAction();
         public ICompositeAction Sequence() => new SequenceAction();
         [return: MarshalAs(UnmanagedType.Struct)] public Action Repeat([MarshalAs(UnmanagedType.Struct)] Action action, int count) => new RepeatAction(action, count);
         [return: MarshalAs(UnmanagedType.Struct)] public Action Show(bool visible) => new ShowAction(_target, visible);
         [return: MarshalAs(UnmanagedType.Struct)] public Action AddTo(IGroupActor parent) => new AddToAction(_target, parent, true);
-        [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveFrom(IGroupActor parent) => new AddToAction(_target, parent, false);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveFromParent() => new RemoveFromParentAction(_target);
         [return: MarshalAs(UnmanagedType.Struct)] public Action AddChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, true);
         [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, false);
         [return: MarshalAs(UnmanagedType.Struct)] public Action Seek(float pos) => new SeekAction((Video)_target, pos);
