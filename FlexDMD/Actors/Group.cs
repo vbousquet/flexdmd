@@ -102,8 +102,8 @@ namespace FlexDMD
         public override void Update(float delta)
         {
             base.Update(delta);
-            foreach (Actor child in Children)
-                child.Update(delta);
+            for (int i = 0; i < Children.Count; i++)
+                Children[i].Update(delta);
         }
 
         public override void Draw(Graphics graphics)
@@ -115,12 +115,14 @@ namespace FlexDMD
 				{
 					var clipRegion = new RectangleF(0, 0, Width, Height);
 					graphics.SetClip(clipRegion, CombineMode.Replace);
-					foreach (Actor child in Children) child.Draw(graphics);
+                    base.Draw(graphics);
+                    foreach (Actor child in Children) child.Draw(graphics);
 					graphics.ResetClip();
 				}
 				else
 				{
-					foreach (Actor child in Children) child.Draw(graphics);
+                    base.Draw(graphics);
+                    foreach (Actor child in Children) child.Draw(graphics);
 				}
                 graphics.TranslateTransform(-X, -Y);
             }
