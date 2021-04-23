@@ -243,6 +243,7 @@ namespace FlexDMD
 
         // Label interface
         bool AutoPack { get; set; }
+        Alignment Alignment { get; set; }
         Font Font { [return: MarshalAs(UnmanagedType.Struct)] get; [param: MarshalAs(UnmanagedType.Struct)] set; }
         string Text { get; set; }
     }
