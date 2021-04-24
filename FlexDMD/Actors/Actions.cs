@@ -137,6 +137,43 @@ namespace FlexDMD
         }
     }
 
+    public class BlinkAction : Action
+    {
+        public Actor Target { get; }
+        public float SecondsShow { get; set; }
+        public float SecondsHide { get; set; }
+        public int Repeat { get; set; }
+
+        private int _n = 0;
+        private float _time;
+
+        public BlinkAction(Actor target, float secondsShow, float secondsHide, int repeat)
+        {
+            Target = target;
+            SecondsShow = secondsShow;
+            SecondsHide = secondsHide;
+            Repeat = repeat;
+        }
+
+        public override bool Update(float secondsElapsed)
+        {
+            _time += secondsElapsed;
+            if (Target.Visible && _time > SecondsShow)
+            {
+                _time -= SecondsShow;
+                Target.Visible = false;
+                _n++;
+                if (Repeat >= 0 && _n > Repeat) return true;
+            }
+            else if (!Target.Visible && _time > SecondsHide)
+            {
+                _time -= SecondsHide;
+                Target.Visible = true;
+            }
+            return false;
+        }
+    }
+
     public class AddToAction : Action
     {
         public Actor Target { get; }
@@ -168,7 +205,7 @@ namespace FlexDMD
 
         public override bool Update(float secondsElapsed)
         {
-            Target.Parent?.RemoveActor(Target);
+            Target.Remove();
             return true;
         }
     }
@@ -409,6 +446,7 @@ namespace FlexDMD
         public ICompositeAction Parallel() => new ParallelAction();
         public ICompositeAction Sequence() => new SequenceAction();
         [return: MarshalAs(UnmanagedType.Struct)] public Action Repeat([MarshalAs(UnmanagedType.Struct)] Action action, int count) => new RepeatAction(action, count);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action Blink(float secondsShow, float secondsHide, int repeat) => new BlinkAction(_target, secondsShow, secondsHide, repeat);
         [return: MarshalAs(UnmanagedType.Struct)] public Action Show(bool visible) => new ShowAction(_target, visible);
         [return: MarshalAs(UnmanagedType.Struct)] public Action AddTo(IGroupActor parent) => new AddToAction(_target, parent, true);
         [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveFromParent() => new RemoveFromParentAction(_target);

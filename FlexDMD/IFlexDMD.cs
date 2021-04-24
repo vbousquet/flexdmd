@@ -56,6 +56,7 @@ namespace FlexDMD
         ICompositeAction Parallel();
         ICompositeAction Sequence();
         [return: MarshalAs(UnmanagedType.Struct)] Action Repeat([MarshalAs(UnmanagedType.Struct)]Action action, int count);
+        [return: MarshalAs(UnmanagedType.Struct)] Action Blink(float secondsShow, float secondsHide, int repeat);
         [return: MarshalAs(UnmanagedType.Struct)] Action Show(bool visible);
         [return: MarshalAs(UnmanagedType.Struct)] Action AddTo(IGroupActor parent);
         [return: MarshalAs(UnmanagedType.Struct)] Action RemoveFromParent();
@@ -116,6 +117,7 @@ namespace FlexDMD
 
         // Group interface
         bool Clip { get; set; }
+        bool HasChild(string name);
         IGroupActor GetGroup(string name);
         IFrameActor GetFrame(string name);
         ILabelActor GetLabel(string name);

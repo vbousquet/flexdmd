@@ -59,7 +59,7 @@ namespace FlexDMD
             log.Info("Warning actor not found '{0}'", name);
             return null;
         }
-
+        public bool HasChild(string name) => Get(name) != null;
         public IGroupActor GetGroup(string name) => (IGroupActor)Get(name);
         public IFrameActor GetFrame(string name) => (IFrameActor)Get(name);
         public ILabelActor GetLabel(string name) => (ILabelActor)Get(name);
