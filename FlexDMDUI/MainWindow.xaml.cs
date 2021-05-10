@@ -1,6 +1,7 @@
 ﻿using FlexDMD;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Deployment.Application;
 using System.Diagnostics;
@@ -8,6 +9,8 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Security.Permissions;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,6 +36,7 @@ namespace FlexDMDUI
     public partial class MainWindow : Window
     {
         private string _installPath;
+        private string _packPath;
         private ScriptThread _testScript;
         private readonly KnownColor[] _allColors;
 
@@ -47,6 +51,8 @@ namespace FlexDMDUI
         {
             InitializeComponent();
             AppWindow.Title = AppWindow.Title + " " + getRunningVersion();
+            _packPath = Directory.GetCurrentDirectory();
+            packerFolderLabel.Content = "Pack folder: " + _packPath;
             Array colorsArray = Enum.GetValues(typeof(KnownColor));
             _allColors = new KnownColor[colorsArray.Length - 28 - 7]; // Create a list of user color, skipping system ones
             Array.Copy(colorsArray, 28, _allColors, 0, _allColors.Length);
@@ -331,7 +337,8 @@ namespace FlexDMDUI
                         return zoneId.Contains("ZONEID=3") || zoneId.Contains("ZONEID=4");
                     }
                 }
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 // FIXME This is an horrible exception swallowing when DLL blocking check fails. This should be properly reported (at leats in a log file). Not done since this action is performed periodically
             }
@@ -548,6 +555,124 @@ namespace FlexDMDUI
         public void OnStopDMDScript(object sender, RoutedEventArgs e)
         {
             if (_testScript != null) _testScript.Interrupt();
+        }
+
+        public void OnSelectFrameFolder(object sender, RoutedEventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Select the directory where the frames are located.";
+                fbd.SelectedPath = _packPath;
+                DialogResult result = fbd.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    _packPath = fbd.SelectedPath;
+                    packerFolderLabel.Content = "Pack folder: " + _packPath;
+                }
+            }
+        }
+
+        public void OnPackFrames(object sender, RoutedEventArgs e)
+        {
+            string atlasName = "DMD_Atlas";
+            Packer packer = new Packer();
+            packer.Process(_packPath, 8192, 0, false);
+            if (packer.Atlasses.Count == 1)
+            {
+                var atlas = packer.Atlasses[0];
+                var img = packer.CreateAtlasImage(atlas);
+
+                // Create a sorted list of all the packed frames
+                var frames = new SortedList<string, Node>();
+                foreach (Node n in atlas.Nodes)
+                    if (n.Texture != null)
+                        foreach (string source in n.Texture.Sources)
+                            frames[source] = n;
+
+                StringBuilder tw = new StringBuilder();
+                tw.Append("' This code was automatically generated from FlexDMDUI. Don't modify.\n");
+                tw.AppendFormat("' {0} frames packed into a {1}x{2} atlas.\n", frames.Count, img.Width, img.Height);
+                tw.Append("Public Sub PreloadFrames(flex)\n");
+                string sequence = null;
+                foreach (KeyValuePair<string, Node> kvp in frames)
+                {
+                    var shortName = Path.GetFileNameWithoutExtension(kvp.Key);
+                    if (Regex.IsMatch(shortName, "(.+)_(\\d+)"))
+                    {
+                        var seqName = Regex.Match(shortName, "(.+)_(\\d+)").Groups[1].Value;
+                        if (sequence == null || !sequence.Equals(seqName))
+                            tw.AppendFormat("\tNewFrames flex, \"\", \"{0}\"\n", seqName);
+                        sequence = seqName;
+                    }
+                    else
+                    {
+                        tw.AppendFormat("\tNewFrames flex, \"\", \"{0}\"\n", shortName);
+                        sequence = null;
+                    }
+                }
+                sequence = null;
+                tw.Append("End Sub\n\n");
+                tw.Append("Public Function NewFrames(flex, name, id)\n");
+                tw.Append("\tSelect Case id\n");
+                StringBuilder lw = new StringBuilder();
+                foreach (KeyValuePair<string, Node> kvp in frames)
+                {
+                    var n = kvp.Value;
+                    var shortName = Path.GetFileNameWithoutExtension(kvp.Key);
+                    if (Regex.IsMatch(shortName, "(.+)_(\\d+)"))
+                    {
+                        var seqName = Regex.Match(shortName, "(.+)_(\\d+)").Groups[1].Value;
+                        if (sequence == null || !sequence.Equals(seqName))
+                        {
+                            if (sequence != null) // End of previous sequence
+                            {
+                                lw.Remove(lw.Length - 1, 1);
+                                tw.Append(lw.ToString());
+                                tw.Append("\")\n");
+                            }
+                            lw = new StringBuilder();
+                            lw.AppendFormat("\t\tCase \"{0}\": Set NewFrames = flex.NewImageSequence(name, 30, \"", seqName);
+                        }
+                        if (lw.Length > 80)
+                        {
+                            tw.Append(lw.ToString());
+                            tw.Append("\" & _\n");
+                            tw.Append("\t\t\t\t\"");
+                            lw.Clear();
+                        }
+                        lw.AppendFormat("VPX.{0}&region={1},{2},{3},{4}&pad={5},{6},{7},{8}|", atlasName, n.Bounds.X, n.Bounds.Y, n.Bounds.Width, n.Bounds.Height, 
+                            n.Texture.PackedX, n.Texture.PackedY, n.Texture.OriginalWidth - n.Texture.PackedWidth - n.Texture.PackedX, n.Texture.OriginalHeight - n.Texture.PackedHeight - n.Texture.PackedY);
+                        sequence = seqName;
+                    }
+                    else
+                    {
+                        if (sequence != null) // End of previous sequence
+                        {
+                            lw.Remove(lw.Length - 1, 1);
+                            tw.Append(lw.ToString());
+                            tw.Append("\")\n");
+                            sequence = null;
+                        }
+                        tw.AppendFormat("\t\tCase \"{0}\": Set NewFrames = flex.NewImage(name, \"VPX.{1}&region={2},{3},{4},{5}&pad={6},{7},{8},{9}\")\n", shortName, atlasName, n.Bounds.X, n.Bounds.Y, n.Bounds.Width, n.Bounds.Height,
+                            n.Texture.PackedX, n.Texture.PackedY, n.Texture.OriginalWidth - n.Texture.PackedWidth - n.Texture.PackedX, n.Texture.OriginalHeight - n.Texture.PackedHeight - n.Texture.PackedY);
+                    }
+                }
+                if (sequence != null) // End of previous sequence
+                {
+                    lw.Remove(lw.Length - 1, 1);
+                    tw.Append(lw.ToString());
+                    tw.Append("\")\n");
+                }
+                tw.Append("\tEnd Select\n");
+                tw.Append("End Function\n");
+                tw.Append("' End of generated block\n");
+                flexDMDPackerScript.Text = tw.ToString();
+                img.Save(_packPath + "/../" + atlasName + ".png", System.Drawing.Imaging.ImageFormat.Png);
+            }
+            else
+            {
+                flexDMDPackerScript.Text = "Packing returned more than one image. You must select less frames to pack.";
+            }
         }
     }
 }

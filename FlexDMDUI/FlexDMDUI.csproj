@@ -248,6 +248,7 @@
     </ApplicationDefinition>
     <Compile Include="IActiveScriptComInterfaces.cs" />
     <Compile Include="ScriptThread.cs" />
+    <Compile Include="TexturePacker.cs" />
     <Compile Include="WindowHandle.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -228,17 +228,18 @@
             <TabItem Header="FlexDMD Designer">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
+                        <ColumnDefinition Width="198*" />
+                        <ColumnDefinition Width="197*" />
+                        <ColumnDefinition Width="21*" />
+                        <ColumnDefinition Width="176*"/>
+                        <ColumnDefinition Width="197*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="70"/>
                         <RowDefinition Height="1*" />
                         <RowDefinition Height="60"/>
                     </Grid.RowDefinitions>
-                    <RichTextBox Grid.ColumnSpan="4" Grid.Row="0" Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
+                    <RichTextBox Grid.ColumnSpan="5" Grid.Row="0" Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
                         <FlowDocument>
                             <Paragraph>
                                 <Run FontWeight="Bold" Text="FlexDMD Scene Designer"/>
@@ -248,16 +249,16 @@
                             </Paragraph>
                         </FlowDocument>
                     </RichTextBox>
-                    <ScrollViewer Grid.ColumnSpan="4" Grid.Row="1" Margin="10,0,10,0">
+                    <ScrollViewer Grid.ColumnSpan="5" Grid.Row="1" Margin="10,0,10,59.8" Grid.RowSpan="2">
                         <TextBox x:Name="flexDMDScriptTextBox" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" Text="Dim font&#xD;&#xA;Set font = FlexDMD.NewFont(&quot;FlexDMD.Resources.teeny_tiny_pixls-5.fnt&quot;, vbWhite, vbWhite, 0)&#xD;&#xA;&#xD;&#xA;Dim scene1&#xD;&#xA;Set scene1 = FlexDMD.NewGroup(&quot;Scene 1&quot;)&#xD;&#xA;scene1.AddActor FlexDMD.NewImage(&quot;Back&quot;, &quot;FlexDMD.Resources.dmds.black.png&quot;)&#xD;&#xA;scene1.AddActor FlexDMD.NewLabel(&quot;Label&quot;, font, &quot;Welcome to FlexDMD&quot;)&#xD;&#xA;scene1.GetLabel(&quot;Label&quot;).SetAlignedPosition 64, 16, 4&#xD;&#xA;&#xD;&#xA;Dim scene2&#xD;&#xA;Set scene2 = FlexDMD.NewGroup(&quot;Scene 2&quot;)&#xD;&#xA;scene2.AddActor FlexDMD.NewImage(&quot;Back&quot;, &quot;FlexDMD.Resources.dmds.black.png&quot;)&#xD;&#xA;scene2.AddActor FlexDMD.NewLabel(&quot;Label&quot;, font, &quot;Enjoy!&quot;)&#xD;&#xA;scene2.GetLabel(&quot;Label&quot;).SetAlignedPosition 64, 16, 4&#xD;&#xA;&#xD;&#xA;Dim sequence&#xD;&#xA;Set sequence = FlexDMD.NewGroup(&quot;Sequence&quot;)&#xD;&#xA;sequence.SetSize 128, 32&#xD;&#xA;Set af = sequence.ActionFactory&#xD;&#xA;Set list = af.Sequence()&#xD;&#xA;list.Add af.AddChild(scene1)&#xD;&#xA;list.Add af.Wait(5)&#xD;&#xA;list.Add af.RemoveChild(scene1)&#xD;&#xA;list.Add af.AddChild(scene2)&#xD;&#xA;list.Add af.Wait(5)&#xD;&#xA;list.Add af.RemoveChild(scene2)&#xD;&#xA;sequence.AddAction af.Repeat(list, -1)&#xD;&#xA;&#xD;&#xA;FlexDMD.LockRenderThread&#xD;&#xA;FlexDMD.Stage.RemoveAll&#xD;&#xA;FlexDMD.Stage.AddActor sequence&#xD;&#xA;FlexDMD.UnlockRenderThread&#xD;&#xA;"/>
                     </ScrollViewer>
-                    <Button Grid.Row="2" Grid.Column="2" Margin="10,10,10,10" Width="150" Click="OnStopDMDScript" HorizontalAlignment="Right">
+                    <Button Grid.Row="2" Grid.Column="3" Margin="0,10.2,10.2,9.8" Width="150" Click="OnStopDMDScript" HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Image Source="Resources/stop.png" Width="16" Height="24"/>
                             <TextBlock Text="Stop  [F6]" VerticalAlignment="Center" Width="74" TextAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Grid.Row="2" Grid.Column="3" Margin="10,10,10,10" Width="150" Click="OnRunFlexDMDScript" HorizontalAlignment="Right">
+                    <Button Grid.Row="2" Grid.Column="4" Margin="0,10.2,10,9.8" Width="150" Click="OnRunFlexDMDScript" HorizontalAlignment="Right">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Image Source="Resources/run.png" Width="16" Height="24"/>
                             <TextBlock Text="Run  [F5]" VerticalAlignment="Center" Width="74" TextAlignment="Center" />
@@ -265,7 +266,55 @@
                     </Button>
                 </Grid>
             </TabItem>
+            <TabItem Header="Frame Packer">
+                <Grid Background="#FFE5E5E5" Margin="0,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="100"/>
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+                    <RichTextBox Grid.Row="0" Margin="10,10,10,10" Background="{x:Null}" Block.LineHeight="4" IsReadOnly="True" BorderBrush="{x:Null}">
+                        <FlowDocument>
+                            <Paragraph>
+                                <Run Text="This tool will pack all PNG frames found in a given folder inside a single image that you can import inside VPX."/>
+                            </Paragraph>
+                            <Paragraph>
+                                <Run Text="It also generates a code block that you can copy/paste into your table script to create video/image objects from the packed frame sequences."/>
+                            </Paragraph>
+                            <Paragraph>
+                                <Run Text="All images are packed together, converting white space around the frames to padding, and removing duplicates."/>
+                            </Paragraph>
+                            <Paragraph>
+                                <Run Text="When frames' name ends with an underscore followed by a number (ex: frame_000.png), the frame will be grouped in a video."/>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                    <GroupBox Grid.Row="1" Header="Options" Margin="10,0,10,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="1*" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" Background="#FFE5E5E5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Label x:Name="packerFolderLabel" Grid.Column="0" Content="Install folder: C:\xx"/>
+                                <Button Content="Select Frame Folder..." Grid.Column="1" Width ="145" HorizontalAlignment="Right" Click="OnSelectFrameFolder"/>
+                            </Grid>
+                            <Grid Grid.Row="1" Background="#FFE5E5E5" Margin="0,0,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Content="Pack Frames" Grid.Column="1" Width ="145" HorizontalAlignment="Right" Click="OnPackFrames"/>
+                            </Grid>
+                            <TextBox Grid.Row="2" x:Name="flexDMDPackerScript" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="10,10,10,10" TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" Text=""/>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
         </TabControl>
-
     </Grid>
 </Window>
