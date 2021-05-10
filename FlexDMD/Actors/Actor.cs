@@ -129,9 +129,9 @@ namespace FlexDMD
 
         public virtual void Update(float secondsElapsed)
         {
-            if (FillParent && Parent != null) SetBounds(0, 0, Parent.Width, Parent.Height);
             for (int i = 0; i < _actions.Count; i++)
                 if (_actions[i].Update(secondsElapsed)) _actions.RemoveAt(i);
+            if (FillParent && Parent != null) SetBounds(0, 0, Parent.Width, Parent.Height);
         }
 
         public virtual void Draw(Graphics graphics)

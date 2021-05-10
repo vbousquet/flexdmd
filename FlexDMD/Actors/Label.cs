@@ -42,7 +42,7 @@ namespace FlexDMD
 
         public override float PrefHeight { get => _textHeight; }
 
-        public bool AutoPack { get; set; } = true;
+        public bool AutoPack { get; set; } = false;
 
         public string Text
         {

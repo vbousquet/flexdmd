@@ -18,28 +18,52 @@ using System.Drawing;
 
 namespace FlexDMD
 {
-    class ImageSequence : AnimatedActor
+    class ImageSequence : AnimatedActor, IImageSequenceActor
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
-        private readonly int _fps;
+        private int _fps;
         private int _frame;
         private List<Image> _frames = new List<Image>();
 
         public ImageSequence(List<Bitmap> images, int fps = 25, bool loop = true)
         {
-            log.Info("Initalizing image list: {0}", images);
+            log.Info("Initalizing list of {0} images", images.Count);
             _fps = fps;
             Loop = loop;
             foreach (Bitmap bmp in images)
                 _frames.Add(new Image(bmp));
             _frame = 0;
             _frameDuration = 1.0f / fps;
+            Pack();
         }
-		
+
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+
+        public Alignment Alignment { get; set; } = Alignment.Center;
+
+        public override float PrefWidth { get => _frames[0].Width; }
+
+        public override float PrefHeight { get => _frames[0].Height; }
+
+        public float Length { get => _frames.Count * _frameDuration; }
+
+        public int FPS
+        {
+            get => _fps;
+            set
+            {
+                if (_fps == value) return;
+                _fps = value;
+                _frameDuration = 1.0f / _fps;
+            }
+        }
+
         protected override void Rewind()
         {
+            _endOfAnimation = false;
             _frame = 0;
             _frameTime = 0;
+            _time = 0;
         }
 
         protected override void ReadNextFrame()
@@ -58,7 +82,13 @@ namespace FlexDMD
         public override void Draw(Graphics graphics)
         {
             base.Draw(graphics);
-            _frames[_frame].Draw(graphics);
+            if (Visible)
+            {
+                _frames[_frame].Scaling = Scaling;
+                _frames[_frame].Alignment = Alignment;
+                _frames[_frame].SetBounds(X, Y, Width, Height);
+                _frames[_frame].Draw(graphics);
+            }
         }
     }
 

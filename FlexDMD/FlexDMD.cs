@@ -37,6 +37,7 @@ namespace FlexDMD
         private readonly Group _stage = new Group() { Name = "Stage" };
         private readonly int _frameRate = 60;
         private readonly Mutex _renderMutex = new Mutex();
+        private int _renderLockCount = 0;
         private DMDDevice _dmdDevice = null, _dmdScreen = null;
         private Thread _processThread = null;
         private bool _run = false;
@@ -72,6 +73,25 @@ namespace FlexDMD
                 return videoActor;
             }
         }
+        public IImageSequenceActor NewImageSequence(string name, int fps, string images)
+        {
+            try
+            {
+                var ai = new ImageSequenceDef(images, fps, true);
+                List<Bitmap> imgs = new List<Bitmap>();
+                foreach (string file in ai._images)
+                    imgs.Add(AssetManager.Load<Bitmap>(file).Load());
+                var seq = new ImageSequence(imgs, ai.Fps, ai.Loop);
+                seq.Name = name;
+                return seq;
+            }
+            catch (Exception e)
+            {
+                log.Error(e, "Exception while resolving image: '{0}'", images);
+            }
+            log.Error("Missing resource '{0}'", images);
+            return null;
+        }
         public IImageActor NewImage(string name, string image)
         {
             var g = (IImageActor)ResolveImage(image);
@@ -89,6 +109,15 @@ namespace FlexDMD
         public IUltraDMD NewUltraDMD() => new UltraDMD.UltraDMD(this);
 
         public Graphics Graphics { get; private set; } = null;
+
+        public int Version
+        {
+            get
+            {
+                var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+                return fvi.FileMajorPart * 1000 + fvi.FileMinorPart;
+            }
+        }
 
         public bool Run
         {
@@ -410,12 +439,16 @@ namespace FlexDMD
 
         public void LockRenderThread()
         {
-            _renderMutex.WaitOne();
+            _renderLockCount++;
+            if (_renderLockCount == 1)
+                _renderMutex.WaitOne();
         }
 
         public void UnlockRenderThread()
         {
-            _renderMutex.ReleaseMutex();
+            _renderLockCount--;
+            if (_renderLockCount == 0)
+                _renderMutex.ReleaseMutex();
         }
 
         public void Post(System.Action runnable)
@@ -458,7 +491,7 @@ namespace FlexDMD
                             return new Video(Path.Combine(AssetManager.BasePath, filename), false);
                     }
                 }
-                else if (filename.Contains(","))
+                else if (filename.Contains("|"))
                 {
                     var def = new ImageSequenceDef(filename, 25, true);
                     return AssetManager.Load<ImageSequence>(def).Load();

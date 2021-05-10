@@ -186,7 +186,7 @@ namespace FlexDMD
             }
         }
 
-        public void Seek(float position)
+        public override void Seek(float position)
         {
             _seek = position;
             _time = position;
@@ -203,6 +203,7 @@ namespace FlexDMD
 
         protected override void Rewind()
         {
+            _endOfAnimation = false;
             Seek(0f);
         }
 

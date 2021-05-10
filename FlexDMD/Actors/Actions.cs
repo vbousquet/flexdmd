@@ -232,10 +232,10 @@ namespace FlexDMD
 
     public class SeekAction : Action
     {
-        public Video Target { get; }
+        public AnimatedActor Target { get; }
         public float Position { get; set; } = 0f;
 
-        public SeekAction(Video target, float position)
+        public SeekAction(AnimatedActor target, float position)
         {
             Target = target;
             Position = position;
@@ -452,7 +452,7 @@ namespace FlexDMD
         [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveFromParent() => new RemoveFromParentAction(_target);
         [return: MarshalAs(UnmanagedType.Struct)] public Action AddChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, true);
         [return: MarshalAs(UnmanagedType.Struct)] public Action RemoveChild([MarshalAs(UnmanagedType.Struct)] Actor child) => new AddChildAction((Group)_target, child, false);
-        [return: MarshalAs(UnmanagedType.Struct)] public Action Seek(float pos) => new SeekAction((Video)_target, pos);
+        [return: MarshalAs(UnmanagedType.Struct)] public Action Seek(float pos) => new SeekAction((AnimatedActor)_target, pos);
         public ITweenAction MoveTo(float x, float y, float duration) => new MoveToAction(_target, x, y, duration);
     }
 }

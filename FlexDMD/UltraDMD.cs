@@ -83,7 +83,7 @@ namespace UltraDMD
                     var preload = _preloads[preloadId];
                     if (preload is VideoDef vp)
                     {
-                        var actor = _flexDMD.ResolveImage(vp.VideoFilename);
+                        var actor = _flexDMD.ResolveImage(vp.VideoFilename.Replace(',', '|'));
                         if (actor != null && actor is Video v)
                         {
                             v.Loop = vp.Loop;
@@ -112,7 +112,7 @@ namespace UltraDMD
                 }
                 else
                 {
-                    var actor = _flexDMD.ResolveImage(filename);
+                    var actor = _flexDMD.ResolveImage(filename.Replace(',', '|'));
                     if (actor != null)
                     {
                         if (actor is Video v)
@@ -247,7 +247,7 @@ namespace UltraDMD
         public int CreateAnimationFromImages(int fps, bool loop, string imagelist)
         {
             var id = _nextId;
-            _preloads[id] = new ImageSequenceDef(imagelist, fps, loop);
+            _preloads[id] = new ImageSequenceDef(imagelist.Replace(',','|'), fps, loop);
             _nextId++;
             return id;
         }

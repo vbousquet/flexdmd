@@ -77,5 +77,11 @@ namespace FlexDMD
             }
         }
 
+        public static uint ARGBToABGR(uint argbColor)
+        {
+            uint r = (argbColor >> 16) & 0xFF;
+            uint b = argbColor & 0xFF;
+            return (argbColor & 0xFF00FF00) | (b << 16) | r;
+        }
     }
 }

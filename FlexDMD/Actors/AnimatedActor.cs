@@ -24,6 +24,7 @@ namespace FlexDMD
         protected float _frameTime;
         protected float _frameDuration;
         protected float _time;
+        public bool Paused { get; set; } = false;
 
         public bool Loop { get; set; } = true;
 
@@ -31,13 +32,25 @@ namespace FlexDMD
         {
             base.Update(delta);
 			if (!Visible) return;
+            if (!Paused) Advance(delta);
+        }
+
+        public virtual void Seek(float posInSeconds)
+        {
+            Rewind();
+            Advance(posInSeconds);
+        }
+
+        private void Advance(float delta)
+        {
             _time += delta;
             while (!_endOfAnimation && _time >= _frameTime + _frameDuration)
             {
                 try
                 {
                     ReadNextFrame();
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     log.Error(e, "ReadNextFrame failed, scene discarded");
                     _endOfAnimation = true;
@@ -51,6 +64,7 @@ namespace FlexDMD
                 Rewind();
             }
         }
+
         protected abstract void Rewind();
 
         protected abstract void ReadNextFrame();

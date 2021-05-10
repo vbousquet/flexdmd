@@ -24,7 +24,7 @@ namespace FlexDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private bool _inStage = false;
-		
+
         public List<Actor> Children { get; } = new List<Actor>();
 
         public override bool InStage
@@ -40,6 +40,8 @@ namespace FlexDMD
         }
 
         public bool Clip { get; set; } = false;
+
+        public int ChildCount { get => Children.Count; }
 
         public Actor Get(string name)
         {
@@ -64,6 +66,7 @@ namespace FlexDMD
         public IFrameActor GetFrame(string name) => (IFrameActor)Get(name);
         public ILabelActor GetLabel(string name) => (ILabelActor)Get(name);
         public IVideoActor GetVideo(string name) => (IVideoActor)Get(name);
+        public IImageSequenceActor GetImageSeq(string name) => (IImageSequenceActor)Get(name);
         public IImageActor GetImage(string name) => (IImageActor)Get(name);
 
         public void AddActor(Actor child)
@@ -111,19 +114,19 @@ namespace FlexDMD
             if (Visible)
             {
                 graphics.TranslateTransform(X, Y);
-				if (Clip)
-				{
-					var clipRegion = new RectangleF(0, 0, Width, Height);
-					graphics.SetClip(clipRegion, CombineMode.Replace);
+                if (Clip)
+                {
+                    var clipRegion = new RectangleF(0, 0, Width, Height);
+                    graphics.SetClip(clipRegion, CombineMode.Replace);
                     base.Draw(graphics);
                     foreach (Actor child in Children) child.Draw(graphics);
-					graphics.ResetClip();
-				}
-				else
-				{
+                    graphics.ResetClip();
+                }
+                else
+                {
                     base.Draw(graphics);
                     foreach (Actor child in Children) child.Draw(graphics);
-				}
+                }
                 graphics.TranslateTransform(-X, -Y);
             }
         }
