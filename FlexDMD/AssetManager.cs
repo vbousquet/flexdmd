@@ -164,7 +164,7 @@ namespace FlexDMD
                 if (_vpxFile != null)
                 {
                     var file = _vpxFile.GetImportFile(def.Path);
-                    if (file != null && file.Length > 4) ext = file.Substring(parts[0].Length - 4).ToLowerInvariant();
+                    if (file != null && file.Length > 4) ext = file.Substring(file.Length - 4).ToLowerInvariant();
                 }
             }
             else
@@ -230,6 +230,8 @@ namespace FlexDMD
                             filter.Bottom = int.Parse(rect[3]);
                             def.BitmapFilters.Add(filter);
                         }
+                        else
+                            log.Error("Unsupported Bitmap parameter in {0}: {1}", src, definition);
                     }
                     catch (Exception e)
                     {
@@ -249,6 +251,8 @@ namespace FlexDMD
                             def.FontBorderTint = Color.FromArgb(borderTint);
                         else if (definition.StartsWith("border_size=") && int.TryParse(definition.Substring(12), out int borderSize))
                             def.FontBorderSize = borderSize;
+                        else
+                            log.Error("Unsupported Font parameter in {0}: {1}", src, definition);
                     }
                     catch (Exception e)
                     {
@@ -291,6 +295,7 @@ namespace FlexDMD
             { // The bitmap from which the requested one is derived is cached
                 var cache = new CachedBitmap(_cachedBitmaps[src.IdWithoutOptions].Bitmap);
                 _cachedBitmaps[src.Id] = cache;
+                log.Info("Bitmap added to cache:{0}", src.Id);
                 if (!Array.Exists(cache.Bitmap.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
                 { // Apply filters to still bitmaps
                     foreach (IBitmapFilter filter in src.BitmapFilters)
@@ -302,6 +307,7 @@ namespace FlexDMD
             { // This is a new bitmap that should be added to the cache
                 var cache = new CachedBitmap(Open(src));
                 _cachedBitmaps[src.IdWithoutOptions] = cache;
+                log.Info("Bitmap added to cache:{0}", src.IdWithoutOptions);
                 if (!Array.Exists(cache.Bitmap.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
                 { // Apply RGB conversion and filters to still bitmaps
                     GraphicUtils.BGRtoRGB(cache.Bitmap);
@@ -311,6 +317,7 @@ namespace FlexDMD
                         _cachedBitmaps[src.Id] = cache;
                         foreach (IBitmapFilter filter in src.BitmapFilters)
                             cache.Bitmap = filter.Filter(cache.Bitmap);
+                        log.Info("Bitmap added to cache:{0}", src.Id);
                     }
                 }
                 return cache.Bitmap;
@@ -327,6 +334,7 @@ namespace FlexDMD
                 return _cachedFonts[assetSrc.Id];
             var font = new Font(this, assetSrc);
             _cachedFonts[assetSrc.Id] = font;
+            log.Info("Font added to cache:{0}", assetSrc.Id);
             return font;
         }
     }

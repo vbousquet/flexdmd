@@ -29,11 +29,12 @@ namespace FlexDMD
         {
             _fps = fps;
             Loop = loop;
+            Name = name;
             foreach (string path in paths.Split('|'))
                 _frames.Add(new Image(manager, path));
             _frame = 0;
             _frameDuration = 1.0f / fps;
-            log.Info("ImageSequence Initalized with {0} frames", _frames.Count);
+            log.Info("ImageSequence '{0}' initalized with {1} frames", name, _frames.Count);
             Pack();
         }
 

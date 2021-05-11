@@ -39,19 +39,21 @@ namespace FlexDMD
         public Actor Get(string name)
         {
             if (Name.Equals(name)) return this;
-            foreach (Actor child in Children)
+            var pos = name.IndexOf("/");
+            if (pos < 0)
             {
-                if (child is Group g)
-                {
-                    var found = g.Get(Name + "/" + name);
-                    if (found != null) return found;
-                }
-                else if (child.Name.Equals(name))
-                {
-                    return child;
-                }
+                foreach (Actor child in Children)
+                    if (child.Name.Equals(name))
+                        return child;
             }
-            log.Info("Warning actor not found '{0}'", name);
+            else
+            {
+                var groupName = name.Substring(0, pos);
+                foreach (Actor child in Children)
+                    if (child is Group g && child.Name.Equals(groupName))
+                        return g.Get(name.Substring(pos + 1));
+            }
+            log.Info("Warning actor '{0}' not found in children of '{1}'", name, Name);
             return null;
         }
         public bool HasChild(string name) => Get(name) != null;
@@ -97,8 +99,14 @@ namespace FlexDMD
         public override void Update(float delta)
         {
             base.Update(delta);
-            for (int i = 0; i < Children.Count; i++)
-                Children[i].Update(delta);
+            if (!OnStage) return; // This may happen if an action has just removed this actor
+            int i = 0;
+            while (i < Children.Count)
+            {
+                var child = Children[i];
+                child.Update(delta);
+                if (i < Children.Count && child == Children[i]) i++; // This child may have been removed
+            }
         }
 
         public override void Draw(Graphics graphics)

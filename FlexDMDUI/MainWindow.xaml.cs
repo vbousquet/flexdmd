@@ -631,7 +631,7 @@ namespace FlexDMDUI
                                 tw.Append("\")\n");
                             }
                             lw = new StringBuilder();
-                            lw.AppendFormat("\t\tCase \"{0}\": Set NewFrames = flex.NewImageSequence(name, 30, \"", seqName);
+                            lw.AppendFormat("\t\tCase \"{0}\": Set NewFrames = flex.NewVideo(name, \"", seqName);
                         }
                         if (lw.Length > 80)
                         {

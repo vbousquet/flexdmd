@@ -166,20 +166,20 @@ namespace FlexDMD
                 _pos += count;
             }
 
-            public Int32 ReadInt32()
+            public int ReadInt32()
             {
                 _stream.Read(_buffer, _pos, 4);
                 _pos += 4;
-                Int32 v = BitConverter.ToInt32(_buffer, 0);
+                int v = BitConverter.ToInt32(_buffer, 0);
                 if (_reverse) v = BinaryPrimitives.ReverseEndianness(v);
                 return v;
             }
 
-            public UInt32 ReadUInt32()
+            public uint ReadUInt32()
             {
                 _stream.Read(_buffer, _pos, 4);
                 _pos += 4;
-                UInt32 v = BitConverter.ToUInt32(_buffer, 0);
+                uint v = BitConverter.ToUInt32(_buffer, 0);
                 if (_reverse) v = BinaryPrimitives.ReverseEndianness(v);
                 return v;
             }

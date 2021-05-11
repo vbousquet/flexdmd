@@ -62,7 +62,7 @@ namespace FlexDMD
         public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
         public IVideoActor NewVideo(string name, string path)
         {
-            if (name.Contains("|"))
+            if (path.Contains("|"))
                 return new ImageSequence(AssetManager, path, name);
             else
             {
@@ -77,7 +77,7 @@ namespace FlexDMD
             return null;
         }
         public IImageActor NewImage(string name, string image) => new Image(AssetManager, image, name);
-        public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => new Font(AssetManager, AssetManager.ResolveSrc(string.Format("{0}&tint={1:X8}&border_size={2}&border_tint={3:X8}", font, tint, borderSize, borderTint)));
+        public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => AssetManager.GetFont(AssetManager.ResolveSrc(string.Format("{0}&tint={1:X8}&border_size={2}&border_tint={3:X8}", font, tint.ToArgb(), borderSize, borderTint.ToArgb())));
         public IUltraDMD NewUltraDMD() => new UltraDMD.UltraDMD(this);
 
         public Graphics Graphics { get; private set; } = null;
