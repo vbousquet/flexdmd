@@ -25,6 +25,119 @@ using System.Drawing;
 // FIXME use the DMD color as the tint for all fonts
 namespace UltraDMD
 {
+    public class VideoDef
+    {
+        public string VideoFilename { get; set; } = "";
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+        public Alignment Alignment { get; set; } = Alignment.Center;
+        public bool Loop { get; set; } = false;
+
+        public override bool Equals(object obj)
+        {
+            return obj is VideoDef def &&
+                   VideoFilename == def.VideoFilename &&
+                   Scaling == def.Scaling &&
+                   Alignment == def.Alignment &&
+                   Loop == def.Loop;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 96768724;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(VideoFilename);
+            hashCode = hashCode * -1521134295 + Scaling.GetHashCode();
+            hashCode = hashCode * -1521134295 + Alignment.GetHashCode();
+            hashCode = hashCode * -1521134295 + Loop.GetHashCode();
+            return hashCode;
+        }
+    }
+
+    public class ImageSequenceDef
+    {
+        public string _images;
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+        public Alignment Alignment { get; set; } = Alignment.Center;
+        public int Fps { get; set; } = 25;
+        public bool Loop { get; set; } = true;
+
+        public ImageSequenceDef(string images, int fps, bool loop)
+        {
+            _images = images;
+            Fps = fps;
+            Loop = loop;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ImageSequenceDef def &&
+                   _images == def._images &&
+                   Fps == def.Fps &&
+                   Loop == def.Loop;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -2035125405;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(_images);
+            hashCode = hashCode * -1521134295 + Fps.GetHashCode();
+            hashCode = hashCode * -1521134295 + Loop.GetHashCode();
+            return hashCode;
+        }
+    }
+
+    public class FontDef
+    {
+        public Color Tint { get; set; } = Color.White;
+        public Color BorderTint { get; set; } = Color.White;
+        public int BorderSize { get; set; } = 0;
+        public string Path { get; set; } = "";
+
+        public FontDef(string path, Color tint, Color borderTint, int borderSize = 0)
+        {
+            Path = path;
+            Tint = tint;
+            BorderTint = borderTint;
+            BorderSize = borderSize;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is FontDef def &&
+                   Tint.R == def.Tint.R &&
+                   Tint.G == def.Tint.G &&
+                   Tint.B == def.Tint.B &&
+                   Tint.A == def.Tint.A &&
+                   BorderTint.R == def.BorderTint.R &&
+                   BorderTint.G == def.BorderTint.G &&
+                   BorderTint.B == def.BorderTint.B &&
+                   BorderTint.A == def.BorderTint.A &&
+                   BorderSize == def.BorderSize &&
+                   Path.Equals(def.Path);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1876634251;
+            hashCode = hashCode * -1521134295 + Tint.R;
+            hashCode = hashCode * -1521134295 + Tint.G;
+            hashCode = hashCode * -1521134295 + Tint.B;
+            hashCode = hashCode * -1521134295 + Tint.A;
+            hashCode = hashCode * -1521134295 + BorderTint.R;
+            hashCode = hashCode * -1521134295 + BorderTint.G;
+            hashCode = hashCode * -1521134295 + BorderTint.B;
+            hashCode = hashCode * -1521134295 + BorderTint.A;
+            hashCode = hashCode * -1521134295 + BorderSize;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
+            return hashCode;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("FontDef [path={0}, tint={1}, border tint={2}, border size={3}]", Path, Tint, BorderTint, BorderSize);
+        }
+
+    }
+
     /// <summary>
     /// Implementation of the UltraDMD API using the FlexDMD rendering engine.
     /// </summary>
@@ -83,61 +196,67 @@ namespace UltraDMD
                     var preload = _preloads[preloadId];
                     if (preload is VideoDef vp)
                     {
-                        var actor = _flexDMD.ResolveImage(vp.VideoFilename.Replace(',', '|'));
-                        if (actor != null && actor is Video v)
+                        var actor = _flexDMD.NewVideo("", vp.VideoFilename);
+                        if (actor != null && actor is AnimatedActor video)
                         {
-                            v.Loop = vp.Loop;
-                            v.Scaling = vp.Scaling;
-                            v.Alignment = vp.Alignment;
-                            return v;
-                        }
-                        else if (actor != null && actor is GIFImage gif)
-                        {
-                            gif.Loop = vp.Loop;
-                            gif.Scaling = vp.Scaling;
-                            gif.Alignment = vp.Alignment;
-                            return gif;
+                            video.Loop = vp.Loop;
+                            video.Scaling = vp.Scaling;
+                            video.Alignment = vp.Alignment;
+                            return video;
                         }
                     }
                     else if (preload is ImageSequenceDef ai)
                     {
-                        List<Bitmap> images = new List<Bitmap>();
-                        foreach (string file in ai._images)
-                        {
-                            var bmp = _flexDMD.AssetManager.Load<Bitmap>(file).Load();
-                            images.Add(bmp);
-                        }
-                        return new ImageSequence(images, ai.Fps, ai.Loop);
+                        var video = new ImageSequence(_flexDMD.AssetManager, ai._images);
+                        video.FPS = ai.Fps;
+                        video.Loop = ai.Loop;
+                        video.Scaling = ai.Scaling;
+                        video.Alignment = ai.Alignment;
+                        return video;
                     }
                 }
                 else
                 {
-                    var actor = _flexDMD.ResolveImage(filename.Replace(',', '|'));
-                    if (actor != null)
+                    var path = filename.Replace(',', '|');
+                    if (path.Contains("|"))
                     {
-                        if (actor is Video v)
+                        var video = new ImageSequence(_flexDMD.AssetManager, path);
+                        return video;
+                    }
+                    else
+                    {
+                        var src = _flexDMD.AssetManager.ResolveSrc(path);
+                        if (src.AssetType == AssetType.Image)
                         {
-                            switch (_stretchMode)
+                            return new FlexDMD.Image(_flexDMD.AssetManager, path);
+                        }
+                        else if (src.AssetType == AssetType.Video || src.AssetType == AssetType.Gif)
+                        {
+                            var actor = (AnimatedActor)_flexDMD.NewVideo("", path);
+                            if (actor != null)
                             {
-                                case 0:
-                                    v.Scaling = Scaling.Stretch;
-                                    v.Alignment = Alignment.Center;
-                                    break;
-                                case 1:
-                                    v.Scaling = Scaling.FillX;
-                                    v.Alignment = Alignment.Top;
-                                    break;
-                                case 2:
-                                    v.Scaling = Scaling.FillX;
-                                    v.Alignment = Alignment.Center;
-                                    break;
-                                case 3:
-                                    v.Scaling = Scaling.FillX;
-                                    v.Alignment = Alignment.Bottom;
-                                    break;
+                                switch (_stretchMode)
+                                {
+                                    case 0:
+                                        actor.Scaling = Scaling.Stretch;
+                                        actor.Alignment = Alignment.Center;
+                                        break;
+                                    case 1:
+                                        actor.Scaling = Scaling.FillX;
+                                        actor.Alignment = Alignment.Top;
+                                        break;
+                                    case 2:
+                                        actor.Scaling = Scaling.FillX;
+                                        actor.Alignment = Alignment.Center;
+                                        break;
+                                    case 3:
+                                        actor.Scaling = Scaling.FillX;
+                                        actor.Alignment = Alignment.Bottom;
+                                        break;
+                                }
+                                return actor;
                             }
                         }
-                        return actor;
                     }
                 }
             }
@@ -247,7 +366,7 @@ namespace UltraDMD
         public int CreateAnimationFromImages(int fps, bool loop, string imagelist)
         {
             var id = _nextId;
-            _preloads[id] = new ImageSequenceDef(imagelist.Replace(',','|'), fps, loop);
+            _preloads[id] = new ImageSequenceDef(imagelist.Replace(',', '|'), fps, loop);
             _nextId++;
             return id;
         }

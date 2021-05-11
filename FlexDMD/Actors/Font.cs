@@ -22,39 +22,30 @@ using System.IO;
 
 namespace FlexDMD
 {
-    public class Font
+    public class Font : IDisposable
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private Bitmap[] _textures;
-        private readonly AssetManager _assets;
 
-        public FontDef FontDef { get; }
         public BitmapFont BitmapFont { get; }
 
-        public Font(AssetManager assets, FontDef fontDef)
+        public Font(AssetManager manager, AssetSrc assetSrc)
         {
-            _assets = assets;
-            FontDef = fontDef;
             BitmapFont = new BitmapFont();
-            using (Stream stream = assets.OpenStream(fontDef.Path))
+            using (Stream stream = manager.Open(assetSrc))
             {
                 BitmapFont.LoadText(stream);
             }
-        }
-
-        private void PrepareTextures()
-        {
-            if (_textures != null) return;
             _textures = new Bitmap[BitmapFont.Pages.Length];
 
             // Load textures (relative to the main font path)
             for (int i = 0; i < BitmapFont.Pages.Length; i++)
-                _textures[i] = new Bitmap(_assets.OpenStream(BitmapFont.Pages[i].FileName, FontDef.Path));
+                _textures[i] = new Bitmap(manager.Open(manager.ResolveSrc(BitmapFont.Pages[i].FileName, assetSrc)));
 
             // Render outlines font (note that the outline is created in the glyph padding area, so the font must have a padding of 1 pixel per char on all sides)
-            if (FontDef.BorderSize > 0)
+            if (assetSrc.FontBorderSize > 0)
             {
-				uint outline = GraphicUtil.ARGBToABGR((uint) FontDef.BorderTint.ToArgb());
+                uint outline = GraphicUtils.ARGBToABGR((uint)assetSrc.FontBorderTint.ToArgb());
                 // TODO do not process the complete bitmap but only the glyph areas
                 for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
@@ -69,7 +60,7 @@ namespace FlexDMD
                         int dstStride = dstData.Stride / 4;
                         int srcOffset = srcStride - w;
                         int dstOffset = dstStride - w;
-						// First pass draw the borders (spill in the inside of the glyph as well)
+                        // First pass draw the borders (spill in the inside of the glyph as well)
                         uint* srcP = (uint*)srcData.Scan0;
                         uint* dstP = (uint*)dstData.Scan0;
                         for (int y = 0; y < h; y++)
@@ -99,36 +90,36 @@ namespace FlexDMD
                             srcP += srcOffset;
                             dstP += dstOffset;
                         }
-						// Second pass redraw the glyph (to tint it and clean up border spills)
+                        // Second pass redraw the glyph (to tint it and clean up border spills)
                         byte* srcPt = (byte*)srcData.Scan0;
                         byte* dstPt = (byte*)dstData.Scan0;
-						for (int y = 0; y < h; ++y)
+                        for (int y = 0; y < h; ++y)
                         {
                             for (int x = 0; x < w; ++x)
                             {
-								byte srcR = (byte)*srcPt;
-								srcPt++;
-								byte srcG = (byte)*srcPt;
-								srcPt++;
-								byte srcB = (byte)*srcPt;
-								srcPt++;
-								byte srcA = (byte)*srcPt;
-								srcPt++;
-								if (srcA == 0)
-								{
-									dstPt += 4;
-								}
-								else 
-								{
-									*dstPt = (byte)((srcR * FontDef.Tint.R) / 255);
-									dstPt++;
-									*dstPt = (byte)((srcG * FontDef.Tint.G) / 255);
-									dstPt++;
-									*dstPt = (byte)((srcB * FontDef.Tint.B) / 255);
-									dstPt++;
-									*dstPt = (byte)((srcA * FontDef.Tint.A) / 255);
-									dstPt++;
-								}
+                                byte srcR = (byte)*srcPt;
+                                srcPt++;
+                                byte srcG = (byte)*srcPt;
+                                srcPt++;
+                                byte srcB = (byte)*srcPt;
+                                srcPt++;
+                                byte srcA = (byte)*srcPt;
+                                srcPt++;
+                                if (srcA == 0)
+                                {
+                                    dstPt += 4;
+                                }
+                                else
+                                {
+                                    *dstPt = (byte)((srcR * assetSrc.FontTint.R) / 255);
+                                    dstPt++;
+                                    *dstPt = (byte)((srcG * assetSrc.FontTint.G) / 255);
+                                    dstPt++;
+                                    *dstPt = (byte)((srcB * assetSrc.FontTint.B) / 255);
+                                    dstPt++;
+                                    *dstPt = (byte)((srcA * assetSrc.FontTint.A) / 255);
+                                    dstPt++;
+                                }
                             }
                             srcPt += srcOffset * 4;
                             dstPt += dstOffset * 4;
@@ -152,7 +143,7 @@ namespace FlexDMD
             }
 
             // Render tinted font
-            else if (FontDef.Tint != Color.White)
+            else if (assetSrc.FontTint != Color.White)
             {
                 for (int i = 0; i < BitmapFont.Pages.Length; i++)
                 {
@@ -166,13 +157,13 @@ namespace FlexDMD
                         {
                             for (int x = 0; x < _textures[i].Width; ++x)
                             {
-                                *p = (byte)(((*p) * FontDef.Tint.R) / 255);
+                                *p = (byte)(((*p) * assetSrc.FontTint.R) / 255);
                                 p++;
-                                *p = (byte)(((*p) * FontDef.Tint.G) / 255);
+                                *p = (byte)(((*p) * assetSrc.FontTint.G) / 255);
                                 p++;
-                                *p = (byte)(((*p) * FontDef.Tint.B) / 255);
+                                *p = (byte)(((*p) * assetSrc.FontTint.B) / 255);
                                 p++;
-                                *p = (byte)(((*p) * FontDef.Tint.A) / 255);
+                                *p = (byte)(((*p) * assetSrc.FontTint.A) / 255);
                                 p++;
                             }
                             p += offset;
@@ -181,6 +172,15 @@ namespace FlexDMD
                     _textures[i].UnlockBits(bmData);
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            foreach (Bitmap texture in _textures)
+            {
+                texture.Dispose();
+            }
+            _textures = null;
         }
 
         private void DrawCharacter(Graphics graphics, char character, char previousCharacter, ref float x, ref float y)
@@ -208,7 +208,7 @@ namespace FlexDMD
                     }
                     else if (BitmapFont.Characters.ContainsKey(' '))
                     {
-                        log.Error("Missing character #{0} replaced by ' ' for font {1}", (int)character, FontDef.Path);
+                        log.Error("Missing character #{0} replaced by ' '", (int)character);
                         BitmapFont.Characters[character] = BitmapFont[' '];
                         DrawCharacter(graphics, character, previousCharacter, ref x, ref y);
                     }
@@ -225,7 +225,6 @@ namespace FlexDMD
 
         public void DrawText(Graphics graphics, float x, float y, string text)
         {
-            PrepareTextures();
             char previousCharacter = ' ';
             foreach (char character in text)
             {

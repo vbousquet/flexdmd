@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -21,6 +22,7 @@ namespace FlexDMD
     {
         private List<Action> _actions = new List<Action>();
         private SolidBrush _fillBrush = null;
+        private bool _onStage = false;
 
         public string Name { get; set; } = "";
         public float X { get; set; } = 0;
@@ -32,8 +34,21 @@ namespace FlexDMD
         public bool ClearBackground { get; set; } = false;
         public virtual float PrefWidth { get; } = 0;
         public virtual float PrefHeight { get; } = 0;
-        public virtual bool InStage { get; set; } = false;
         public virtual bool Visible { get; set; } = true;
+
+        public bool OnStage
+        {
+            get => _onStage;
+            set
+            {
+                if (value != _onStage)
+                {
+                    _onStage = value;
+                    OnStageStateChanged();
+                }
+            }
+        }
+
         public IActionFactory ActionFactory { get; }
 
         public Actor()
@@ -44,6 +59,14 @@ namespace FlexDMD
         public Actor(string name) : this()
         {
             Name = name;
+        }
+
+        /// <summary>
+        /// Called each time visibility or 'in stage' state changes. Actors are supposed to release ressources when
+        /// they are not on stage, and request them back when they are back on stage.
+        /// </summary>
+        protected virtual void OnStageStateChanged()
+        {
         }
 
         public void Remove()
@@ -129,6 +152,7 @@ namespace FlexDMD
 
         public virtual void Update(float secondsElapsed)
         {
+            if (!OnStage) throw new InvalidOperationException("Update was called on an actor which is not on stage.");
             for (int i = 0; i < _actions.Count; i++)
                 if (_actions[i].Update(secondsElapsed)) _actions.RemoveAt(i);
             if (FillParent && Parent != null) SetBounds(0, 0, Parent.Width, Parent.Height);
@@ -136,6 +160,7 @@ namespace FlexDMD
 
         public virtual void Draw(Graphics graphics)
         {
+            if (!OnStage) throw new InvalidOperationException("Draw was called on an actor which is not on stage.");
             if (ClearBackground)
             {
                 if (_fillBrush == null) _fillBrush = new SolidBrush(Color.Black);

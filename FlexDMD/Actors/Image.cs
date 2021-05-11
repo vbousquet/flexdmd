@@ -18,27 +18,42 @@ namespace FlexDMD
 {
     public class Image : Actor, IImageActor
     {
-        public Bitmap Bitmap {get; set; } = null;
-		public Scaling Scaling {get; set; } = Scaling.Stretch;
+        private readonly AssetSrc _src;
+        private readonly AssetManager _manager;
+        private readonly float _prefWidth, _prefHeight;
+        private Bitmap _bitmap = null;
+
+        public Scaling Scaling {get; set; } = Scaling.Stretch;
 		public Alignment Alignment {get; set; } = Alignment.Center;
+        public override float PrefWidth { get => _prefWidth; }
+        public override float PrefHeight { get => _prefHeight; }
 
-		public override float PrefWidth { get => Bitmap.Width; }
-		
-		public override float PrefHeight { get => Bitmap.Height; }
-
-        public Image(Bitmap image)
+        public Image(AssetManager manager, string path, string name = "")
         {
-            Bitmap = image;
-			Pack();
+            _src = manager.ResolveSrc(path);
+            _manager = manager;
+            Name = name;
+            // Initialize by loading the frame from the asset manager.
+            _bitmap = _manager.GetBitmap(_src);
+            _prefWidth = _bitmap.Width;
+            _prefHeight = _bitmap.Height;
+            Pack();
+            // Since we are not on stage, we can not guarantee that the data will remain live in memory
+            _bitmap = null;
+        }
+
+        protected override void OnStageStateChanged()
+        {
+            _bitmap = OnStage ? _manager.GetBitmap(_src) : null;
         }
 
         public override void Draw(Graphics graphics)
         {
-            if (Visible && Bitmap != null) 
+            if (Visible && _bitmap != null)
 			{
 				Layout.Scale(Scaling, PrefWidth, PrefHeight, Width, Height, out float w, out float h);
                 Layout.Align(Alignment, w, h, Width, Height, out float x, out float y);
-				graphics.DrawImage(Bitmap, (int)(X + x), (int)(Y + y), (int)w, (int)h);
+				graphics.DrawImage(_bitmap, (int)(X + x), (int)(Y + y), (int)w, (int)h);
 			}
         }
     }

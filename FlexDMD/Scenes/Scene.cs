@@ -32,7 +32,6 @@ namespace FlexDMD.Scenes
         protected float _outAnimLength;
         protected AnimationType _animateIn;
         protected AnimationType _animateOut;
-        private bool _inStage = false;
         private bool _visible = true;
         private bool _active = false;
 
@@ -47,19 +46,6 @@ namespace FlexDMD.Scenes
             Name = id;
         }
 
-        public override bool InStage
-        {
-            get => _inStage;
-            set
-            {
-                if (_inStage == value) return;
-                _inStage = value;
-                foreach (Actor child in Children)
-                    child.InStage = value;
-                UpdateState();
-            }
-        }
-
         public override bool Visible
         {
             get => _visible;
@@ -70,9 +56,15 @@ namespace FlexDMD.Scenes
             }
         }
 
+        protected override void OnStageStateChanged()
+        {
+            base.OnStageStateChanged();
+            UpdateState();
+        }
+
         private void UpdateState()
         {
-            bool shouldBeActive = _visible && _inStage;
+            bool shouldBeActive = _visible && OnStage;
             if (shouldBeActive && !_active)
             {
                 // log.Info("Begining scene");

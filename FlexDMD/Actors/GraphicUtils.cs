@@ -26,13 +26,13 @@ namespace FlexDMD
             if (image.PixelFormat == PixelFormat.Format32bppArgb)
             {
                 BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-                GraphicUtils.ABGRtoARGB(data.Scan0, data.Stride, image.Width, image.Height);
+                ABGRtoARGB(data.Scan0, data.Stride, image.Width, image.Height);
                 image.UnlockBits(data);
             }
             else
             {
                 BitmapData data = image.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-                GraphicUtils.BGRtoRGB(data.Scan0, data.Stride, image.Width, image.Height);
+                BGRtoRGB(data.Scan0, data.Stride, image.Width, image.Height);
                 image.UnlockBits(data);
             }
         }

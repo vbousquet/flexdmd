@@ -1,4 +1,4 @@
-﻿/* Copyright 2019 Vincent Bousquet
+/* Copyright 2019 Vincent Bousquet
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,298 +17,72 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Linq;
+using Cyotek.Drawing.BitmapFont;
 
 namespace FlexDMD
 {
 
-    public enum FileType
+    public enum AssetSrcType
     {
-        Unknow, Image, Gif, Video
+        File, FlexResource, VPXResource
     }
 
-    public interface IBitmapFilter
+    public enum AssetType
     {
-        Bitmap Filter(Bitmap src);
+        Unknow, Image, Gif, Video, BMFont
     }
 
-    public class RegionFilter : IBitmapFilter
+    public class AssetSrc
     {
-        public Rectangle _region = new Rectangle(0, 0, 0, 0);
-
-        public Bitmap Filter(Bitmap src)
-        {
-            var dst = new Bitmap(_region.Width, _region.Height);
-            for (int y = 0; y < _region.Height; y++)
-            {
-                for (int x = 0; x < _region.Width; x++)
-                {
-                    dst.SetPixel(x, y, src.GetPixel(_region.X + x, _region.Y + y));
-                }
-            }
-            return dst;
-        }
-    }
-
-    public class DotFilter : IBitmapFilter
-    {
-        public int _dotSize = 2;
-        public int _offset = 0;
-
-        public Bitmap Filter(Bitmap src)
-        {
-            var dst = new Bitmap(src.Width / _dotSize, src.Height / _dotSize, PixelFormat.Format32bppArgb);
-            for (int y = 0; y < dst.Height; y++)
-            {
-                for (int x = 0; x < dst.Width; x++)
-                {
-                    int r = 0, g = 0, b = 0, a = 0;
-                    for (int i = 0; i < _dotSize; i++)
-                    {
-                        for (int j = 0; j < _dotSize; j++)
-                        {
-                            Color c = src.GetPixel(x * _dotSize + i, y * _dotSize + j);
-                            r += c.R;
-                            g += c.G;
-                            b += c.B;
-                            a += c.A;
-                        }
-                    }
-                    float bright = 1f + _dotSize * _dotSize / 1.8f;
-                    dst.SetPixel(x, y, Color.FromArgb((int) Math.Min(a / bright, 255), (int)Math.Min(r / bright, 255), (int)Math.Min(g / bright, 255), (int)Math.Min(b / bright, 255)));
-                    // dst.SetPixel(x, y, src.GetPixel(x * _dotSize + (_dotSize - 1) - _offset, y * _dotSize + (_dotSize - 1)));
-                }
-            }
-            return dst;
-        }
-    }
-
-    public class AdditiveFilter : IBitmapFilter
-    {
-        public Bitmap Filter(Bitmap src)
-        {
-            var dst = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
-            for (int y = 0; y < dst.Height; y++)
-            {
-                for (int x = 0; x < dst.Width; x++)
-                {
-                    var pixel = src.GetPixel(x, y);
-                    // var alpha = (int)(4 * ((0.21 * pixel.R + 0.72 * pixel.G + 0.07 * pixel.B) * pixel.A) / 255);
-                    // if (alpha > 255) alpha = 255;
-                    if (pixel.R < 64 && pixel.G < 64 && pixel.B < 64)
-                        dst.SetPixel(x, y, Color.FromArgb(0, pixel));
-                    else
-                        dst.SetPixel(x, y, pixel);
-                }
-            }
-            return dst;
-        }
-    }
-
-    public class VideoDef
-    {
-        public string VideoFilename { get; set; } = "";
-        public Scaling Scaling { get; set; } = Scaling.Stretch;
-        public Alignment Alignment { get; set; } = Alignment.Center;
-        public bool Loop { get; set; } = false;
-
-        public override bool Equals(object obj)
-        {
-            return obj is VideoDef def &&
-                   VideoFilename == def.VideoFilename &&
-                   Scaling == def.Scaling &&
-                   Alignment == def.Alignment &&
-                   Loop == def.Loop;
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = 96768724;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(VideoFilename);
-            hashCode = hashCode * -1521134295 + Scaling.GetHashCode();
-            hashCode = hashCode * -1521134295 + Alignment.GetHashCode();
-            hashCode = hashCode * -1521134295 + Loop.GetHashCode();
-            return hashCode;
-        }
-    }
-
-    public class ImageSequenceDef
-    {
-        public List<string> _images;
-        public Scaling Scaling { get; set; } = Scaling.Stretch;
-        public Alignment Alignment { get; set; } = Alignment.Center;
-        public int Fps { get; set; } = 25;
-        public bool Loop { get; set; } = true;
-
-        public ImageSequenceDef(string images, int fps, bool loop)
-        {
-            _images = new List<string>();
-            foreach (string image in images.Split(','))
-                _images.Add(image.Trim());
-            Fps = fps;
-            Loop = loop;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is ImageSequenceDef def &&
-                   EqualityComparer<List<string>>.Default.Equals(_images, def._images) &&
-                   Fps == def.Fps &&
-                   Loop == def.Loop;
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = -2035125405;
-            hashCode = hashCode * -1521134295 + EqualityComparer<List<string>>.Default.GetHashCode(_images);
-            hashCode = hashCode * -1521134295 + Fps.GetHashCode();
-            hashCode = hashCode * -1521134295 + Loop.GetHashCode();
-            return hashCode;
-        }
-    }
-
-    public class FontDef
-    {
-        public Color Tint { get; set; } = Color.White;
-        public Color BorderTint { get; set; } = Color.White;
-        public int BorderSize { get; set; } = 0;
+        public string Id { get; set; } = "";
+        public string IdWithoutOptions { get => Id.Split('&')[0]; }
         public string Path { get; set; } = "";
+        public AssetType AssetType { get; set; } = AssetType.Unknow;
+        public AssetSrcType SrcType { get; set; } = AssetSrcType.File;
 
-        public FontDef(string path, Color tint, Color borderTint, int borderSize = 0)
-        {
-            Path = path;
-            Tint = tint;
-            BorderTint = borderTint;
-            BorderSize = borderSize;
-        }
+        // Still images can have filters applied to the source bitmap
+        public List<IBitmapFilter> BitmapFilters { get; } = new List<IBitmapFilter>();
 
-        public override bool Equals(object obj)
-        {
-            return obj is FontDef def &&
-                   Tint.R == def.Tint.R &&
-                   Tint.G == def.Tint.G &&
-                   Tint.B == def.Tint.B &&
-                   Tint.A == def.Tint.A &&
-                   BorderTint.R == def.BorderTint.R &&
-                   BorderTint.G == def.BorderTint.G &&
-                   BorderTint.B == def.BorderTint.B &&
-                   BorderTint.A == def.BorderTint.A &&
-                   BorderSize == def.BorderSize &&
-                   Path.Equals(def.Path);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = -1876634251;
-            hashCode = hashCode * -1521134295 + Tint.R;
-            hashCode = hashCode * -1521134295 + Tint.G;
-            hashCode = hashCode * -1521134295 + Tint.B;
-            hashCode = hashCode * -1521134295 + Tint.A;
-            hashCode = hashCode * -1521134295 + BorderTint.R;
-            hashCode = hashCode * -1521134295 + BorderTint.G;
-            hashCode = hashCode * -1521134295 + BorderTint.B;
-            hashCode = hashCode * -1521134295 + BorderTint.A;
-            hashCode = hashCode * -1521134295 + BorderSize;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Path);
-            return hashCode;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("FontDef [path={0}, tint={1}, border tint={2}, border size={3}]", Path, Tint, BorderTint, BorderSize);
-        }
-
+        // Bitmap Fonts can have a tint and a border applied
+        public Color FontTint { get; set; } = Color.White;
+        public Color FontBorderTint { get; set; } = Color.White;
+        public int FontBorderSize { get; set; } = 0;
     }
 
-    public class Asset<T> : IDisposable
+    public class CachedBitmap
     {
-        private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private readonly AssetManager _assets;
-        private readonly object _id;
-        private T _value;
-        public bool _loaded;
-        public int _refCount;
-
-        public Asset(AssetManager assets, object id)
+        public Stream Stream { get; set; } = null;
+        public Bitmap Bitmap { get; set; } = null;
+        public CachedBitmap(Bitmap bitmap)
         {
-            _id = id;
-            _assets = assets;
-            _refCount = 1;
+            Bitmap = bitmap;
         }
-
-        public void Dispose()
+        public CachedBitmap(Stream stream)
         {
-            _refCount = 0;
-            Unload();
-        }
-
-        public T Value
-        {
-            get
-            {
-                if (!_loaded) throw new InvalidOperationException("Asset must be loaded before accessing its value.");
-                return _value;
-            }
-        }
-
-        public T Load()
-        {
-            if (!_loaded)
-            {
-                if (typeof(T) == typeof(Bitmap) && _id.GetType() == typeof(string))
-                {
-                    log.Info("New bitmap added to asset manager: {0}", _id);
-                    var stream = _assets.OpenStream((string)_id);
-                    Bitmap image = new Bitmap(stream);
-                    var originalImage = image;
-                    foreach (IBitmapFilter filter in _assets.GetFilters((string)_id))
-                        image = filter.Filter(image);
-                    if (!Array.Exists(image.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
-                    {
-                        // Only convert for still image; animated ones are converted when played
-                        GraphicUtils.BGRtoRGB(image);
-                        // FIXME we only release for still images, since animated GIF are streamed
-                        _assets.CloseStream(stream, (string)_id);
-                    }
-                    _value = (T)Convert.ChangeType(image, typeof(T));
-                    _loaded = true;
-                }
-                else if (typeof(T) == typeof(Font) && _id.GetType() == typeof(FontDef))
-                {
-                    var fontDef = (FontDef)_id;
-                    log.Info("New font added to asset manager: {0}", fontDef);
-                    var font = new Font(_assets, fontDef);
-                    _value = (T)Convert.ChangeType(font, typeof(T));
-                    _loaded = true;
-                }
-                else
-                {
-                    throw new InvalidOperationException(string.Format("Unsupported asset type {0}", typeof(T)));
-                }
-            }
-            return _value;
-        }
-
-        public void Unload()
-        {
-            if (_loaded && _value != null)
-            {
-                if (typeof(T) == typeof(Bitmap) && _value is Bitmap bmp)
-                {
-                    bmp.Dispose();
-                }
-                _value = default;
-            }
-            _loaded = false;
+            Stream = stream;
+            Bitmap = new Bitmap(stream);
         }
     }
 
+    /// <summary>
+    /// Manages assets used by the actors (asset caching and file resolving).
+    /// 
+    /// Data lifecycle is the following:
+    /// - When they are on stage (InStage property), Actors request the assets they need to the asset manager.
+    /// - Assets returned by the manager are valid until ClearAll is called.
+    /// - FlexDMD keeps the cache live for the duration of the Run state. When Run is False, all actors are 
+    ///   set as out of stage (no more stage to be on), and ClearAll is then called.
+    /// </summary>
     public class AssetManager : IDisposable
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private readonly Dictionary<object, object> _cache = new Dictionary<object, object>();
         private VPXFile _vpxFile = null;
+        private readonly Dictionary<string, CachedBitmap> _cachedBitmaps = new Dictionary<string, CachedBitmap>();
+        private readonly Dictionary<string, Font> _cachedFonts = new Dictionary<string, Font>();
 
         public string BasePath { get; set; } = "./";
         public string TableFile { get; set; } = null;
@@ -319,292 +93,241 @@ namespace FlexDMD
 
         public void Dispose()
         {
-            ClearCache();
+            ClearAll();
         }
 
-        public void ClearCache()
+        public void ClearAll()
         {
-            if (_vpxFile != null)
+            foreach (KeyValuePair<string, CachedBitmap> entry in _cachedBitmaps)
             {
-                foreach (KeyValuePair<object, object> entry in _cache)
+                entry.Value.Bitmap.Dispose();
+                // If loaded from a stream, it must be kept open for the lifetime of the bitmap
+                entry.Value.Stream?.Dispose();
+            }
+            foreach (KeyValuePair<string, Font> entry in _cachedFonts)
+            {
+                entry.Value.Dispose();
+            }
+            _cachedBitmaps.Clear();
+            _cachedFonts.Clear();
+            _vpxFile?.Dispose();
+            _vpxFile = null;
+        }
+
+        /// <summary>
+        /// Resolve a source string into an asset descriptor.
+        ///
+        /// Source string are made of a filename eventually followed by parameters. A base source can be provided, 
+        /// in which case the source is resolved against it. This can be usefull to resolve dependencies for example
+        /// a bitmap font is defined by a text file and texture as sibling files. The textures will be resolved
+        /// against the base path of the text file.
+        ///
+        /// The filename can be:
+        /// - a filename to be resolved on the filesystem. eg "video.mp4"
+        /// - a resource from FlexDMD itself: "FlexDMD.Resources." followed by the name of the FlexDMD resource.. eg "FlexDMD.Resources.bm_army-12.fnt"
+        /// - a file included inside the VPX file: "VPX." followed by the name of the VPX resource. eg "VPX.DMD"
+        ///
+        /// The parameters are under the form of a list of "&param=value" or "&flag"
+        ///	- For still images, this is a list of filters
+        /// - For fonts, this is color & border paramters
+        /// </summary>
+        public AssetSrc ResolveSrc(string src, AssetSrc baseSrc = null)
+        {
+            if (src.Contains("|")) throw new Exception("'|' is not allowed inside file names as it is the separator for image sequences");
+            var def = new AssetSrc();
+            var parts = src.Split('&');
+            // Apply the parenting if any
+            if (baseSrc != null)
+            {
+                if (baseSrc.SrcType == AssetSrcType.FlexResource)
+                    parts[0] = "FlexDMD.Resources." + parts[0];
+                else if (baseSrc.SrcType == AssetSrcType.VPXResource)
+                    parts[0] = "VPX." + parts[0];
+                else if (baseSrc.SrcType == AssetSrcType.File)
+                    parts[0] = Path.Combine(baseSrc.Path, "..", parts[0]);
+            }
+            def.Id = string.Join("&", parts);
+            // Resolve the source path
+            var ext = parts[0].Length > 4 ? parts[0].Substring(parts[0].Length - 4).ToLowerInvariant() : "";
+            if (parts[0].StartsWith("FlexDMD.Resources."))
+            {
+                def.SrcType = AssetSrcType.FlexResource;
+                def.Path = parts[0];
+            }
+            else if (parts[0].StartsWith("VPX."))
+            {
+                def.SrcType = AssetSrcType.VPXResource;
+                def.Path = parts[0].Substring(4);
+                ext = "";
+                if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
+                    _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
+                if (_vpxFile != null)
                 {
-                    ((IDisposable)entry.Value).Dispose();
+                    var file = _vpxFile.GetImportFile(def.Path);
+                    if (file != null && file.Length > 4) ext = file.Substring(parts[0].Length - 4).ToLowerInvariant();
                 }
-                _cache.Clear();
-                _vpxFile.Dispose();
-                _vpxFile = null;
+            }
+            else
+            {
+                def.SrcType = AssetSrcType.File;
+                def.Path = parts[0];
+            }
+            // Identify the asset type
+            if (ext.Equals(".png") || ext.Equals(".jpg") || ext.Equals(".jpeg") || ext.Equals(".bmp"))
+                def.AssetType = AssetType.Image;
+            else if (ext.Equals(".wmv") || ext.Equals(".avi") || ext.Equals(".mp4"))
+                def.AssetType = AssetType.Video;
+            else if (ext.Equals(".gif"))
+                def.AssetType = AssetType.Gif;
+            else if (ext.Equals(".fnt"))
+                def.AssetType = AssetType.BMFont;
+            // Parse the asset options
+            if (def.AssetType == AssetType.Image)
+            { // Still image filters
+                foreach (string definition in parts.Skip(1))
+                {
+                    try
+                    {
+                        if (definition.StartsWith("dmd=") && int.TryParse(definition.Substring(4), out int dotSize))
+                        {
+                            var filter = new DotFilter
+                            {
+                                DotSize = dotSize
+                            };
+                            def.BitmapFilters.Add(filter);
+                        }
+                        else if (definition.StartsWith("dmd2=") && int.TryParse(definition.Substring(5), out int dotSize2))
+                        {
+                            var filter = new DotFilter
+                            {
+                                DotSize = dotSize2,
+                                Offset = 1
+                            };
+                            def.BitmapFilters.Add(filter);
+                        }
+                        else if (definition.StartsWith("add"))
+                        {
+                            var filter = new AdditiveFilter();
+                            def.BitmapFilters.Add(filter);
+                        }
+                        else if (definition.StartsWith("region="))
+                        {
+                            var filter = new RegionFilter();
+                            var rect = definition.Substring(7).Split(',');
+                            filter.X = int.Parse(rect[0]);
+                            filter.Y = int.Parse(rect[1]);
+                            filter.Width = int.Parse(rect[2]);
+                            filter.Height = int.Parse(rect[3]);
+                            def.BitmapFilters.Add(filter);
+                        }
+                        else if (definition.StartsWith("pad="))
+                        {
+                            var filter = new PadFilter();
+                            var rect = definition.Substring(4).Split(',');
+                            filter.Left = int.Parse(rect[0]);
+                            filter.Top = int.Parse(rect[1]);
+                            filter.Right = int.Parse(rect[2]);
+                            filter.Bottom = int.Parse(rect[3]);
+                            def.BitmapFilters.Add(filter);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error(e, "Failed to create bitmap filter for: ", definition);
+                    }
+                }
+            }
+            else if (def.AssetType == AssetType.BMFont)
+            { // Font parameters
+                foreach (string definition in parts.Skip(1))
+                {
+                    try
+                    {
+                        if (definition.StartsWith("tint=") && int.TryParse(definition.Substring(5), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int tint))
+                            def.FontTint = Color.FromArgb(tint);
+                        else if (definition.StartsWith("border_tint=") && int.TryParse(definition.Substring(12), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int borderTint))
+                            def.FontBorderTint = Color.FromArgb(borderTint);
+                        else if (definition.StartsWith("border_size=") && int.TryParse(definition.Substring(12), out int borderSize))
+                            def.FontBorderSize = borderSize;
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error(e, "Failed to read font parameter: ", definition);
+                    }
+                }
+            }
+            return def;
+        }
+
+        public Stream Open(AssetSrc src)
+        {
+            switch (src.SrcType)
+            {
+                case AssetSrcType.File:
+                    return new FileStream(src.Path, FileMode.Open, FileAccess.Read);
+                case AssetSrcType.FlexResource:
+                    return Assembly.GetExecutingAssembly().GetManifestResourceStream(src.Path);
+                case AssetSrcType.VPXResource:
+                    if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
+                        _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
+                    if (_vpxFile != null)
+                        return _vpxFile.OpenStream(src.Path);
+                    return null;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Load a bitmap (still image or GIF), applying bitmap filters to still images.
+        /// </summary>
+        public Bitmap GetBitmap(AssetSrc src)
+        {
+            if (src.AssetType != AssetType.Image && src.AssetType != AssetType.Gif) throw new Exception("Asked to load a bitmap from a resource of type " + src.AssetType);
+            if (_cachedBitmaps.ContainsKey(src.Id))
+            { // The requested bitmap is cached
+                return _cachedBitmaps[src.Id].Bitmap;
+            }
+            else if (_cachedBitmaps.ContainsKey(src.IdWithoutOptions))
+            { // The bitmap from which the requested one is derived is cached
+                var cache = new CachedBitmap(_cachedBitmaps[src.IdWithoutOptions].Bitmap);
+                _cachedBitmaps[src.Id] = cache;
+                if (!Array.Exists(cache.Bitmap.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
+                { // Apply filters to still bitmaps
+                    foreach (IBitmapFilter filter in src.BitmapFilters)
+                        cache.Bitmap = filter.Filter(cache.Bitmap);
+                }
+                return cache.Bitmap;
+            }
+            else
+            { // This is a new bitmap that should be added to the cache
+                var cache = new CachedBitmap(Open(src));
+                _cachedBitmaps[src.IdWithoutOptions] = cache;
+                if (!Array.Exists(cache.Bitmap.FrameDimensionsList, e => e == FrameDimension.Time.Guid))
+                { // Apply RGB conversion and filters to still bitmaps
+                    GraphicUtils.BGRtoRGB(cache.Bitmap);
+                    if (src.BitmapFilters.Count > 0)
+                    {
+                        cache = new CachedBitmap(cache.Bitmap);
+                        _cachedBitmaps[src.Id] = cache;
+                        foreach (IBitmapFilter filter in src.BitmapFilters)
+                            cache.Bitmap = filter.Filter(cache.Bitmap);
+                    }
+                }
+                return cache.Bitmap;
             }
         }
 
         /// <summary>
-        /// Resolve then open a stream for the given path. It is the responsibility of the caller to close the stream.
-        ///
-        /// File names are resolved using the following rules:
-        /// <list type="bullet">
-        /// <item>
-        /// <description>If the file name starts with 'FlexDMD.Resources.' then the file is searched inside FlexDMD's embedded resources,</description>
-        /// </item>
-        /// <item>
-        /// <description>If the file name starts with 'VPX.' then the file is searched inside the VPX table file,</description>
-        /// </item>
-        /// <item>
-        /// <description>Otherwise, the file is searched in the project folder (see FlexDMD.SetProjectFolder).</description>
-        /// </item>
-        /// </list>
-        ///
-        /// Note that for the time being, for videos, only files placed in the project folder are supported.
-        ///
+        /// Load a font
         /// </summary>
-        public Stream OpenStream(string path, string siblingPath = null)
+        public Font GetFont(AssetSrc assetSrc)
         {
-            if (path.Contains("&")) path = path.Split('&')[0];
-            if (siblingPath != null)
-            {
-                if (siblingPath.StartsWith("FlexDMD.Resources."))
-                    path = "FlexDMD.Resources." + path;
-                else if (siblingPath.StartsWith("VPX."))
-                    path = "VPX." + path;
-                else
-                    path = Path.Combine(siblingPath, "..", path);
-            }
-            if (path.StartsWith("FlexDMD.Resources."))
-            {
-                return Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
-            }
-            else if (path.StartsWith("VPX."))
-            {
-                if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
-                {
-                    _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
-                }
-                if (_vpxFile != null)
-                {
-                    return _vpxFile.OpenStream(GetVPXId(path));
-                }
-                return null;
-            }
-            else
-            {
-                var fullPath = Path.Combine(BasePath, path);
-                return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
-            }
+            if (assetSrc.AssetType != AssetType.BMFont) throw new Exception("Asked to load a font from a resource of type " + assetSrc.AssetType);
+            if (_cachedFonts.ContainsKey(assetSrc.Id))
+                return _cachedFonts[assetSrc.Id];
+            var font = new Font(this, assetSrc);
+            _cachedFonts[assetSrc.Id] = font;
+            return font;
         }
-
-        public void CloseStream(Stream stream, string path, string siblingPath = null)
-        {
-            stream.Close();
-        }
-
-        public bool FileExists(string path, string siblingPath = null)
-        {
-            if (path.Contains("&")) path = path.Split('&')[0];
-            if (siblingPath != null)
-            {
-                if (siblingPath.StartsWith("FlexDMD.Resources."))
-                    path = "FlexDMD.Resources." + path;
-                else if (siblingPath.StartsWith("VPX."))
-                    path = "VPX." + path;
-                else
-                    path = Path.Combine(siblingPath, "..", path);
-            }
-            if (path.StartsWith("FlexDMD.Resources."))
-            {
-                return Assembly.GetExecutingAssembly().GetManifestResourceInfo(path) != null;
-            }
-            else if (path.StartsWith("VPX."))
-            {
-                // TODO do not keept the file open (this blocks editing)
-                if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
-                {
-                    _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
-                }
-                if (_vpxFile != null)
-                {
-                    return _vpxFile.Contains(GetVPXId(path));
-                }
-                return false;
-            }
-            else
-            {
-                var fullPath = Path.Combine(BasePath, path);
-                return File.Exists(fullPath);
-            }
-        }
-
-        public FileType GetFileType(string path, string siblingPath = null)
-        {
-            if (path.Contains("&")) path = path.Split('&')[0];
-            if (siblingPath != null)
-            {
-                if (siblingPath.StartsWith("FlexDMD.Resources."))
-                    path = "FlexDMD.Resources." + path;
-                else if (siblingPath.StartsWith("VPX."))
-                    path = "VPX." + path;
-                else
-                    path = Path.Combine(siblingPath, "..", path);
-            }
-            if (path.StartsWith("FlexDMD.Resources."))
-            {
-                return GetTypeFromExt(path);
-            }
-            else if (path.StartsWith("VPX."))
-            {
-                if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
-                {
-                    _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
-                }
-                if (_vpxFile != null)
-                {
-                    var file = _vpxFile.GetImportFile(GetVPXId(path));
-                    if (file != null) return GetTypeFromExt(file);
-                }
-                return FileType.Unknow;
-            }
-            else
-            {
-                var fullPath = Path.Combine(BasePath, path);
-                return GetTypeFromExt(fullPath);
-            }
-        }
-
-        private FileType GetTypeFromExt(string file)
-        {
-            if (file.Length < 4) return FileType.Unknow;
-            string extension = file.Substring(file.Length - 4).ToLowerInvariant();
-            if (extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".bmp"))
-            {
-                return FileType.Image;
-            }
-            else if (extension.Equals(".gif"))
-            {
-                return FileType.Gif;
-            }
-            else if (extension.Equals(".wmv") || extension.Equals(".avi") || extension.Equals(".mp4"))
-            {
-                return FileType.Video;
-            }
-            return FileType.Unknow;
-        }
-
-        private string GetVPXId(string path)
-        {
-            return path.Split('&')[0].Substring(4);
-        }
-
-        public List<object> GetFilters(string path)
-        {
-            var filters = new List<object>();
-            foreach (string definition in path.Split('&'))
-            {
-                try
-                {
-                    if (definition.StartsWith("dmd=") && int.TryParse(definition.Substring(4), out int dotSize))
-                    {
-                        var filter = new DotFilter();
-                        filter._dotSize = dotSize;
-                        filters.Add(filter);
-                    }
-                    else if (definition.StartsWith("dmd2=") && int.TryParse(definition.Substring(5), out int dotSize2))
-                    {
-                        var filter = new DotFilter();
-                        filter._dotSize = dotSize2;
-                        filter._offset = 1;
-                        filters.Add(filter);
-                    }
-                    else if (definition.StartsWith("add"))
-                    {
-                        var filter = new AdditiveFilter();
-                        filters.Add(filter);
-                    }
-                    else if (definition.StartsWith("region="))
-                    {
-                        var filter = new RegionFilter();
-                        var rect = definition.Substring(7).Split(',');
-                        filter._region.X = int.Parse(rect[0]);
-                        filter._region.Y = int.Parse(rect[1]);
-                        filter._region.Width = int.Parse(rect[2]);
-                        filter._region.Height = int.Parse(rect[3]);
-                        filters.Add(filter);
-                    }
-                } 
-                catch (Exception e)
-                {
-                    log.Error(e, "Failed to create filter for: ", definition);
-                }
-            }
-            return filters;
-        }
-
-        public Asset<T> Load<T>(object id)
-        {
-            if (_cache.ContainsKey(id))
-            {
-                Asset<T> asset = (Asset<T>)_cache[id];
-                asset._refCount++;
-                return asset;
-            }
-            else
-            {
-                var asset = new Asset<T>(this, id);
-                _cache[id] = asset;
-                return asset;
-            }
-        }
-
-        public bool IsLoaded<T>(object id)
-        {
-            if (_cache.ContainsKey(id))
-            {
-                Asset<T> asset = (Asset<T>)_cache[id];
-                return asset._loaded;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public T Get<T>(object id)
-        {
-            if (_cache.ContainsKey(id))
-            {
-                Asset<T> asset = (Asset<T>)_cache[id];
-                if (!asset._loaded)
-                {
-                    return asset.Value;
-                }
-                else
-                {
-                    throw new InvalidOperationException(string.Format("Get called on '{0}' which was not loaded yet.", id));
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException(string.Format("Get called on '{0}' which was not previously asked to be loaded.", id));
-            }
-        }
-
-        public void Unload<T>(object id)
-        {
-            if (_cache.ContainsKey(id))
-            {
-                Asset<T> asset = (Asset<T>)_cache[id];
-                asset._refCount--;
-                if (asset._refCount == 0)
-                {
-                    _cache.Remove(id);
-                    asset.Unload();
-                }
-                else if (asset._refCount < 0)
-                {
-                    throw new InvalidOperationException(string.Format("Unload called on '{0}' which was already unloaded.", id));
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException(string.Format("Unload called on '{0}' which was not previously loaded.", id));
-            }
-        }
-
     }
 }

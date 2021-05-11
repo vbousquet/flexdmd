@@ -23,25 +23,18 @@ namespace FlexDMD
     public class Group : Actor, IGroupActor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private bool _inStage = false;
 
         public List<Actor> Children { get; } = new List<Actor>();
-
-        public override bool InStage
-        {
-            get => _inStage;
-            set
-            {
-                if (_inStage == value) return;
-                _inStage = value;
-                foreach (Actor child in Children)
-                    child.InStage = value;
-            }
-        }
 
         public bool Clip { get; set; } = false;
 
         public int ChildCount { get => Children.Count; }
+
+        protected override void OnStageStateChanged()
+        {
+            foreach (Actor child in Children)
+                child.OnStage = OnStage;
+        }
 
         public Actor Get(string name)
         {
@@ -50,7 +43,7 @@ namespace FlexDMD
             {
                 if (child is Group g)
                 {
-                    var found = g.Get(name);
+                    var found = g.Get(Name + "/" + name);
                     if (found != null) return found;
                 }
                 else if (child.Name.Equals(name))
@@ -66,7 +59,6 @@ namespace FlexDMD
         public IFrameActor GetFrame(string name) => (IFrameActor)Get(name);
         public ILabelActor GetLabel(string name) => (ILabelActor)Get(name);
         public IVideoActor GetVideo(string name) => (IVideoActor)Get(name);
-        public IImageSequenceActor GetImageSeq(string name) => (IImageSequenceActor)Get(name);
         public IImageActor GetImage(string name) => (IImageActor)Get(name);
 
         public void AddActor(Actor child)
@@ -74,7 +66,7 @@ namespace FlexDMD
             child.Remove();
             child.Parent = this;
             Children.Add(child);
-            child.InStage = _inStage;
+            child.OnStage = OnStage;
         }
 
         public void AddActorAt(Actor child, int index)
@@ -82,14 +74,14 @@ namespace FlexDMD
             child.Remove();
             child.Parent = this;
             Children.Insert(index, child);
-            child.InStage = _inStage;
+            child.OnStage = OnStage;
         }
 
         public void RemoveActor(Actor child)
         {
             child.Parent = null;
             Children.Remove(child);
-            child.InStage = false;
+            child.OnStage = false;
         }
 
         public void RemoveAll()
@@ -97,7 +89,7 @@ namespace FlexDMD
             Children.ForEach(item =>
             {
                 item.Parent = null;
-                item.InStage = false;
+                item.OnStage = false;
             });
             Children.Clear();
         }

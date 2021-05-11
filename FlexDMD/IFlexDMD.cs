@@ -123,7 +123,6 @@ namespace FlexDMD
         IFrameActor GetFrame(string name);
         ILabelActor GetLabel(string name);
         IVideoActor GetVideo(string name);
-        IImageSequenceActor GetImageSeq(string name);
         IImageActor GetImage(string name);
         void RemoveAll();
         void AddActor([MarshalAs(UnmanagedType.Struct)]Actor child);
@@ -188,43 +187,8 @@ namespace FlexDMD
         // Image interface
         Scaling Scaling { get; set; }
         Alignment Alignment { get; set; }
-        Bitmap Bitmap { get; set; }
     }
 
-
-    [Guid("225D3F5A-E69F-4290-81CC-79F21ADD35AF"), ComVisible(true)]
-    public interface IImageSequenceActor
-    {
-        // Actor interface
-        string Name { get; set; }
-        float X { get; set; }
-        float Y { get; set; }
-        float Width { get; set; }
-        float Height { get; set; }
-        bool Visible { get; set; }
-        bool FillParent { get; set; }
-        bool ClearBackground { get; set; }
-        void SetBounds(float x, float y, float width, float height);
-        void SetPosition(float x, float y);
-        void SetAlignedPosition(float x, float y, Alignment alignment);
-        void SetSize(float width, float height);
-        float PrefWidth { get; }
-        float PrefHeight { get; }
-        void Pack();
-        void Remove();
-        IActionFactory ActionFactory { get; }
-        void AddAction([MarshalAs(UnmanagedType.Struct)] Action action);
-        void ClearActions();
-
-        // Image Sequence interface
-        int FPS { get; set; }
-        Scaling Scaling { get; set; }
-        Alignment Alignment { get; set; }
-        float Length { get; }
-        bool Loop { get; set; }
-        bool Paused { get; set; }
-        void Seek(float posInSeconds);
-    }
 
     [Guid("CF9AFD55-03A3-458D-8EAB-119C55090BAB"), ComVisible(true)]
     public interface IVideoActor
@@ -429,12 +393,9 @@ namespace FlexDMD
         ILabelActor NewLabel(string name, [param: MarshalAs(UnmanagedType.Struct)] Font font, string text);
 
         /// <summary>
+        /// Creates a video from a video file, a GIF animated image, or an image sequence.
         /// </summary>
         IVideoActor NewVideo(string name, string video);
-
-        /// <summary>
-        /// </summary>
-        IImageSequenceActor NewImageSequence(string name, int fps, string images);
 
         /// <summary>
         /// </summary>

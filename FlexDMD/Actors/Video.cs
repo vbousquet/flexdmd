@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 
 namespace FlexDMD
 {
-    public class Video : AnimatedActor, IVideoActor
+    public class Video : AnimatedActor
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
         private static int nOpenedVideos = 0;
@@ -35,7 +35,6 @@ namespace FlexDMD
         private MediaFoundationReader _audioReader;
         private WaveOutEvent _audioDevice;
         private Bitmap _frame;
-        private bool _inStage = false;
         private bool _visible = true;
         private bool _opened = false;
         private float _seek = -1f;
@@ -59,9 +58,24 @@ namespace FlexDMD
             void ContiguousCopyFrom([In] IntPtr pbSrcBuffer, [In] int cbSrcBuffer);
         }
 
-        public Video(string path, bool loop = false)
+        public override float Length { get => _length; }
+        public override float PrefWidth { get => _videoWidth; }
+        public override float PrefHeight { get => _videoHeight; }
+
+        public override bool Visible
+        {
+            get => _visible;
+            set
+            {
+                _visible = value;
+                OnStageStateChanged();
+            }
+        }
+
+        public Video(string path, string name = "", bool loop = false)
         {
             _path = path;
+            Name = name;
             Loop = loop;
             // Get the frame size
             MediaFoundationInterop.MFCreateSourceReaderFromURL(_path, null, out IMFSourceReader reader);
@@ -102,40 +116,10 @@ namespace FlexDMD
             }
         }
 
-        public Scaling Scaling { get; set; } = Scaling.Stretch;
-
-        public Alignment Alignment { get; set; } = Alignment.Center;
-
-        public float Length { get => _length; }
-
-        public override bool InStage
-        {
-            get => _inStage;
-            set
-            {
-                _inStage = value;
-                UpdateOpenClose();
-            }
-        }
-
-        public override bool Visible
-        {
-            get => _visible;
-            set
-            {
-                _visible = value;
-                UpdateOpenClose();
-            }
-        }
-
-        public override float PrefWidth { get => _videoWidth; }
-
-        public override float PrefHeight { get => _videoHeight; }
-
         // open/close when entering/exiting rendering graph since MMF has a limited number of concurrently opened sources
-        private void UpdateOpenClose()
+        protected override void OnStageStateChanged()
         {
-            bool shouldBeOpened = _visible && _inStage;
+            bool shouldBeOpened = _visible && OnStage;
             if (shouldBeOpened && !_opened)
             {
                 _opened = true;
@@ -203,7 +187,7 @@ namespace FlexDMD
 
         protected override void Rewind()
         {
-            _endOfAnimation = false;
+            base.Rewind();
             Seek(0f);
         }
 
@@ -246,7 +230,11 @@ namespace FlexDMD
 
         protected override void ReadNextFrame()
         {
-            if (_videoReader == null || _endOfAnimation) return;
+            if (_videoReader == null || _endOfAnimation)
+            {
+                _endOfAnimation = true;
+                return;
+            }
             try
             {
                 if (_seek >= 0)

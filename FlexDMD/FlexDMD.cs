@@ -60,52 +60,24 @@ namespace FlexDMD
         public IGroupActor NewGroup(string name) { var g = new Group() { Name = name }; return g; }
         public IFrameActor NewFrame(string name) { var g = new Frame() { Name = name }; return g; }
         public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
-        public IVideoActor NewVideo(string name, string video)
+        public IVideoActor NewVideo(string name, string path)
         {
-            var g = ResolveImage(video);
-            if (g == null || !(g is IVideoActor videoActor))
-            {
-                return null;
-            }
+            if (name.Contains("|"))
+                return new ImageSequence(AssetManager, path, name);
             else
             {
-                videoActor.Name = name;
-                return videoActor;
+                var src = AssetManager.ResolveSrc(path);
+                if (src.AssetType == AssetType.Video)
+                    return new Video(path, name);
+                if (src.AssetType == AssetType.Gif)
+                    return new GIFImage(AssetManager, path, name);
+                if (src.AssetType == AssetType.Image)
+                    return new ImageSequence(AssetManager, path, name);
             }
-        }
-        public IImageSequenceActor NewImageSequence(string name, int fps, string images)
-        {
-            try
-            {
-                var ai = new ImageSequenceDef(images, fps, true);
-                List<Bitmap> imgs = new List<Bitmap>();
-                foreach (string file in ai._images)
-                    imgs.Add(AssetManager.Load<Bitmap>(file).Load());
-                var seq = new ImageSequence(imgs, ai.Fps, ai.Loop);
-                seq.Name = name;
-                return seq;
-            }
-            catch (Exception e)
-            {
-                log.Error(e, "Exception while resolving image: '{0}'", images);
-            }
-            log.Error("Missing resource '{0}'", images);
             return null;
         }
-        public IImageActor NewImage(string name, string image)
-        {
-            var g = (IImageActor)ResolveImage(image);
-            if (g == null || !(g is IImageActor imageActor))
-            {
-                return null;
-            }
-            else
-            {
-                imageActor.Name = name;
-                return imageActor;
-            }
-        }
-        public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => AssetManager.Load<Font>(new FontDef(font, tint, borderTint, borderSize)).Load();
+        public IImageActor NewImage(string name, string image) => new Image(AssetManager, image, name);
+        public Font NewFont(string font, Color tint, Color borderTint, int borderSize) => new Font(AssetManager, AssetManager.ResolveSrc(string.Format("{0}&tint={1:X8}&border_size={2}&border_tint={3:X8}", font, tint, borderSize, borderTint)));
         public IUltraDMD NewUltraDMD() => new UltraDMD.UltraDMD(this);
 
         public Graphics Graphics { get; private set; } = null;
@@ -144,7 +116,7 @@ namespace FlexDMD
                     _processThread = null;
                     ShowDMD(false);
                     MediaFoundationApi.Shutdown();
-                    AssetManager.ClearCache();
+                    AssetManager.ClearAll();
                 }
             }
         }
@@ -459,59 +431,13 @@ namespace FlexDMD
             }
         }
 
-        /// Resolve image files.
-        /// For file resolving rules (resources, VPX files, path search,...), see AssetManager.OpenStream.
-        ///
-        /// File name is interpreted to be either:
-        /// <list type="bullet">
-        /// <item>
-        /// <description>a preloaded id (converted to a string),</description>
-        /// </item>
-        /// <item>
-        /// <description>a comma separated list of images filenames, which will be played as a looping animation at 25 FPS,</description>
-        /// </item>
-        /// <item>
-        /// <description>a filename resolving to an image, gif or video file.</description>
-        /// </item>
-        /// </list>
-        public Actor ResolveImage(string filename)
-        {
-            if (filename == "") return null;
-            try
-            {
-                if (AssetManager.FileExists(filename))
-                {
-                    switch (AssetManager.GetFileType(filename))
-                    {
-                        case FileType.Image:
-                            return new Image(AssetManager.Load<Bitmap>(filename).Load());
-                        case FileType.Gif:
-                            return new GIFImage(AssetManager.Load<Bitmap>(filename).Load());
-                        case FileType.Video:
-                            return new Video(Path.Combine(AssetManager.BasePath, filename), false);
-                    }
-                }
-                else if (filename.Contains("|"))
-                {
-                    var def = new ImageSequenceDef(filename, 25, true);
-                    return AssetManager.Load<ImageSequence>(def).Load();
-                }
-            }
-            catch (Exception e)
-            {
-                log.Error(e, "Exception while resolving image: '{0}'", filename);
-            }
-            log.Error("Missing resource '{0}'", filename);
-            return null;
-        }
-
         public void RenderLoop()
         {
             log.Info("RenderThread start");
             _frame = new Bitmap(_width, _height, PixelFormat.Format24bppRgb);
             Graphics = Graphics.FromImage(_frame);
             _stage.SetSize(_width, _height);
-            _stage.InStage = true;
+            _stage.OnStage = true;
             Stopwatch stopWatch = new Stopwatch();
             WindowHandle visualPinball = null;
             IntPtr _bpFrame = _renderMode != RenderMode.DMD_RGB ? Marshal.AllocHGlobal(_width * _height) : IntPtr.Zero;
@@ -680,7 +606,7 @@ namespace FlexDMD
                     elapsedMs = 4000 / _frameRate;
                 }
             }
-            _stage.InStage = false;
+            _stage.OnStage = false;
             if (_bpFrame != IntPtr.Zero) Marshal.FreeHGlobal(_bpFrame);
             Graphics.Dispose();
             Graphics = null;

@@ -18,34 +18,28 @@ using System.Drawing;
 
 namespace FlexDMD
 {
-    class ImageSequence : AnimatedActor, IImageSequenceActor
+    class ImageSequence : AnimatedActor
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
         private int _fps;
         private int _frame;
         private List<Image> _frames = new List<Image>();
 
-        public ImageSequence(List<Bitmap> images, int fps = 25, bool loop = true)
+        public ImageSequence(AssetManager manager, string paths, string name = "", int fps = 30, bool loop = true)
         {
-            log.Info("Initalizing list of {0} images", images.Count);
             _fps = fps;
             Loop = loop;
-            foreach (Bitmap bmp in images)
-                _frames.Add(new Image(bmp));
+            foreach (string path in paths.Split('|'))
+                _frames.Add(new Image(manager, path));
             _frame = 0;
             _frameDuration = 1.0f / fps;
+            log.Info("ImageSequence Initalized with {0} frames", _frames.Count);
             Pack();
         }
 
-        public Scaling Scaling { get; set; } = Scaling.Stretch;
-
-        public Alignment Alignment { get; set; } = Alignment.Center;
-
         public override float PrefWidth { get => _frames[0].Width; }
-
         public override float PrefHeight { get => _frames[0].Height; }
-
-        public float Length { get => _frames.Count * _frameDuration; }
+        public override float Length { get => _frames.Count * _frameDuration; }
 
         public int FPS
         {
@@ -58,12 +52,16 @@ namespace FlexDMD
             }
         }
 
+        protected override void OnStageStateChanged()
+        {
+            foreach (Image frame in _frames)
+                frame.OnStage = OnStage;
+        }
+
         protected override void Rewind()
         {
-            _endOfAnimation = false;
+            base.Rewind();
             _frame = 0;
-            _frameTime = 0;
-            _time = 0;
         }
 
         protected override void ReadNextFrame()
@@ -91,5 +89,4 @@ namespace FlexDMD
             }
         }
     }
-
 }

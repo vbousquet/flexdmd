@@ -17,16 +17,19 @@ using System;
 
 namespace FlexDMD
 {
-    public abstract class AnimatedActor : Actor
+    public abstract class AnimatedActor : Actor, IVideoActor
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
-        protected bool _endOfAnimation;
-        protected float _frameTime;
-        protected float _frameDuration;
-        protected float _time;
-        public bool Paused { get; set; } = false;
+        protected float _frameTime; // Timestamp of the currently displayed frame
+        protected float _frameDuration; // Duration of the currently displayed frame
+        protected float _time; // Time of the video
+        protected bool _endOfAnimation; // Has the end of animation been reached ?
 
+        public Scaling Scaling { get; set; } = Scaling.Stretch;
+        public Alignment Alignment { get; set; } = Alignment.Center;
+        public bool Paused { get; set; } = false;
         public bool Loop { get; set; } = true;
+        public abstract float Length { get; }
 
         public override void Update(float delta)
         {
@@ -60,12 +63,16 @@ namespace FlexDMD
             {
                 var length = _frameTime + _frameDuration;
                 _time %= length;
-                _endOfAnimation = false;
                 Rewind();
             }
         }
 
-        protected abstract void Rewind();
+        protected virtual void Rewind()
+        {
+            _time = 0;
+            _frameTime = 0;
+            _endOfAnimation = false;
+        }
 
         protected abstract void ReadNextFrame();
 

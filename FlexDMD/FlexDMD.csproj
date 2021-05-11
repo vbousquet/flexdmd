@@ -139,6 +139,7 @@
     <Compile Include="Actors\Layout.cs" />
     <Compile Include="Actors\ScoreBoard.cs" />
     <Compile Include="AssetManager.cs" />
+    <Compile Include="BitmapFilter.cs" />
     <Compile Include="BMFonts\BitmapFont.cs" />
     <Compile Include="BMFonts\BitmapFontLoader.cs" />
     <Compile Include="BMFonts\Character.cs" />
