@@ -185,6 +185,7 @@ namespace FlexDMD
         void ClearActions();
 
         // Image interface
+        Bitmap Bitmap { get; set; }
         Scaling Scaling { get; set; }
         Alignment Alignment { get; set; }
     }

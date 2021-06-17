@@ -68,7 +68,7 @@ namespace FlexDMD
             {
                 var src = AssetManager.ResolveSrc(path);
                 if (src.AssetType == AssetType.Video)
-                    return new Video(path, name);
+                    return new Video(src.Path, name);
                 if (src.AssetType == AssetType.Gif)
                     return new GIFImage(AssetManager, path, name);
                 if (src.AssetType == AssetType.Image)

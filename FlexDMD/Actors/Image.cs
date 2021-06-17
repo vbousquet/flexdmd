@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
+using System;
 using System.Drawing;
 
 namespace FlexDMD
@@ -42,6 +43,19 @@ namespace FlexDMD
             _bitmap = null;
         }
 
+        /// <summary>
+        /// Allows to directly acces the bitmap. This bypass the default lifecycle management (tied to FlexDMD run state 
+        /// and actors being on stage) and needs the user to perform it.
+        /// </summary>
+        public Bitmap Bitmap
+        {
+            get
+            {
+                if (_bitmap == null) _bitmap = _manager.GetBitmap(_src);
+                return _bitmap;
+            }
+            set => _bitmap = value;
+        }
         protected override void OnStageStateChanged()
         {
             _bitmap = OnStage ? _manager.GetBitmap(_src) : null;

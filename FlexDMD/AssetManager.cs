@@ -170,7 +170,7 @@ namespace FlexDMD
             else
             {
                 def.SrcType = AssetSrcType.File;
-                def.Path = parts[0];
+                def.Path = Path.Combine(BasePath, parts[0]);
             }
             // Identify the asset type
             if (ext.Equals(".png") || ext.Equals(".jpg") || ext.Equals(".jpeg") || ext.Equals(".bmp"))
