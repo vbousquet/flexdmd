@@ -34,9 +34,10 @@ namespace FlexDMD
         public Bitmap Filter(Bitmap src)
         {
             var dst = new Bitmap(Width, Height, src.PixelFormat);
-            Graphics graph = Graphics.FromImage(dst);
-            graph.DrawImage(src, 0, 0, new RectangleF(X, Y, Width, Height), GraphicsUnit.Pixel);
-            graph.Dispose();
+            using (Graphics graph = Graphics.FromImage(dst)) { 
+                graph.Clear(Color.FromArgb(0, 0, 0, 0));
+                graph.DrawImage(src, new RectangleF(0, 0, Width, Height), new RectangleF(X, Y, Width, Height), GraphicsUnit.Pixel);
+            }
             /*for (int y = 0; y < Height; y++)
                 for (int x = 0; x < Width; x++)
                     dst.SetPixel(x, y, src.GetPixel(X + x, Y + y));*/
@@ -55,6 +56,7 @@ namespace FlexDMD
         {
             var dst = new Bitmap(src.Width + Left + Right, src.Height + Top + Bottom, src.PixelFormat);
             Graphics graph = Graphics.FromImage(dst);
+            graph.Clear(Color.FromArgb(0, 0, 0, 0));
             graph.DrawImage(src, Left, Top);
             graph.Dispose();
             /* for (int y = 0; y < src.Height; y++)
