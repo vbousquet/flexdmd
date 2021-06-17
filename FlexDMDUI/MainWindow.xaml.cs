@@ -576,7 +576,7 @@ namespace FlexDMDUI
         {
             string atlasName = "DMD_Atlas";
             Packer packer = new Packer();
-            packer.Process(_packPath, 8192, 0, false);
+            packer.Process(_packPath, 8192, 1, false);
             if (packer.Atlasses.Count == 1)
             {
                 var atlas = packer.Atlasses[0];
