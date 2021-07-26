@@ -161,7 +161,7 @@ namespace FlexDMD
         public virtual void Draw(Graphics graphics)
         {
             if (!OnStage) throw new InvalidOperationException("Draw was called on an actor which is not on stage.");
-            if (ClearBackground)
+            if (Visible && ClearBackground)
             {
                 if (_fillBrush == null) _fillBrush = new SolidBrush(Color.Black);
                 graphics.FillRectangle(_fillBrush, X, Y, Width, Height);

@@ -18,18 +18,21 @@ namespace FlexDMD
         public override void Draw(Graphics graphics)
         {
             base.Draw(graphics);
-            if (Fill)
+            if (Visible)
             {
-                _fillBrush.Color = FillColor;
-                graphics.FillRectangle(_fillBrush, X + Thickness, Y + Thickness, Width - 2 * Thickness, Height - 2 * Thickness);
-            }
-            if (Thickness > 0)
-            {
-                _borderBrush.Color = BorderColor;
-                graphics.FillRectangle(_borderBrush, X, Y, Width, Thickness);
-                graphics.FillRectangle(_borderBrush, X, Y + Height - Thickness, Width, Thickness);
-                graphics.FillRectangle(_borderBrush, X, Y + Thickness, Thickness, Height - 2 * Thickness);
-                graphics.FillRectangle(_borderBrush, X + Width - Thickness, Y + Thickness, Thickness, Height - 2 * Thickness);
+                if (Fill)
+                {
+                    _fillBrush.Color = FillColor;
+                    graphics.FillRectangle(_fillBrush, X + Thickness, Y + Thickness, Width - 2 * Thickness, Height - 2 * Thickness);
+                }
+                if (Thickness > 0)
+                {
+                    _borderBrush.Color = BorderColor;
+                    graphics.FillRectangle(_borderBrush, X, Y, Width, Thickness);
+                    graphics.FillRectangle(_borderBrush, X, Y + Height - Thickness, Width, Thickness);
+                    graphics.FillRectangle(_borderBrush, X, Y + Thickness, Thickness, Height - 2 * Thickness);
+                    graphics.FillRectangle(_borderBrush, X + Width - Thickness, Y + Thickness, Thickness, Height - 2 * Thickness);
+                }
             }
         }
     }
