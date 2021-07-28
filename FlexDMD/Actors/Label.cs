@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
    */
+using System;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
@@ -101,14 +102,14 @@ namespace FlexDMD
                     foreach (string line in _lines)
                     {
                         Layout.Align(Alignment, _font.MeasureFont(line).Width, PrefHeight, Width, Height, out float lx, out float ly);
-                        _font.DrawText(graphics, (int)(X + lx), (int)(Y + y), line);
+                        _font.DrawText(graphics, (int)Math.Floor(X + lx), (int)Math.Floor (Y + y), line);
                         y += _font.BitmapFont.LineHeight;
                     }
                 }
                 else
                 {
                     Layout.Align(Alignment, PrefWidth, PrefHeight, Width, Height, out float x, out float y);
-                    _font.DrawText(graphics, (int)(X + x), (int)(Y + y), _text);
+                    _font.DrawText(graphics, (int)Math.Floor(X + x), (int)Math.Floor(Y + y), _text);
                 }
             }
         }
