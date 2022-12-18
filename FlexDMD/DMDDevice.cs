@@ -96,8 +96,7 @@ namespace FlexDMD
 
         public DMDDevice(string basename = "dmddevice", bool errorOnMissing = true)
         {
-            string libraryName = basename + ".dll";
-            if (Environment.Is64BitProcess) libraryName = basename + "64.dll";
+            string libraryName = basename + (Environment.Is64BitProcess ? "64.dll" : ".dll");
             var fullPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), libraryName);
             _dllhandle = NativeLibrary.LoadLibrary(fullPath);
             if (_dllhandle != IntPtr.Zero)

@@ -1,4 +1,5 @@
 ﻿using FlexDMD;
+using System;
 using System.Drawing;
 
 namespace FlexDMDTest
@@ -7,7 +8,7 @@ namespace FlexDMDTest
     {
         static void Main(string[] args)
         {
-            System.Console.WriteLine("starting test");
+            System.Console.WriteLine("Starting test (Process: " + (Environment.Is64BitProcess ? "x64" : "x86") + ")");
             var dmd = new FlexDMD.FlexDMD
             {
                 // dmd.DmdWidth = 512;
@@ -18,7 +19,7 @@ namespace FlexDMDTest
                 Run = true
             };
             var udmd = dmd.NewUltraDMD();
-            // udmd.DisplayScene00("Diablo.UltraDMD/bel-0.jpg", " ", 15, "FREE PLAY", 15, 14, 5000, 14);
+            udmd.DisplayScene00("Diablo.UltraDMD/bel-0.jpg", " ", 15, "FREE PLAY", 15, 14, 5000, 14);
             // udmd.DisplayScene00("Diablo.UltraDMD/act1.wmv", " ", 15, "FREE PLAY", 15, 14, 5000, 14);
             // udmd.DisplayScene00("Diablo.UltraDMD/act2.wmv", "SCENE", 0, "2", 0, 0, 1000, 0);
             // dmd.DisplayScene00("Diablo.UltraDMD/black.jpg", "SCENE", 0, "2", 0, 0, 1000, 0);
@@ -28,7 +29,7 @@ namespace FlexDMDTest
             // udmd.DisplayScene00("Metal Slug.UltraDMD/IntroMS.wmv", "SCENE", 0, "2", 0, 0, 5000, 0);
             // udmd.DisplayScene00Ex("Diablo.UltraDMD/act1.wmv", "SCENE", 5, 15, "Test n 2", 5, 15, 14, 5000, 14);
             // udmd.DisplayScene00("Futurama.UltraDMD/a300-big-boys-1.gif", "", 15, "", 15, 14, 10000, 14);
-            udmd.DisplayScene00("Futurama.UltraDMD/free-play.mp4", "Color Test", 15, "Scene Test", 15, 14, 1000, 14);
+            // udmd.DisplayScene00("Futurama.UltraDMD/free-play.mp4", "Color Test", 15, "Scene Test", 15, 14, 1000, 14);
             // udmd.DisplayScene00("Countdown2.mp4", "Color Test", 15, "Scene Test", 15, 14, 5000, 14);
             // udmd.DisplayScene00("", "Color Test", 15, "Scene Test", 15, 14, 5000, 14);
             // udmd.DisplayScene00("big_buck_bunny.mp4", "Color Test", 15, "Scene Test", 15, 14, 1000, 14);
