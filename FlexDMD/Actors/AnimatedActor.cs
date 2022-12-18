@@ -30,12 +30,13 @@ namespace FlexDMD
         public bool Paused { get; set; } = false;
         public bool Loop { get; set; } = true;
         public abstract float Length { get; }
+        public float PlaySpeed { get; set; } = 1.0f;
 
         public override void Update(float delta)
         {
             base.Update(delta);
 			if (!Visible) return;
-            if (!Paused) Advance(delta);
+            if (!Paused) Advance(delta * PlaySpeed);
         }
 
         public virtual void Seek(float posInSeconds)

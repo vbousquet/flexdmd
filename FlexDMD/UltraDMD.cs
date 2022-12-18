@@ -145,7 +145,7 @@ namespace UltraDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly FlexDMD.FlexDMD _flexDMD;
-        private readonly Sequence _queue = new Sequence();
+        private readonly Sequence _queue;
         private readonly Dictionary<int, object> _preloads = new Dictionary<int, object>();
         private readonly ScoreBoard _scoreBoard;
         private readonly FontDef _scoreFontText;
@@ -162,6 +162,7 @@ namespace UltraDMD
         public UltraDMD(FlexDMD.FlexDMD flexDMD)
         {
             _flexDMD = flexDMD;
+            _queue = new Sequence(_flexDMD);
             _queue.FillParent = true;
             // UltraDMD uses f4by5 / f5by7 / f6by12
             _scoreFontText = new FontDef("FlexDMD.Resources.udmd-f4by5.fnt", Color.FromArgb(168, 168, 168), Color.White);
@@ -178,6 +179,7 @@ namespace UltraDMD
             _twoLinesFontBottom = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt", Color.White, Color.White);
             // Core rendering tree
             _scoreBoard = new ScoreBoard(
+                _flexDMD,
                 _flexDMD.NewFont(_scoreFontNormal.Path, _scoreFontNormal.Tint, _scoreFontNormal.BorderTint, _scoreFontNormal.BorderSize),
                 _flexDMD.NewFont(_scoreFontHighlight.Path, _scoreFontHighlight.Tint, _scoreFontHighlight.BorderTint, _scoreFontHighlight.BorderSize),
                 _flexDMD.NewFont(_scoreFontText.Path, _scoreFontText.Tint, _scoreFontText.BorderTint, _scoreFontText.BorderSize)
@@ -473,24 +475,24 @@ namespace UltraDMD
                 {
                     var fontTop = GetFont(_twoLinesFontTop.Path, topBrightness / 15f, topOutlineBrightness / 15f);
                     var fontBottom = GetFont(_twoLinesFontBottom.Path, bottomBrightness / 15f, bottomOutlineBrightness / 15f);
-                    var scene = new TwoLineScene(ResolveImage(background, true), toptext, fontTop, bottomtext, fontBottom, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                    var scene = new TwoLineScene(_flexDMD, ResolveImage(background, true), toptext, fontTop, bottomtext, fontBottom, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
                     _queue.Enqueue(scene);
                 }
                 else if (toptext != null && toptext.Length > 0)
                 {
                     var font = GetFittedLabel(toptext, topBrightness / 15f, topOutlineBrightness / 15f).Font;
-                    var scene = new SingleLineScene(ResolveImage(background, true), toptext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, false, sceneId);
+                    var scene = new SingleLineScene(_flexDMD, ResolveImage(background, true), toptext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, false, sceneId);
                     _queue.Enqueue(scene);
                 }
                 else if (bottomtext != null && bottomtext.Length > 0)
                 {
                     var font = GetFittedLabel(bottomtext, bottomBrightness / 15f, bottomOutlineBrightness / 15f).Font;
-                    var scene = new SingleLineScene(ResolveImage(background, true), bottomtext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, false, sceneId);
+                    var scene = new SingleLineScene(_flexDMD, ResolveImage(background, true), bottomtext, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, false, sceneId);
                     _queue.Enqueue(scene);
                 }
                 else
                 {
-                    var scene = new BackgroundScene(ResolveImage(background, true), (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
+                    var scene = new BackgroundScene(_flexDMD, ResolveImage(background, true), (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, sceneId);
                     _queue.Enqueue(scene);
                 }
             });
@@ -531,7 +533,7 @@ namespace UltraDMD
             {
                 if (LOG_DEBUG) log.Debug("DisplayScene01");
                 var font = GetFont(_singleLineFont[0].Path, textBrightness / 15f, textOutlineBrightness / 15f);
-                var scene = new SingleLineScene(ResolveImage(background, false), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
+                var scene = new SingleLineScene(_flexDMD, ResolveImage(background, false), text, font, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut, true, sceneId);
                 _scoreBoard.Visible = false;
                 _queue.Visible = true;
                 _queue.Enqueue(scene);
@@ -601,7 +603,7 @@ namespace UltraDMD
                 _scoreBoard.Visible = false;
                 string[] lines = text.Split(new char[] { '\n', '|' });
                 var font12 = GetFont(_scoreFontText.Path, textBrightness / 15f, -1);
-                var scene = new ScrollingCreditsScene(ResolveImage(background, false), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
+                var scene = new ScrollingCreditsScene(_flexDMD, ResolveImage(background, false), lines, font12, (AnimationType)animateIn, pauseTime / 1000f, (AnimationType)animateOut);
                 _queue.Visible = true;
                 _queue.Enqueue(scene);
             });

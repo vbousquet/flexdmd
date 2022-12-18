@@ -19,7 +19,7 @@ namespace FlexDMD.Scenes
         private readonly Label _topText;
         private readonly Label _bottomText;
 
-        public TwoLineScene(Actor background, string topText, Font topFont, string bottomText, Font bottomFont, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
+        public TwoLineScene(IFlexDMD flex, Actor background, string topText, Font topFont, string bottomText, Font bottomFont, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(flex, background, animateIn, pauseS, animateOut, id)
         {
             _topText = new Label(topFont, topText);
             _bottomText = new Label(bottomFont, bottomText);

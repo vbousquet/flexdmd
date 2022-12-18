@@ -26,6 +26,8 @@ namespace FlexDMD.Actors
 
         public Scene ActiveScene { get; private set; } = null;
 
+        public Sequence(IFlexDMD flex) : base(flex) { }
+
         public void Enqueue(Scene scene)
         {
             _pendingScenes.Add(scene);

@@ -20,6 +20,7 @@ namespace FlexDMD
 {
 
     #region Interfaces
+	
     [Guid("3ABF2DA1-819B-462E-AC1C-6BF8BF625D36"), ComVisible(true)]
     public enum Interpolation
     {
@@ -221,6 +222,7 @@ namespace FlexDMD
         float Length { get; }
         bool Loop { get; set; }
         bool Paused { get; set; }
+        float PlaySpeed { get; set; }
         void Seek(float posInSeconds);
     }
 
@@ -287,6 +289,14 @@ namespace FlexDMD
         /// Major part is multiplied by 1000, added to the minor part. For example 1.9 version will return 1009.
         /// </summary>
         int Version { get; }
+
+        /// <summary>
+        /// Runtime version.
+        /// This version number allow backward comaptibility. The default is to run with the lower runtime compatibility, that is to say 1008:
+        /// -    0 to 1008: initial fatures
+        /// - 1009 to  ...: searching for nodes changed
+        /// </summary>
+        int RuntimeVersion { get; set; }
 
         /// <summary>
         /// You need to set to true to start the rendering daemon thread, and to false to stop it.

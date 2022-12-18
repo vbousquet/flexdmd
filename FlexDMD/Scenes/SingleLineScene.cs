@@ -22,7 +22,7 @@ namespace FlexDMD.Scenes
 
         public float ScrollX { get; set; } = 0f;
 
-        public SingleLineScene(Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, bool scroll = false, string id = "") : base(background, animateIn, pauseS, animateOut, id)
+        public SingleLineScene(IFlexDMD flex, Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, bool scroll = false, string id = "") : base(flex, background, animateIn, pauseS, animateOut, id)
         {
             _scroll = scroll;
             _text = new Label(font, text);

@@ -29,7 +29,7 @@ namespace FlexDMD
         public Font HighlightFont { get; private set; }
         public Font TextFont { get; private set; }
 
-        public ScoreBoard(Font scoreFont, Font highlightFont, Font textFont)
+        public ScoreBoard(IFlexDMD flex, Font scoreFont, Font highlightFont, Font textFont) : base(flex)
         {
             ScoreFont = scoreFont;
             HighlightFont = highlightFont;

@@ -17,11 +17,12 @@ namespace FlexDMD.Scenes
 {
     class ScrollingCreditsScene : BackgroundScene
     {
-        private readonly Group _container = new Group();
+        private readonly Group _container;
         private readonly float _length;
 
-        public ScrollingCreditsScene(Actor background, string[] text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(background, animateIn, pauseS, animateOut, id)
+        public ScrollingCreditsScene(IFlexDMD flex, Actor background, string[] text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(flex, background, animateIn, pauseS, animateOut, id)
         {
+            _container = new Group(FlexDMD);
             // There is nothing obvious in UltraDMD that gives hint on the timing, so I choosed one.
             _length = 3f + text.Length * 0.4f;
             AddActor(_container);

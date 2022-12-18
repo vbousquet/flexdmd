@@ -32,9 +32,10 @@ namespace FlexDMD
     [Guid("766e10d3-dfe3-4e1b-ac99-c4d2be16e91f"), ComVisible(true), ClassInterface(ClassInterfaceType.None), ComSourceInterfaces(typeof(IDMDObjectEvents))]
     public class FlexDMD : IFlexDMD
     {
+        private int _runtimeVersion = 1008; // 1009 (1.9) is the first version introducing a breaking change. The default is to be backward compatible unless otherwise requested by the user
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
         private readonly List<System.Action> _runnables = new List<System.Action>();
-        private readonly Group _stage = new Group() { Name = "Stage" };
+        private readonly Group _stage;
         private readonly int _frameRate = 60;
         private readonly Mutex _renderMutex = new Mutex();
         private int _renderLockCount = 0;
@@ -57,7 +58,7 @@ namespace FlexDMD
         public delegate void OnDMDChangedDelegate();
 
         public IGroupActor Stage { get => _stage; }
-        public IGroupActor NewGroup(string name) { var g = new Group() { Name = name }; return g; }
+        public IGroupActor NewGroup(string name) { var g = new Group(this) { Name = name }; return g; }
         public IFrameActor NewFrame(string name) { var g = new Frame() { Name = name }; return g; }
         public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
         public IVideoActor NewVideo(string name, string path)
@@ -89,6 +90,12 @@ namespace FlexDMD
                 var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
                 return fvi.FileMajorPart * 1000 + fvi.FileMinorPart;
             }
+        }
+
+        public int RuntimeVersion
+        {
+            get => _runtimeVersion;
+            set => _runtimeVersion = value;
         }
 
         public bool Run
@@ -394,6 +401,7 @@ namespace FlexDMD
                 LogManager.ReconfigExistingLoggers();
             }
             log.Info("FlexDMD version {0}", assembly.GetName().Version);
+            _stage = new Group(this) { Name = "Stage" };
         }
 
         ~FlexDMD()

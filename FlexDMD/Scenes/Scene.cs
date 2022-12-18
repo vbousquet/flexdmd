@@ -38,7 +38,7 @@ namespace FlexDMD.Scenes
         public float Time { get; private set; }
         public float Pause { get; set; }
 
-        public Scene(AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "")
+        public Scene(IFlexDMD flex, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(flex)
         {
             _animateIn = animateIn;
             _animateOut = animateOut;

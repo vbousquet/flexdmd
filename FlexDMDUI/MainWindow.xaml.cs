@@ -43,7 +43,7 @@ namespace FlexDMDUI
         public const string flexDMDclsid = "{766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F}";
         public const string ultraDMDclsid = "{E1612654-304A-4E07-A236-EB64D6D4F511}";
 
-        public const int udmdConfigTab = 1;
+    public const int udmdConfigTab = 1;
         public const int udmdDesignTab = 2;
         public const int fdmdDesignTab = 3;
 

@@ -24,11 +24,28 @@ namespace FlexDMD
     {
         private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
+        public readonly IFlexDMD FlexDMD;
+
         public List<Actor> Children { get; } = new List<Actor>();
 
         public bool Clip { get; set; } = false;
 
         public int ChildCount { get => Children.Count; }
+
+        public Group Root { 
+			get
+			{
+				var root = this;
+				while (root.Parent != null)
+					root = root.Parent;
+				return root;
+			}
+		}
+
+		public Group(IFlexDMD flex)
+        {
+            FlexDMD = flex;
+        }
 
         protected override void OnStageStateChanged()
         {
@@ -39,20 +56,42 @@ namespace FlexDMD
         public Actor Get(string name)
         {
             if (Name.Equals(name)) return this;
-            var pos = name.IndexOf("/");
-            if (pos < 0)
-            {
-                foreach (Actor child in Children)
-                    if (child.Name.Equals(name))
-                        return child;
-            }
-            else
-            {
-                var groupName = name.Substring(0, pos);
-                foreach (Actor child in Children)
-                    if (child is Group g && child.Name.Equals(groupName))
-                        return g.Get(name.Substring(pos + 1));
-            }
+			if (FlexDMD.RuntimeVersion <= 1008) {
+				foreach (Actor child in Children)
+				{
+					if (child is Group g)
+					{
+						var found = g.Get(Name + "/" + name);
+						if (found != null) return found;
+					}
+					else if (child.Name.Equals(name))
+					{
+						return child;
+					}
+				}
+			} else {
+				var pos = name.IndexOf("/");
+				if (pos < 0)
+				{
+					// direct child node search 'xx'
+					foreach (Actor child in Children)
+						if (child.Name.Equals(name))
+							return child;
+				}
+				else if (pos == 0)
+				{
+					// absolute path from root '/xx/yy/zz', note that stage node is named 'Stage'
+					return Root.Get(name.Substring(1));
+				}
+				else
+				{
+					// relative path from current group 'xx/yy/zz'
+					var groupName = name.Substring(0, pos);
+					foreach (Actor child in Children)
+						if (child is Group g && child.Name.Equals(groupName))
+							return g.Get(name.Substring(pos + 1));
+				}
+			}
             log.Info("Warning actor '{0}' not found in children of '{1}'", name, Name);
             return null;
         }
@@ -62,7 +101,7 @@ namespace FlexDMD
         public ILabelActor GetLabel(string name) => (ILabelActor)Get(name);
         public IVideoActor GetVideo(string name) => (IVideoActor)Get(name);
         public IImageActor GetImage(string name) => (IImageActor)Get(name);
-
+		
         public void AddActor(Actor child)
         {
             child.Remove();
