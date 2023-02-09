@@ -59,14 +59,14 @@ namespace FlexDMD
 			if (FlexDMD.RuntimeVersion <= 1008) {
 				foreach (Actor child in Children)
 				{
-					if (child is Group g)
+                    if (child.Name.Equals(name))
+                    {
+                        return child;
+                    }
+                    if (child is Group g)
 					{
 						var found = g.Get(Name + "/" + name);
 						if (found != null) return found;
-					}
-					else if (child.Name.Equals(name))
-					{
-						return child;
 					}
 				}
 			} else {
