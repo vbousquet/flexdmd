@@ -63,17 +63,24 @@ namespace FlexDMD
         public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
         public IVideoActor NewVideo(string name, string path)
         {
-            if (path.Contains("|"))
-                return new ImageSequence(AssetManager, path, name);
-            else
+            try
             {
-                var src = AssetManager.ResolveSrc(path);
-                if (src.AssetType == AssetType.Video)
-                    return new Video(src.Path, name);
-                if (src.AssetType == AssetType.Gif)
-                    return new GIFImage(AssetManager, path, name);
-                if (src.AssetType == AssetType.Image)
+                if (path.Contains("|"))
                     return new ImageSequence(AssetManager, path, name);
+                else
+                {
+                    var src = AssetManager.ResolveSrc(path);
+                    if (src.AssetType == AssetType.Video)
+                        return new Video(src.Path, name);
+                    if (src.AssetType == AssetType.Gif)
+                        return new GIFImage(AssetManager, path, name);
+                    if (src.AssetType == AssetType.Image)
+                        return new ImageSequence(AssetManager, path, name);
+                }
+            }
+            catch (Exception)
+            {
+                // Silently discard loading exception and returns null to caller
             }
             return null;
         }
