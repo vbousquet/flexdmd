@@ -65,7 +65,7 @@ namespace FlexDMD
                     }
                     if (child is Group g)
 					{
-						var found = g.Get(Name + "/" + name);
+						var found = g.Get(name);
 						if (found != null) return found;
 					}
 				}
