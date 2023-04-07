@@ -160,11 +160,21 @@ namespace FlexDMD
                 def.Path = parts[0].Substring(4);
                 ext = "";
                 if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
+                {
                     _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
+                    log.Info("Path for resolving VPX embedded ressources defined to '{0}'", _vpxFile.ToString());
+                }
                 if (_vpxFile != null)
                 {
                     var file = _vpxFile.GetImportFile(def.Path);
-                    if (file != null && file.Length > 4) ext = file.Substring(file.Length - 4).ToLowerInvariant();
+                    if (file == null)
+                        log.Error("Embedded VPX ressource was not found: '{0}'", def.Path);
+                    else
+                    {
+                        def.AssetType = AssetType.Image;
+                        if (file.Length > 4)
+                            ext = file.Substring(file.Length - 4).ToLowerInvariant();
+                    }
                 }
             }
             else
@@ -259,9 +269,13 @@ namespace FlexDMD
                     }
                     catch (Exception e)
                     {
-                        log.Error(e, "Failed to read font parameter: ", definition);
+                        log.Error(e, "Failed to read font parameter: {0}", definition);
                     }
                 }
+            }
+            else if (def.AssetType == AssetType.Unknow)
+            {
+                log.Error("Failed to resolve asset. [src='{0}' base src='{1}'] {2} {3}", src, baseSrc, parts[0], parts[0].StartsWith("VPX."));
             }
             return def;
         }
@@ -276,7 +290,10 @@ namespace FlexDMD
                     return Assembly.GetExecutingAssembly().GetManifestResourceStream(src.Path);
                 case AssetSrcType.VPXResource:
                     if (_vpxFile == null && TableFile != null && File.Exists(Path.Combine(BasePath, TableFile)))
+                    {
                         _vpxFile = new VPXFile(Path.Combine(BasePath, TableFile));
+                        log.Info("Path for resolving VPX embedded ressources defined to '{0}'", _vpxFile.ToString());
+                    }
                     if (_vpxFile != null)
                         return _vpxFile.OpenStream(src.Path);
                     return null;

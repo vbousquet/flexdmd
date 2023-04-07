@@ -21,8 +21,8 @@ namespace FlexDMD.Scenes
 
         public TwoLineScene(IFlexDMD flex, Actor background, string topText, Font topFont, string bottomText, Font bottomFont, AnimationType animateIn, float pauseS, AnimationType animateOut, string id = "") : base(flex, background, animateIn, pauseS, animateOut, id)
         {
-            _topText = new Label(topFont, topText);
-            _bottomText = new Label(bottomFont, bottomText);
+            _topText = new Label(flex, topFont, topText);
+            _bottomText = new Label(flex, bottomFont, bottomText);
             AddActor(_topText);
             AddActor(_bottomText);
         }

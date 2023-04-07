@@ -26,12 +26,14 @@ namespace FlexDMD
         private string[] _lines;
         private float _textWidth, _textHeight;
 
-        public Label()
+        public Label(IFlexDMD flex)
         {
+            AutoPack = flex.RuntimeVersion <= 1008;
         }
 
-        public Label(Font font, string text)
+        public Label(IFlexDMD flex, Font font, string text)
         {
+            AutoPack = flex.RuntimeVersion <= 1008;
             _font = font;
             Text = text;
             Pack();

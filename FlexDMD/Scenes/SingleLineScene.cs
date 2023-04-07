@@ -25,7 +25,7 @@ namespace FlexDMD.Scenes
         public SingleLineScene(IFlexDMD flex, Actor background, string text, Font font, AnimationType animateIn, float pauseS, AnimationType animateOut, bool scroll = false, string id = "") : base(flex, background, animateIn, pauseS, animateOut, id)
         {
             _scroll = scroll;
-            _text = new Label(font, text);
+            _text = new Label(flex, font, text);
             AddActor(_text);
 
         }

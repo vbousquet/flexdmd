@@ -431,7 +431,7 @@ namespace UltraDMD
             foreach (FontDef f in _singleLineFont)
             {
                 var font = GetFont(f.Path, fillBrightness, outlineBrightness);
-                var label = new Label(font, text);
+                var label = new Label(_flexDMD, font, text);
                 label.SetPosition((_flexDMD.Width - label.Width) / 2, (_flexDMD.Height - label.Height) / 2);
                 if ((label.X >= 0 && label.Y >= 0) || f == _singleLineFont[_singleLineFont.Length - 1]) return label;
             }

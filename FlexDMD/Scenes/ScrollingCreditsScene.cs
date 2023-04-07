@@ -31,7 +31,7 @@ namespace FlexDMD.Scenes
             {
                 var txt = line.Trim();
                 if (txt.Length == 0) txt = " ";
-                var label = new Label(font, txt);
+                var label = new Label(flex, font, txt);
                 label.Y = y;
                 y += label.Height;
                 _container.AddActor(label);

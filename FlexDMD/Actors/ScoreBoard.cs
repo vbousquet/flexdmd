@@ -34,13 +34,13 @@ namespace FlexDMD
             ScoreFont = scoreFont;
             HighlightFont = highlightFont;
             TextFont = textFont;
-            _lowerLeft = new Label(textFont, "");
-            _lowerRight = new Label(textFont, "");
+            _lowerLeft = new Label(flex, textFont, "");
+            _lowerRight = new Label(flex, textFont, "");
             AddActor(_lowerLeft);
             AddActor(_lowerRight);
             for (int i = 0; i < 4; i++)
             {
-                _scores[i] = new Label(scoreFont, "0");
+                _scores[i] = new Label(flex, scoreFont, "0");
                 AddActor(_scores[i]);
             }
         }

@@ -60,7 +60,7 @@ namespace FlexDMD
         public IGroupActor Stage { get => _stage; }
         public IGroupActor NewGroup(string name) { var g = new Group(this) { Name = name }; return g; }
         public IFrameActor NewFrame(string name) { var g = new Frame() { Name = name }; return g; }
-        public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(font, text) { Name = name }; return g; }
+        public ILabelActor NewLabel(string name, Font font, string text) { var g = new Label(this, font, text) { Name = name }; return g; }
         public IVideoActor NewVideo(string name, string path)
         {
             try
