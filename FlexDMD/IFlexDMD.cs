@@ -292,9 +292,9 @@ namespace FlexDMD
 
         /// <summary>
         /// Runtime version.
-        /// This version number allow backward comaptibility. The default is to run with the lower runtime compatibility, that is to say 1008:
-        /// -    0 to 1008: initial fatures
-        /// - 1009 to  ...: searching for nodes changed
+        /// This version number allow backward compatibility. The default is to run with the lower runtime compatibility, that is to say 1008:
+        /// -    0 to 1008: initial features
+        /// - 1009 to  ...: new nodes searching, changed label packing,...
         /// </summary>
         int RuntimeVersion { get; set; }
 

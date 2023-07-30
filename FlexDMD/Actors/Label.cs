@@ -21,6 +21,7 @@ namespace FlexDMD
     // [Guid("BCAC5C64-9E46-431A-860C-DDBE38195965"), ComVisible(true), ClassInterface(ClassInterfaceType.None)]
     public class Label : Actor, ILabelActor
     {
+        private readonly IFlexDMD _flex;
         private Font _font;
         private string _text;
         private string[] _lines;
@@ -28,11 +29,13 @@ namespace FlexDMD
 
         public Label(IFlexDMD flex)
         {
+            _flex = flex;
             AutoPack = flex.RuntimeVersion <= 1008;
         }
 
         public Label(IFlexDMD flex, Font font, string text)
         {
+            _flex = flex;
             AutoPack = flex.RuntimeVersion <= 1008;
             _font = font;
             Text = text;
@@ -45,7 +48,7 @@ namespace FlexDMD
 
         public override float PrefHeight { get => _textHeight; }
 
-        public bool AutoPack { get; set; } = false;
+        public bool AutoPack { get; set; }
 
         public string Text
         {
@@ -99,19 +102,25 @@ namespace FlexDMD
             {
                 if (_lines.Length > 1 && Alignment != Alignment.Left && Alignment != Alignment.BottomLeft && Alignment != Alignment.TopLeft)
                 {
-                    // For multiple lines with cneter or right aligne, we must perform the alignment line by line
+                    // For multiple lines with center or right align, we must perform the alignment line by line
                     Layout.Align(Alignment, PrefWidth, PrefHeight, Width, Height, out float x, out float y);
                     foreach (string line in _lines)
                     {
                         Layout.Align(Alignment, _font.MeasureFont(line).Width, PrefHeight, Width, Height, out float lx, out float ly);
-                        _font.DrawText(graphics, (int)Math.Floor(X + lx), (int)Math.Floor (Y + y), line);
+                        if (_flex.RuntimeVersion <= 1008)
+                            _font.DrawText(graphics, (int)(X + lx), (int)(Y + y), line);
+                        else
+                            _font.DrawText(graphics, (int)Math.Floor(X + lx), (int)Math.Floor (Y + y), line);
                         y += _font.BitmapFont.LineHeight;
                     }
                 }
                 else
                 {
                     Layout.Align(Alignment, PrefWidth, PrefHeight, Width, Height, out float x, out float y);
-                    _font.DrawText(graphics, (int)Math.Floor(X + x), (int)Math.Floor(Y + y), _text);
+                    if (_flex.RuntimeVersion <= 1008)
+                        _font.DrawText(graphics, (int)(X + x), (int)(Y + y), _text);
+                    else
+                        _font.DrawText(graphics, (int)Math.Floor(X + x), (int)Math.Floor(Y + y), _text);
                 }
             }
         }
