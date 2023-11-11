@@ -83,6 +83,7 @@ namespace FlexDMD
             while (!done)
             {
                 var bytesInRecordRemaining = reader.ReadUInt32();
+                var fieldStart = reader.GetPos();
                 var tag = reader.ReadString(Encoding.ASCII, 4);
                 switch (tag)
                 {
@@ -143,6 +144,7 @@ namespace FlexDMD
                         }
                         break;
                 }
+                reader.Seek(fieldStart + bytesInRecordRemaining);
             }
             return data;
         }
@@ -164,6 +166,16 @@ namespace FlexDMD
             public void Skip(int count)
             {
                 _pos += count;
+            }
+
+            public long GetPos()
+            {
+                return _pos;
+            }
+
+            public void Seek(long newPos)
+            {
+                _pos = newPos;
             }
 
             public int ReadInt32()
